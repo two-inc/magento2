@@ -1,0 +1,46 @@
+<?php
+/**
+ * Copyright © Two.inc All rights reserved.
+ * See COPYING.txt for license details.
+ */
+?>
+<?php /* @var \Two\Gateway\Block\Adminhtml\Order\View $block */ ?>
+<?php if ($block->getMethod() == \Two\Gateway\Model\Two::CODE): ?>
+    <section class="admin__page-section order-view-account-information">
+        <div class="admin__page-section-title">
+            <span class="title"><?= $block->escapeHtml(__('Two Details')) ?></span>
+        </div>
+        <div class="admin__page-section-content">
+            <?php $data = $block->getAdditionalData(); ?>
+            <div>
+                <table>
+                    <?php if ($block->getTwoOrderId($data) != ''): ?>
+                        <tr>
+                            <td><?= $block->escapeHtml(__('Two Order Id')); ?>:
+                                <strong><?= $block->escapeHtml($block->getTwoOrderId($data)); ?></strong></td>
+                        </tr>
+                    <?php endif; ?>
+                    <?php if ($block->getTwoInvoiceUrl($data) != ''): ?>
+                        <tr>
+                            <td><?= $block->escapeHtml(__('Two Invoice')); ?>:
+                                <a href="<?= $block->escapeHtml($block->getTwoInvoiceUrl($data)); ?>"
+                                   target="_blank">
+                                    <?= $block->escapeHtml(__('Download')); ?>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                    <?php if ($block->getTwoCreditNoteUrl($data) != ''): ?>
+                        <tr>
+                            <td><?= $block->escapeHtml(__('Two Credit Note')); ?>:
+                                <a href="<?= $block->escapeHtml($block->getTwoCreditNoteUrl($data)); ?>"
+                                   target="_blank">
+                                    <?= $block->escapeHtml(__('Download')); ?>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+
+                </table>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>

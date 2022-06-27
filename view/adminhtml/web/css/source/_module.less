@@ -1,0 +1,80 @@
+/**
+  * Copyright © Two.inc All rights reserved.
+  * See COPYING.txt for license details.
+  */
+@import '_two-buttons';
+@import '_icons';
+@import '_two-colors';
+
+.two-header {
+  color: white;
+  font-size: 1.3rem;
+  text-align: left;
+  background: #0c043b no-repeat;
+  padding: 3rem 3rem 5rem 3rem;
+  border-radius: 30px;
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTk1IiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMTk1IDMyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMCA4LjA1Mjg3VjBINi41MjE2NVY4LjA1Mjg3SDExLjg0NDhWMTMuNTY4NUg2LjUyMTY1VjIyLjQyM0M2LjUyMTY1IDI0Ljc5MTEgNy41NTc0MiAyNS43NzY1IDEwLjAzMjIgMjUuNzc2NUgxMi45OTE1VjMxLjU0NTlIOC44MTg4NEMyLjU2MzUzIDMxLjU0NTkgMCAyOC43MjkyIDAgMjMuMzYwN1Y4LjA1Mjg3WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTIzLjEyMzQgMzEuMzA4NEwxNS4yOTU5IDguMDU0MzJIMjEuOTU0NEwyNi45OTI3IDI0LjQ2NTNMMzMuMjgxMyA4LjA1NDMySDQwLjA3NjdMNDYuMzI4MyAyNC40NjUzTDUxLjM2NjYgOC4wNTQzMkg1OC4wNzMyTDUwLjI0MiAzMS4zMDg0SDQzLjAxMDFMMzYuNjY2IDE0Ljg5MzdMMzAuMzc3NCAzMS4zMDg0SDIzLjEyMzRaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNjEuNDIwNyAyOC40OTU3QzU5LjA3OTEgMjYuMTI0IDU3LjkxMDIgMjMuMjE5MSA1Ny45MTAyIDE5LjY3MDdDNTcuOTEwMiAxNi4xMjIyIDU5LjA3OTEgMTMuMjI4NCA2MS4zNzYzIDEwLjkwNDRDNjMuNjczNSA4LjU4MDUgNjYuODY1OSA3LjM3MDczIDcwLjgyNCA3LjM3MDczQzc0Ljc4MjEgNy4zNzA3MyA3Ny45NzgyIDguNTMyNyA4MC4yNzE3IDEwLjg2MDNDODIuNTY1MSAxMy4xODc5IDgzLjc4MjIgMTYuMTM3IDgzLjc4MjIgMTkuNjg1NEM4My43ODIyIDIzLjIzMzggODIuNjA5NSAyNi4xNjgxIDgwLjI3MTcgMjguNTEwNEM3Ny45MzM4IDMwLjg1MjcgNzQuODI2NSAzMiA3MC44MjQgMzJDNjYuOTEwMiAzMS45ODUzIDYzLjc1ODYgMzAuODE5NiA2MS40MjA3IDI4LjQ5NTdaTTcwLjgyNCAyNi4yNzExQzcyLjg0NzQgMjYuMjcxMSA3NC40Njc3IDI1LjY0MjMgNzUuNjMyOSAyNC40MzI1Qzc2Ljc5ODEgMjMuMjIyNyA3Ny4zOSAyMS42MTU4IDc3LjM5IDE5LjY5MjdDNzcuMzkgMTcuNzY5NiA3Ni44MDE4IDE2LjE1OSA3NS42MzI5IDE0Ljk1MjlDNzQuNDY0IDEzLjc0NjggNzIuODQzNyAxMy4xMTQ0IDcwLjgyNCAxMy4xMTQ0QzY4LjgwNDIgMTMuMTE0NCA2Ny4xODAzIDEzLjczOTUgNjYuMDE1IDE0Ljk1MjlDNjQuODQ5OCAxNi4xNjY0IDY0LjI2MTYgMTcuNzY5NiA2NC4yNjE2IDE5LjY5MjdDNjQuMjYxNiAyMS42MTU4IDY0Ljg0NjEgMjMuMjI2NCA2Ni4wMTUgMjQuNDMyNUM2Ny4xODQgMjUuNjM4NiA2OC44MDA1IDI2LjI3MTEgNzAuODI0IDI2LjI3MTFaIiBmaWxsPSJ3aGl0ZSIvPgo8ZWxsaXBzZSBjeD0iOTIuMjY2NSIgY3k9IjI4LjI2NjciIHJ4PSIzLjczMzMzIiByeT0iMy43MzMzMyIgZmlsbD0iI0ZCQ0U0OSIvPgo8L3N2Zz4K);
+  background-size: 250px;
+  background-position: 40px 40px;
+
+  a {
+    color: #ffffff;
+    font-weight: bold;
+  }
+
+  .development {
+    background-color: #f1f1f1;
+    float: right;
+    padding: 6px 15px 5px 15px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    margin-top: 15px;
+
+    a {
+      color: #0c043a;
+      float: right;
+      text-decoration: none;
+      font-size: 12px;
+    }
+  }
+
+  .two-header-actions {
+    float: right;
+  }
+
+  .two-header-text {
+    text-align: left;
+    padding-left: 1%;
+    padding-top: 90px;
+    line-height: 2.5rem;
+  }
+
+  #two-button_test {
+    background: #444ce7;
+    color: white;
+    border: 0px;
+    border-radius: 20px;
+    width: 185px;
+    padding: 20px;
+  }
+}
+
+.two-extension .title:before {
+  content: '';
+  display: inline-block;
+  background-image: url("@{baseDir}Two_Gateway/images/logo.svg");
+  background-size: 58px;
+  background-repeat: no-repeat;
+  width: 65px;
+  height: 35px;
+  float: left;
+  margin-top: -5px;
+}
+
+#system_config_tabs .two-extension._hide > div > strong {
+  opacity: 0
+}
+
+#system_config_tabs .two-extension._show > div > strong {
+  opacity: 0
+}

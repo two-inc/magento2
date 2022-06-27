@@ -1,0 +1,170 @@
+<div class="payment-method two-payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+    <div class="payment-method-title field choice">
+        <input type="radio"
+               name="payment[method]"
+               class="radio"
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+        <label data-bind="attr: {'for': getCode()}" class="label">
+            <span data-bind="text: getTitle()"></span>
+        </label>
+    </div>
+    <div class="what_is_two" data-bind="visible: isTwoLinkEnabled">
+        <a data-bind='attr: {href: $t("https://www.two.inc/what-is-two")}, text: $t("What is two?")' target="_blank"></a>
+    </div>
+    <div class="payment-method-content">
+        <!-- ko foreach: getRegion('messages') -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+        <div class="payment-method-billing-address">
+            <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+        <div class="checkout-agreements-block">
+            <!-- ko foreach: $parent.getRegion('before-place-order') -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+        <form id="two_gateway_form"
+              data-bind="attr: {'data-hasrequired': $t('* Required Fields')}"
+              onkeydown="return event.key != 'Enter';">
+            <fieldset class="fieldset payment method" data-bind='attr: {id: "payment_form_" + getCode()}'>
+                <div class="field field-text required">
+                    <label for="two_company_name" class="label">
+                        <span><!-- ko i18n: 'Company Name'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input type="text"
+                               id="two_company_name"
+                               name="payment[company_name]"
+                               required="true"
+                               data-bind='
+                                attr: {title: $t("Company Name")},
+                                value: companyName'
+                               class="input-text"
+                        />
+                    </div>
+                </div>
+                <!-- ko if: isCompanyNameAutoCompleteEnabled -->
+                <button data-role="clear_company_name"
+                        id="clear_company_name"
+                        data-bind="
+                        attr: {title: $t('I can not find my company')},
+                        click: clearCompany">
+                    <span data-bind="i18n: 'I can not find my company'"></span>
+                </button>
+                <!-- /ko -->
+                <div class="field field-text required">
+                    <label for="two_company_id" class="label">
+                        <span><!-- ko i18n: 'Company ID'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input type="text"
+                               id="two_company_id"
+                               name="payment[company_id]"
+                               required="true"
+                               data-bind='
+                            attr: {
+                                title: $t("Company ID")
+                            },
+                            value: companyId'
+                               class="input-text"
+                        />
+                    </div>
+                </div>
+                <!-- ko if: showTelephoneOnBillingPage() -->
+                <div class="field field-text required">
+                    <label for="two_telephone" class="label">
+                    <span>
+                        <!-- ko i18n: 'Phone Number'--><!-- /ko -->
+                    </span>
+                    </label>
+                    <div class="control">
+                        <input type="text"
+                               id="two_telephone"
+                               name="payment[telephone]"
+                               required="true"
+                               data-bind='
+                            attr: {title: $t("Phone Number")},
+                            value: telephone'
+                               class="input-text"/>
+                    </div>
+                </div>
+                <!-- /ko -->
+                <div class="field field-text" data-bind="visible: isProjectFieldEnabled">
+                    <label for="two_project" class="label">
+                    <span>
+                        <!-- ko i18n: 'Project'--><!-- /ko -->
+                    </span>
+                    </label>
+                    <div class="control">
+                        <input type="text"
+                               id="two_project"
+                               name="payment[project]"
+                               data-bind='
+                            attr: {title: $t("Project")},
+                            value: project'
+                               class="input-text"/>
+                    </div>
+                </div>
+                <div class="field field-text" data-bind="visible: isDepartmentFieldEnabled">
+                    <label for="two_department" class="label">
+                        <span><!-- ko i18n: 'Department'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input type="text"
+                               id="two_department"
+                               name="payment[department]"
+                               data-bind='
+                            attr: {title: $t("Department")},
+                            value: department'
+                               class="input-text"/>
+                    </div>
+                </div>
+                <div class="field field-text" data-bind="visible: isOrderNoteFieldEnabled">
+                    <label for="two_order_note" class="label">
+                        <span><!-- ko i18n: 'Order Note'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input type="text"
+                               id="two_order_note"
+                               name="payment[orderNote]"
+                               data-bind='
+                            attr: {title: $t("Order Note")},
+                            value: orderNote'
+                               class="input-text"/>
+                    </div>
+                </div>
+                <div class="field field-text" data-bind="visible: isPONumberFieldEnabled">
+                    <label for="two_po_number" class="label">
+                        <span><!-- ko i18n: 'PO Number'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input type="text"
+                               id="two_po_number"
+                               name="payment[poNumber]"
+                               data-bind='
+                            attr: {title: $t("PO Number")},
+                            value: poNumber'
+                               class="input-text"/>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button data-role="review-save"
+                        type="submit"
+                        data-bind="
+                        attr: {title: $t('Place Order')},
+                        enable: (getCode() == isChecked()),
+                        click: placeOrder,
+                        css: {disabled: !isPlaceOrderActionAllowed()}
+                        "
+                        class="action primary checkout">
+                    <span data-bind="i18n: 'Place Order'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,33 @@
+<?php
+/**
+ * Copyright © Two.inc All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * @var $block Two\Gateway\Block\Adminhtml\System\Config\Field\Header
+ */
+?>
+<div class="two-header">
+    <div class="two-header-actions">
+        <button id="two-button_test" title="<?= $block->escapeUrl(__('Sign up now')); ?>"
+                type="button" class="action-default scalable"
+                onclick='window.open("<?= $block->escapeUrl($block->getSignUpUrl()); ?>", "_blank")'>
+            <span><?= $block->escapeUrl(__('Sign up now')); ?></span>
+        </button>
+    </div>
+    <div class="two-header-text">
+        <p>
+            <?=$block->escapeHtml(__(
+                'The Two Payment plugin for Magento simplifies B2B shopping, making it easy and safe for ' .
+                'merchants to offer invoices as a payment method.<br>The payment method lives next to other payment ' .
+                'methods in your existing checkout, and offers a variety of configuration options to suit your ' .
+                'businesses needs.<br>If you would like to know more about how to configure the plugin, check out ' .
+                'our step by step guide at %1',
+                '<a href="https://docs.two.inc/developer-portal/plugins/magento" target="_blank">' .
+                'https://docs.two.inc/developer-portal/plugins/magento</a>'
+            ), ['br', 'a']); ?>
+        </p>
+        <span class="development">
+            <a href="https://www.magmodules.eu/"><?=$block->escapeHtml(__('Developed by Magmodules.')); ?></a>
+        </span>
+    </div>
+</div>
