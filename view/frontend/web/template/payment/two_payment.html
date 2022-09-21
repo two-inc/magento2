@@ -39,8 +39,10 @@
                                name="payment[company_name]"
                                required="true"
                                data-bind='
-                                attr: {title: $t("Company Name")},
-                                value: companyName'
+                            attr: {
+                                title: $t("Company Name")
+                            },
+                            value: companyName'
                                class="input-text"
                         />
                     </div>
@@ -72,7 +74,7 @@
                         />
                     </div>
                 </div>
-                <!-- ko if: showTelephoneOnBillingPage() -->
+                <!-- ko if: showTwoTelephone() -->
                 <div class="field field-text required">
                     <label for="two_telephone" class="label">
                     <span>

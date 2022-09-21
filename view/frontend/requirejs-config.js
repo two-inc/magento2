@@ -6,5 +6,12 @@ var config = {
         'intlTelInput': {
             'deps': ['jquery']
         }
+    },
+    config: {
+        mixins: {
+            'Magento_Checkout/js/action/set-shipping-information': {
+                'Two_Gateway/js/action/set-shipping-information-mixin': true
+            }
+        }
     }
 };

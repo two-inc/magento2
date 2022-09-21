@@ -8,6 +8,9 @@ define([
         'underscore',
         'Magento_Checkout/js/view/payment/default',
         'Magento_Checkout/js/model/quote',
+        'Magento_Customer/js/customer-data',
+        'Magento_Checkout/js/model/step-navigator',
+        'uiRegistry',
         'Magento_Checkout/js/model/payment/additional-validators',
         'mage/translate',
         'Magento_Checkout/js/model/full-screen-loader',
@@ -16,18 +19,38 @@ define([
         'mage/validation',
         'jquery/jquery-storageapi'
     ],
-    function (ko, $, _, Component, quote, additionalValidators, $t, fullScreenLoader, redirectOnSuccessAction) {
+    function (
+        ko,
+        $,
+        _,
+        Component,
+        quote,
+        customerData,
+        stepNavigator,
+        uiRegistry,
+        additionalValidators,
+        $t, fullScreenLoader,
+        redirectOnSuccessAction
+    ) {
         'use strict';
 
-        var config = window.checkoutConfig.payment.two_payment;
-        var telephone = '';
-
-        if (quote.shippingAddress() && quote.shippingAddress().telephone) {
-            telephone = quote.shippingAddress().telephone.replace(' ', '');
+        let config = window.checkoutConfig.payment.two_payment,
+            telephone = '',
+            customAttributesObject = {},
+            shippingTwoTelephoneAttribute = {};
+        if (quote.shippingAddress()) {
+            if (quote.shippingAddress().telephone !== undefined) {
+                telephone = quote.shippingAddress().telephone.replace(' ', '');
+            }
+            if ($.isArray(quote.shippingAddress().customAttributes)) {
+                shippingTwoTelephoneAttribute = _.findWhere(
+                    quote.shippingAddress().customAttributes,
+                    {attribute_code: "two_telephone"}
+                );
+                telephone = (shippingTwoTelephoneAttribute) ? shippingTwoTelephoneAttribute.value : telephone;
+            }
         }
-
-        var customAttributesObject = {};
-        if ($.isArray(quote.billingAddress().customAttributes)) {
+        if (quote.billingAddress() && $.isArray(quote.billingAddress().customAttributes)) {
             quote.billingAddress().customAttributes.forEach(function (value) {
                 customAttributesObject[value.attribute_code] = value.value;
             });
@@ -47,8 +70,9 @@ define([
             isOrderNoteFieldEnabled: config.isOrderNoteFieldEnabled,
             isPONumberFieldEnabled: config.isPONumberFieldEnabled,
             isTwoLinkEnabled: config.isTwoLinkEnabled,
-            companyName: ko.observable(customAttributesObject.company_name),
-            companyId: ko.observable(customAttributesObject.company_id),
+            supportedCoutryCodes: config.supportedCoutryCodes,
+            companyName: customerData.get('twoCompanyName'),
+            companyId: customerData.get('twoCompanyId'),
             project: ko.observable(customAttributesObject.project),
             department: ko.observable(customAttributesObject.department),
             orderNote: ko.observable(''),
@@ -60,14 +84,12 @@ define([
             generalErrorMessage: $t('Something went wrong with your request. Please check your data and try again.'),
             initialize: function () {
                 this._super();
-                if (this.isInternationalTelephoneEnabled) {
+                if (this.showTwoTelephone()) {
                     this.enableInternationalTelephone();
                 }
-
                 if (this.isCompanyNameAutoCompleteEnabled) {
                     this.enableCompanyAutoComplete();
                 }
-
                 this.configureFormValidation();
             },
             afterPlaceOrder: function () {
@@ -81,7 +103,6 @@ define([
                 if (event) {
                     event.preventDefault();
                 }
-
                 if (self.validate() &&
                     additionalValidators.validate() &&
                     self.isPlaceOrderActionAllowed() === true
@@ -100,8 +121,11 @@ define([
                     }
                 }
             },
-            showTelephoneOnBillingPage: function() {
-                return (this.showTelephone === 'billing');
+            showTwoTelephone: function () {
+                let progressBar = uiRegistry.get('index = progressBar'),
+                    configuredCheckoutStep = _.findIndex(progressBar.steps(), {code: this.showTelephone}),
+                    currentCheckoutStep = stepNavigator.getActiveItemIndex();
+                return (this.isInternationalTelephoneEnabled && configuredCheckoutStep == currentCheckoutStep);
             },
             placeOrderBackend: function () {
                 var self = this;
@@ -153,11 +177,9 @@ define([
                         reason = $t('Buyer authentication failed.');
                         break;
                 }
-
                 if (reason) {
                     message += ' ' + $t('Reason') + ': ' + reason;
                 }
-
                 return message;
             },
             processIntentErrorResponse: function (response) {
@@ -177,13 +199,11 @@ define([
                                     self.messageContainer.errorMessages.push(error.msg);
                                 });
                             }
-
                             break;
                         case 'JSON_MISSING_FIELD':
                             if (errorDetails) {
                                 message = errorDetails;
                             }
-
                             break;
                         case 'MERCHANT_NOT_FOUND_ERROR':
                         case 'ORDER_INVALID':
@@ -191,11 +211,9 @@ define([
                             if (errorDetails) {
                                 message += ' - ' + errorDetails;
                             }
-
                             break;
                     }
                 }
-
                 if (message) {
                     self.messageContainer.addErrorMessage({
                         message: message
@@ -203,10 +221,9 @@ define([
                 }
             },
             placeIntentOrder: function () {
-                var totals = quote.getTotals()(),
+                let totals = quote.getTotals()(),
                     billingAddress = quote.billingAddress(),
                     lineItems = [];
-
                 _.each(quote.getItems(), function (item) {
                     lineItems.push({
                         'name': item['name'],
@@ -224,7 +241,6 @@ define([
                         'type': item['is_virtual'] === "0" ? 'PHYSICAL' : 'DIGITAL'
                     });
                 });
-
                 return $.ajax({
                     url: config.intentOrderConfig.host
                         + '/v1/order_intent?'
@@ -278,7 +294,7 @@ define([
                 };
             },
             enableCompanyAutoComplete: function () {
-                var self = this;
+                let self = this;
                 require([
                     'Two_Gateway/js/select2.min'
                 ], function () {
@@ -303,10 +319,10 @@ define([
                                     var searchHosts = config.companyAutoCompleteConfig.searchHosts,
                                         billingAddress = quote.billingAddress(),
                                         searchHost = searchHosts['default'];
-                                    if (billingAddress && billingAddress.countryId && searchHosts[billingAddress.countryId.toLowerCase()]) {
+                                    if (billingAddress && billingAddress.countryId
+                                        && searchHosts[billingAddress.countryId.toLowerCase()]) {
                                         searchHost = searchHosts[billingAddress.countryId.toLowerCase()];
                                     }
-
                                     params.page = params.page || 1;
                                     return searchHost + '/search?limit='
                                         + searchLimit
@@ -344,7 +360,7 @@ define([
                             self.companyId(selectedItem.companyId);
                             $('#two_company_id').prop('disabled', true);
                         });
-                        $('#select2-two_company_name-container').html(customAttributesObject.company_name);
+                        $('.select2-selection__rendered').text(self.companyName());
                     });
                 });
             },
@@ -354,19 +370,16 @@ define([
                     'intlTelInput'
                 ], function () {
                     $.async(self.telephoneSelector, function (telephoneField) {
-                        var preferredCountries = [],
-                            billingAddress = quote.billingAddress();
-                        if (billingAddress) {
-                            preferredCountries.push(billingAddress.countryId.toLowerCase());
-                        }
-
-                        preferredCountries.push('gb');
-                        preferredCountries.push('no');
-
+                        let preferredCountries = self.supportedCoutryCodes,
+                            billingAddress = quote.billingAddress(),
+                            defaultCountry = billingAddress
+                                ? billingAddress.countryId.toLowerCase()
+                                : quote.shippingAddress().countryId.toLowerCase();
+                        preferredCountries.push(defaultCountry);
                         $(telephoneField).intlTelInput({
-                            nationalMode: false,
                             preferredCountries: _.uniq(preferredCountries),
-                            utilsScript: config.internationalTelephoneConfig.utilsScript
+                            utilsScript: config.internationalTelephoneConfig.utilsScript,
+                            initialCountry: defaultCountry
                         });
                     });
                 });
@@ -382,15 +395,12 @@ define([
                                     errorPlacement = element.siblings('label').last();
                                 }
                             }
-
                             if (element.siblings('.tooltip').length) {
                                 errorPlacement = element.siblings('.tooltip');
                             }
-
                             if (element.next().find('.tooltip').length) {
                                 errorPlacement = element.next();
                             }
-
                             errorPlacement.append(error);
                         }
                     });
@@ -400,7 +410,6 @@ define([
                 jQuery('#two_company_id').val('')
                 jQuery('span.select2').remove();
                 jQuery('#two_company_name').removeClass('select2-hidden-accessible').val('');
-                jQuery('#clear_company_name').remove();
             }
         });
     }

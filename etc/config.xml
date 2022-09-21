@@ -11,7 +11,7 @@
         <payment>
             <two_payment>
                 <active>1</active>
-                <version>1.0.0</version>
+                <version>1.1.0</version>
                 <title>Business invoice in 14 days</title>
                 <mode>sandbox</mode>
                 <invoice_type>FUNDED_INVOICE</invoice_type>
@@ -21,6 +21,7 @@
                 <fulfill_order>invoice</fulfill_order>
                 <international_telephone_enabled>1</international_telephone_enabled>
                 <company_autocomplete_enabled>1</company_autocomplete_enabled>
+                <show_telephone>payment</show_telephone>
                 <enable_department>1</enable_department>
                 <enable_order_note>0</enable_order_note>
                 <enable_project>1</enable_project>
@@ -30,6 +31,7 @@
                 <can_use_checkout>1</can_use_checkout>
                 <payment_action>authorize</payment_action>
                 <model>Two\Gateway\Model\Two</model>
+                <enable_address_autocomplete>1</enable_address_autocomplete>
             </two_payment>
         </payment>
     </default>

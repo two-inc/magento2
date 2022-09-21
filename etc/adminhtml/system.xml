@@ -152,10 +152,22 @@
                     </depends>
                     <config_path>payment/two_payment/international_telephone_enabled</config_path>
                 </field>
+                <field id="show_telephone" translate="label" type="select" sortOrder="75" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Show telephone field</label>
+                    <comment>Optional field which enables the buyer to register the telephone number the purchase
+                        is connected to. The information will be displayed on the invoice</comment>
+                    <source_model>Two\Gateway\Model\Config\Source\ShowTelephone</source_model>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                    <config_path>payment/two_payment/show_telephone</config_path>
+                </field>
                 <field id="enable_department" translate="label" type="select" sortOrder="80" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Add department field</label>
-                    <comment>Optional field which enables the buyer to register the deparment the purchase is connected to. The information will be displayed on the invoice</comment>
+                    <comment>Optional field which enables the buyer to register the department the purchase is connected
+                        to. The information will be displayed on the invoice</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>
@@ -211,6 +223,27 @@
                         <field id="active">1</field>
                     </depends>
                     <config_path>payment/two_payment/company_autocomplete_enabled</config_path>
+                </field>
+            </group>
+        </section>
+        <section id="two_search" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1"
+                 showInStore="1">
+            <class>separator-top</class>
+            <label>Search</label>
+            <tab>two_gateway</tab>
+            <resource>Magento_Sales::config_sales</resource>
+            <group id="search" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Search</label>
+                <field id="enable_address_autocomplete" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable address autocomplete</label>
+                    <comment>Based on selected country and company</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                    <config_path>payment/two_payment/enable_address_autocomplete</config_path>
                 </field>
             </group>
         </section>

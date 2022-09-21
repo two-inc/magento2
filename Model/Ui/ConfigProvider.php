@@ -75,7 +75,6 @@ class ConfigProvider implements ConfigProviderInterface
                     'redirectUrlCookieCode' => UrlCookie::COOKIE_NAME,
                     'isOrderIntentEnabled' => 1,
                     'isCompanyNameAutoCompleteEnabled' => $this->configRepository->isCompanyAutocompleteEnabled(),
-                    'isAddressAutoCompleteEnabled' => $this->configRepository->isAddressAutocompleteEnabled(),
                     'isInternationalTelephoneEnabled' => $this->configRepository->isInternationalTelephoneEnabled(),
                     'showTelephone' => $this->configRepository->showTelephone(),
                     'isDepartmentFieldEnabled' => $this->configRepository->isDepartmentEnabled(),
@@ -86,6 +85,8 @@ class ConfigProvider implements ConfigProviderInterface
                     'internationalTelephoneConfig' => $internationalTelephoneConfig,
                     'companyAutoCompleteConfig' => $companyAutoCompleteConfig,
                     'intentOrderConfig' => $intentOrderConfig,
+                    'isAddressAutoCompleteEnabled' => $this->configRepository->isAddressAutocompleteEnabled(),
+                    'supportedCoutryCodes' => ['NO', 'GB', 'SE']
                 ],
             ],
         ];

@@ -188,15 +188,15 @@ class ComposeCapture extends OrderService
             $shipping_line = [
                 'name' => 'Shipping - ' . $order->getShippingMethod(),
                 'description' => '',
-                'gross_amount' => $this->roundAmt($order->getShippingAmount()),
+                'gross_amount' => $this->roundAmt($order->getShippingInclTax()),
                 'net_amount' => (string)(
-                $this->roundAmt($order->getShippingAmount() - $order->getShippingTaxAmount())
+                $this->roundAmt($order->getShippingInclTax() - $order->getShippingTaxAmount())
                 ),
                 'discount_amount' => '0',
                 'tax_amount' => $this->roundAmt($order->getShippingTaxAmount()),
                 'tax_class_name' => 'VAT ' . $this->roundAmt($taxRate * 100) . '%',
                 'tax_rate' => (string)($taxRate),
-                'unit_price' => $this->roundAmt($order->getShippingAmount()),
+                'unit_price' => $this->roundAmt($order->getShippingInclTax()),
                 'quantity' => 1,
                 'quantity_unit' => 'sc', // shipment charge
                 'image_url' => '',
