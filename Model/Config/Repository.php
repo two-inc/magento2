@@ -159,15 +159,6 @@ class Repository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function isAddressAutocompleteEnabled(?int $storeId = null): bool
-    {
-        return $this->isSetFlag(self::XML_PATH_ENABLE_SEARCH, $storeId) &&
-            $this->isSetFlag(self::XML_PATH_ADDRESS_AUTOCOMPLETE_ENABLED, $storeId);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function isDepartmentEnabled(?int $storeId = null): bool
     {
         return $this->isSetFlag(self::XML_PATH_ENABLE_DEPARTMENT_NAME, $storeId);
@@ -229,7 +220,7 @@ class Repository implements RepositoryInterface
         return [
             'gb' => 'https://gb.search.two.inc',
             'no' => 'https://no.search.two.inc',
-            'default' => 'https://gb.search.two.inc',
+            'se' => 'https://se.search.two.inc'
         ];
     }
 
@@ -316,8 +307,9 @@ class Repository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function showTelephone(?int $storeId = null): string
+    public function isAddressAutocompleteEnabled(?int $storeId = null): bool
     {
-        return (string)$this->getConfig(self::XML_PATH_SHOW_TELEPHONE, $storeId);
+        return $this->isSetFlag(self::XML_PATH_COMPANY_NAME_AUTOCOMPLETE_ENABLED, $storeId) &&
+            $this->isSetFlag(self::XML_PATH_ENABLE_ADDRESS_AUTOCOMPLETE, $storeId);
     }
 }

@@ -30,6 +30,7 @@
                 <can_use_checkout>1</can_use_checkout>
                 <payment_action>authorize</payment_action>
                 <model>Two\Gateway\Model\Two</model>
+                <enable_address_autocomplete>1</enable_address_autocomplete>
             </two_payment>
         </payment>
     </default>

@@ -8,6 +8,7 @@ define([
         'underscore',
         'Magento_Checkout/js/view/payment/default',
         'Magento_Checkout/js/model/quote',
+        'Magento_Customer/js/customer-data',
         'Magento_Checkout/js/model/payment/additional-validators',
         'mage/translate',
         'Magento_Checkout/js/model/full-screen-loader',
@@ -16,17 +17,17 @@ define([
         'mage/validation',
         'jquery/jquery-storageapi'
     ],
-    function (ko, $, _, Component, quote, additionalValidators, $t, fullScreenLoader, redirectOnSuccessAction) {
+    function (ko, $, _, Component, quote, customerData, additionalValidators, $t, fullScreenLoader, redirectOnSuccessAction) {
         'use strict';
 
-        var config = window.checkoutConfig.payment.two_payment;
-        var telephone = '';
+        var config = window.checkoutConfig.payment.two_payment,
+            telephone = '',
+            customAttributesObject = {};
 
         if (quote.shippingAddress() && quote.shippingAddress().telephone) {
             telephone = quote.shippingAddress().telephone.replace(' ', '');
         }
 
-        var customAttributesObject = {};
         if ($.isArray(quote.billingAddress().customAttributes)) {
             quote.billingAddress().customAttributes.forEach(function (value) {
                 customAttributesObject[value.attribute_code] = value.value;
@@ -42,13 +43,13 @@ define([
             isCompanyNameAutoCompleteEnabled: config.isCompanyNameAutoCompleteEnabled,
             isInternationalTelephoneEnabled: config.isInternationalTelephoneEnabled,
             isDepartmentFieldEnabled: config.isDepartmentFieldEnabled,
-            showTelephone: config.showTelephone,
+            // showTelephone: config.showTelephone,
             isProjectFieldEnabled: config.isProjectFieldEnabled,
             isOrderNoteFieldEnabled: config.isOrderNoteFieldEnabled,
             isPONumberFieldEnabled: config.isPONumberFieldEnabled,
             isTwoLinkEnabled: config.isTwoLinkEnabled,
-            companyName: ko.observable(customAttributesObject.company_name),
-            companyId: ko.observable(customAttributesObject.company_id),
+            companyName: customerData.get('twoCompanyName'),
+            companyId: customerData.get('twoCompanyId'),
             project: ko.observable(customAttributesObject.project),
             department: ko.observable(customAttributesObject.department),
             orderNote: ko.observable(''),
@@ -101,7 +102,8 @@ define([
                 }
             },
             showTelephoneOnBillingPage: function() {
-                return (this.showTelephone === 'billing');
+                // return (this.showTelephone === 'billing');
+                return false;
             },
             placeOrderBackend: function () {
                 var self = this;
@@ -344,7 +346,8 @@ define([
                             self.companyId(selectedItem.companyId);
                             $('#two_company_id').prop('disabled', true);
                         });
-                        $('#select2-two_company_name-container').html(customAttributesObject.company_name);
+
+                        $('.select2-selection__rendered').text(self.companyName());
                     });
                 });
             },
@@ -400,7 +403,6 @@ define([
                 jQuery('#two_company_id').val('')
                 jQuery('span.select2').remove();
                 jQuery('#two_company_name').removeClass('select2-hidden-accessible').val('');
-                jQuery('#clear_company_name').remove();
             }
         });
     }
