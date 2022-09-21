@@ -307,6 +307,14 @@ class Repository implements RepositoryInterface
     /**
      * @inheritDoc
      */
+    public function showTelephone(?int $storeId = null): string
+    {
+        return (string)$this->getConfig(self::XML_PATH_SHOW_TELEPHONE, $storeId);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function isAddressAutocompleteEnabled(?int $storeId = null): bool
     {
         return $this->isSetFlag(self::XML_PATH_COMPANY_NAME_AUTOCOMPLETE_ENABLED, $storeId) &&

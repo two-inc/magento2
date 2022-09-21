@@ -21,6 +21,7 @@
                 <fulfill_order>invoice</fulfill_order>
                 <international_telephone_enabled>1</international_telephone_enabled>
                 <company_autocomplete_enabled>1</company_autocomplete_enabled>
+                <show_telephone>payment</show_telephone>
                 <enable_department>1</enable_department>
                 <enable_order_note>0</enable_order_note>
                 <enable_project>1</enable_project>

@@ -119,6 +119,9 @@ class Confirm extends Action
         if (isset($twoOrder['buyer_project'])) {
             $address->setData('project', $twoOrder['buyer_project']);
         }
+        if (isset($twoOrder['buyer']['representative']['phone_number'])) {
+            $address->setData('two_telephone', $twoOrder['buyer']['representative']['phone_number']);
+        }
         $address->save();
     }
 }

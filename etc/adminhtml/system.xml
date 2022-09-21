@@ -152,10 +152,22 @@
                     </depends>
                     <config_path>payment/two_payment/international_telephone_enabled</config_path>
                 </field>
+                <field id="show_telephone" translate="label" type="select" sortOrder="75" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Show telephone field</label>
+                    <comment>Optional field which enables the buyer to register the telephone number the purchase
+                        is connected to. The information will be displayed on the invoice</comment>
+                    <source_model>Two\Gateway\Model\Config\Source\ShowTelephone</source_model>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                    <config_path>payment/two_payment/show_telephone</config_path>
+                </field>
                 <field id="enable_department" translate="label" type="select" sortOrder="80" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Add department field</label>
-                    <comment>Optional field which enables the buyer to register the deparment the purchase is connected to. The information will be displayed on the invoice</comment>
+                    <comment>Optional field which enables the buyer to register the department the purchase is connected
+                        to. The information will be displayed on the invoice</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>

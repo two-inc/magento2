@@ -76,7 +76,7 @@ class ConfigProvider implements ConfigProviderInterface
                     'isOrderIntentEnabled' => 1,
                     'isCompanyNameAutoCompleteEnabled' => $this->configRepository->isCompanyAutocompleteEnabled(),
                     'isInternationalTelephoneEnabled' => $this->configRepository->isInternationalTelephoneEnabled(),
-//                    'showTelephone' => $this->configRepository->showTelephone(),
+                    'showTelephone' => $this->configRepository->showTelephone(),
                     'isDepartmentFieldEnabled' => $this->configRepository->isDepartmentEnabled(),
                     'isProjectFieldEnabled' => $this->configRepository->isProjectEnabled(),
                     'isOrderNoteFieldEnabled' => $this->configRepository->isOrderNoteEnabled(),
@@ -86,6 +86,7 @@ class ConfigProvider implements ConfigProviderInterface
                     'companyAutoCompleteConfig' => $companyAutoCompleteConfig,
                     'intentOrderConfig' => $intentOrderConfig,
                     'isAddressAutoCompleteEnabled' => $this->configRepository->isAddressAutocompleteEnabled(),
+                    'supportedCoutryCodes' => ['NO', 'GB', 'SE']
                 ],
             ],
         ];
