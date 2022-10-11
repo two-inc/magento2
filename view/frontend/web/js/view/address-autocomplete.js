@@ -19,7 +19,7 @@ define([
         return Component.extend({
             isCompanyNameAutoCompleteEnabled: config.isCompanyNameAutoCompleteEnabled,
             isAddressAutoCompleteEnabled: config.isAddressAutoCompleteEnabled,
-            supportedCoutryCodes: config.supportedCoutryCodes,
+            supportedCountryCodes: config.supportedCountryCodes,
             isInternationalTelephoneEnabled: config.isInternationalTelephoneEnabled,
             showTelephone: config.showTelephone,
             countrySelector: '#shipping-new-address-form select[name="country_id"]',
@@ -69,8 +69,10 @@ define([
                 ], function () {
                     $.async(self.telephoneSelector, function (telephoneField) {
                         $(telephoneField).intlTelInput({
-                            preferredCountries: _.uniq(self.supportedCoutryCodes),
-                            utilsScript: config.internationalTelephoneConfig.utilsScript
+                            preferredCountries: _.uniq(self.supportedCountryCodes),
+                            utilsScript: config.internationalTelephoneConfig.utilsScript,
+                            hiddenInput: "full",
+                            separateDialCode: true
                         });
                     });
                 });
@@ -143,7 +145,7 @@ define([
                             self.setCompanyData(selectedItem.companyId, selectedItem.companyName);
                             if (self.isAddressAutoCompleteEnabled) {
                                 let countryId = $(self.countrySelector).val();
-                                if (_.indexOf(self.supportedCoutryCodes, countryId.toUpperCase()) != -1) {
+                                if (_.indexOf(self.supportedCountryCodes, countryId.toUpperCase()) != -1) {
                                     const addressResponse = $.ajax({
                                         dataType: 'json',
                                         url: config.intentOrderConfig.host + '/v1/' + countryId.toUpperCase()

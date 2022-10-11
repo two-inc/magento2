@@ -86,7 +86,7 @@ class ConfigProvider implements ConfigProviderInterface
                     'companyAutoCompleteConfig' => $companyAutoCompleteConfig,
                     'intentOrderConfig' => $intentOrderConfig,
                     'isAddressAutoCompleteEnabled' => $this->configRepository->isAddressAutocompleteEnabled(),
-                    'supportedCoutryCodes' => ['NO', 'GB', 'SE']
+                    'supportedCountryCodes' => ['NO', 'GB', 'SE']
                 ],
             ],
         ];

@@ -70,7 +70,7 @@ define([
             isOrderNoteFieldEnabled: config.isOrderNoteFieldEnabled,
             isPONumberFieldEnabled: config.isPONumberFieldEnabled,
             isTwoLinkEnabled: config.isTwoLinkEnabled,
-            supportedCoutryCodes: config.supportedCoutryCodes,
+            supportedCountryCodes: config.supportedCountryCodes,
             companyName: customerData.get('twoCompanyName'),
             companyId: customerData.get('twoCompanyId'),
             project: ko.observable(customAttributesObject.project),
@@ -80,6 +80,7 @@ define([
             telephone: ko.observable(telephone),
             formSelector: 'form#two_gateway_form',
             telephoneSelector: 'input#two_telephone',
+            fullTelephoneSelector: 'input#two_telephone_full',
             companyNameSelector: 'input#two_company_name',
             generalErrorMessage: $t('Something went wrong with your request. Please check your data and try again.'),
             initialize: function () {
@@ -289,7 +290,7 @@ define([
                         department: this.department(),
                         orderNote: this.orderNote(),
                         poNumber: this.poNumber(),
-                        telephone: this.telephone()
+                        telephone: $(this.fullTelephoneSelector).val() // checkout-data -> shippingAddressFromData -> custom_attributes -> two_telephone_full
                     }
                 };
             },
@@ -365,12 +366,12 @@ define([
                 });
             },
             enableInternationalTelephone: function () {
-                var self = this;
+                let self = this;
                 require([
                     'intlTelInput'
                 ], function () {
                     $.async(self.telephoneSelector, function (telephoneField) {
-                        let preferredCountries = self.supportedCoutryCodes,
+                        let preferredCountries = self.supportedCountryCodes,
                             billingAddress = quote.billingAddress(),
                             defaultCountry = billingAddress
                                 ? billingAddress.countryId.toLowerCase()
@@ -379,10 +380,36 @@ define([
                         $(telephoneField).intlTelInput({
                             preferredCountries: _.uniq(preferredCountries),
                             utilsScript: config.internationalTelephoneConfig.utilsScript,
-                            initialCountry: defaultCountry
+                            initialCountry: defaultCountry,
+                            separateDialCode: true
                         });
+                        $(telephoneField).on('keyup', function () {
+                            self.removeTelephoneLeadingZero();
+                        });
+                        self.removeTelephoneLeadingZero();
+                        $(telephoneField).on('change countrychange', function () {
+                            self.setFullTelephone();
+                        });
+                        self.setFullTelephone();
                     });
                 });
+            },
+            removeTelephoneLeadingZero: function () {
+                let telephone = $(this.telephoneSelector).val();
+                telephone = telephone.replace(/^0+/, '');
+                $(this.telephoneSelector).val(telephone);
+            },
+            setFullTelephone: function () {
+                /**
+                 * Note 1! Origin method "getInstance" doesn't work as described in:
+                 *         https://github.com/jackocnr/intl-tel-input#static-methods
+                 * Note 2! "iti" will be initialized correctly when only 1 telephone is initialized at the web page
+                 * Note 3! this logic can't be replaced with "iti.hiddenInput" because it doesn't work as expected
+                 */
+                let iti = window.intlTelInputGlobals.instances[0],
+                    countryCode = iti.getSelectedCountryData().dialCode,
+                    telephoneNumber = $(this.telephoneSelector).val();
+                $(this.fullTelephoneSelector).val('+' + countryCode + telephoneNumber);
             },
             configureFormValidation: function () {
                 $.async(this.formSelector, function (form) {
