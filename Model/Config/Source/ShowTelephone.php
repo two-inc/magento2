@@ -23,17 +23,13 @@ class ShowTelephone implements OptionSourceInterface
     {
         return [
             [
-                'value' => 'payment', // 'payment' is default step code on checkout page
-                'label' => __('On billing page'),
-            ],
-            [
-                'value' => 'shipping',
-                'label' => __('On shipping page'),
-            ],
-            [
                 'value' => '',
                 'label' => __('No'),
             ],
+            [
+                'value' => 'payment', // 'payment' is default step code on checkout page
+                'label' => __('On billing page'),
+            ]
         ];
     }
 }

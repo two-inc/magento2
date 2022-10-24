@@ -64,7 +64,7 @@ class GetLineItems extends OrderService
                 'type' => $item->getIsVirtual() ? 'DIGITAL' : 'PHYSICAL',
                 'unit_price' => $this->roundAmt($item->getPrice()),
             ];
-            $items[$item->getItemId()] = $productData;
+            $items[$item->getProductId()] = $productData;
         }
 
         if (!$order->getIsVirtual()) {
