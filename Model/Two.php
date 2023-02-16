@@ -210,6 +210,13 @@ class Two extends AbstractMethod
         $payload['gateway_data']['original_order_id'] = $response['original_order_id'];
         $payload['gateway_data']['state'] = $response['state'];
         $payload['gateway_data']['status'] = $response['status'];
+
+        //remove unnecessary data before save in database
+        unset($payload['line_items']);
+        unset($payload['shipping_address']);
+        unset($payload['billing_address']);
+        unset($payload['merchant_urls']);
+
         $payment->setAdditionalInformation($payload);
         $payment->setTransactionId($response['external_order_id'])
             ->setIsTransactionClosed(0)
