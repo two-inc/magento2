@@ -79,7 +79,7 @@ define([
             },
             enableCompanyAutoComplete: function () {
                 var self = this,
-                    buttonTitle = $t('I can not find my company');
+                    buttonTitle = $t('I cannot find my company');
                 require([
                     'Two_Gateway/js/select2.min'
                 ], function () {
