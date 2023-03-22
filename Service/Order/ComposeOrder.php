@@ -80,7 +80,7 @@ class ComposeOrder extends OrderService
                     'email' => $billingAddress->getEmail(),
                     'first_name' => $billingAddress->getFirstName(),
                     'last_name' => $billingAddress->getLastName(),
-                    'phone_number' => $additionalData['telephone'],
+                    'phone_number' => $additionalData['telephone'] ?? $billingAddress->getTelephone(),
                 ],
                 'company' => [
                     'organization_number' => $additionalData['companyId'],
@@ -104,7 +104,7 @@ class ComposeOrder extends OrderService
             ],
             'invoice_type' => 'FUNDED_INVOICE',
 
-            'line_items' => array_values($this->getLineItems->execute($order)),
+            'line_items' => $this->getLineItems->execute($order),
 
             'merchant_order_id' => (string)($order->getIncrementId()),
             'merchant_urls' => [
