@@ -81,7 +81,7 @@ class GetLineItems extends OrderService
                 'tax_amount' => $this->roundAmt(abs($order->getShippingTaxAmount())),
                 'tax_class_name' => '',
                 'tax_rate' => $this->roundAmt((1.0 * $order->getShippingTaxAmount() / $shippingAmount)),
-                'unit_price' => $this->roundAmt($order->getShippingInclTax()),
+                'unit_price' => $this->roundAmt($order->getShippingInclTax() - abs($order->getShippingTaxAmount())),
                 'quantity' => (float)1,
                 'quantity_unit' => 'sc',
                 'image_url' => '',
