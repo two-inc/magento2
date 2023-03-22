@@ -15,6 +15,7 @@ use Magento\Sales\Model\Order;
 use Magento\Store\Model\App\Emulation;
 use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 use Two\Gateway\Service\Order as OrderService;
+use Two\Gateway\Api\Log\RepositoryInterface as LogRepository;
 
 /**
  * Compose Order Service
@@ -25,6 +26,8 @@ class ComposeOrder extends OrderService
      * @var GetLineItems
      */
     private $getLineItems;
+
+    private $logRepository;
 
     /**
      * ComposeOrder constructor.
@@ -42,10 +45,12 @@ class ComposeOrder extends OrderService
         CategoryCollection $categoryCollectionFactory,
         Emulation $appEmulation,
         Url $url,
-        GetLineItems $getLineItems
+        GetLineItems $getLineItems,
+        LogRepository $logRepository
     ) {
         parent::__construct($imageHelper, $configRepository, $categoryCollectionFactory, $appEmulation, $url);
         $this->getLineItems = $getLineItems;
+        $this->logRepository = $logRepository;
     }
 
     /**
@@ -124,6 +129,7 @@ class ComposeOrder extends OrderService
             ],
             'net_amount' => $this->roundAmt($order->getGrandTotal() - abs($order->getTaxAmount())),
             'tax_amount' => $this->roundAmt(abs($order->getTaxAmount())),
+            'tax_subtotals' => $this->getTaxSubtotals($order),
             'tax_rate' => $this->roundAmt((1.0 * $order->getTaxAmount() / $order->getGrandTotal())),
             'order_note' => $additionalData['orderNote'] ?? ''
         ];
@@ -143,5 +149,64 @@ class ComposeOrder extends OrderService
                 . (isset($shippingAddress->getStreet()[1]) ? $shippingAddress->getStreet()[1] : ''),
         ];
         return $request;
+    }
+
+    /**
+     * Collect items tax data grouped by tax rates
+     *
+     * @param Order $order
+     * @return array
+     */
+    private function getTaxSubtotals(Order $order)
+    {
+        $taxSubtotals = [];
+        foreach ($order->getAllVisibleItems() as $item) {
+            if ($item->getParentItem()) {
+                continue;
+            }
+            $taxRate = $this->roundAmt(($item->getTaxPercent() / 100));
+            if (array_key_exists($taxRate, $taxSubtotals)) {
+                $taxSubtotals[$taxRate]['tax_amount'] = $this->roundAmt(
+                    (float)$taxSubtotals[$taxRate]['tax_amount']
+                    + $item->getTaxAmount()
+                );
+                $taxSubtotals[$taxRate]['taxable_amount'] = $this->roundAmt(
+                    (float)$taxSubtotals[$taxRate]['taxable_amount']
+                    + $item->getRowTotal()
+                );
+            } else {
+                $taxSubtotals[$taxRate] = [
+                    'tax_amount' => $this->roundAmt($item->getTaxAmount()),
+                    'tax_rate' => $this->roundAmt($taxRate),
+                    'taxable_amount' => $this->roundAmt($item->getRowTotal())
+                ];
+            }
+
+        }
+        if (!$order->getIsVirtual()) {
+            $shippingAmount = $order->getShippingAmount();
+            if ($shippingAmount == 0) {
+                $shippingAmount = 1;
+            }
+            $taxRate = $this->roundAmt((1.0 * $order->getShippingTaxAmount() / $shippingAmount));
+            if (array_key_exists($taxRate, $taxSubtotals)) {
+                $taxSubtotals[$taxRate]['tax_amount'] = $this->roundAmt(
+                    (float)$taxSubtotals[$taxRate]['tax_amount']
+                    + $order->getShippingTaxAmount()
+                );
+                $taxSubtotals[$taxRate]['taxable_amount'] = $this->roundAmt(
+                    (float)$taxSubtotals[$taxRate]['taxable_amount']
+                    + $order->getShippingAmount()
+                );
+            } else {
+                $taxSubtotals[$taxRate] = [
+                    'tax_amount' => $this->roundAmt($order->getShippingTaxAmount()),
+                    'tax_rate' => $this->roundAmt((1.0 * $order->getShippingTaxAmount() / $shippingAmount)),
+                    'taxable_amount' => $this->roundAmt($order->getShippingAmount())
+                ];
+            }
+
+        }
+        return array_values($taxSubtotals);
     }
 }
