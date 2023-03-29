@@ -32,6 +32,7 @@ use Two\Gateway\Service\Order\ComposeCapture;
 use Two\Gateway\Service\Order\ComposeOrder;
 use Two\Gateway\Service\Order\ComposeRefund;
 use Two\Gateway\Service\UrlCookie;
+use Two\Gateway\Api\Log\RepositoryInterface as LogRepository;
 
 /**
  * Two Payment Model
@@ -105,6 +106,10 @@ class Two extends AbstractMethod
      * @var OrderStatusHistoryRepositoryInterface
      */
     private $orderStatusHistoryRepository;
+    /**
+     * @var LogRepository
+     */
+    private $logRepository;
 
     /**
      * Two constructor.
@@ -125,6 +130,7 @@ class Two extends AbstractMethod
      * @param HistoryFactory $historyFactory
      * @param OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository
      * @param Adapter $apiAdapter
+     * @param LogRepository $logRepository
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
      * @param array $data
@@ -146,6 +152,7 @@ class Two extends AbstractMethod
         HistoryFactory $historyFactory,
         OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository,
         Adapter $apiAdapter,
+        LogRepository $logRepository,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
@@ -171,6 +178,7 @@ class Two extends AbstractMethod
         $this->apiAdapter = $apiAdapter;
         $this->historyFactory = $historyFactory;
         $this->orderStatusHistoryRepository = $orderStatusHistoryRepository;
+        $this->logRepository = $logRepository;
     }
 
     /**
@@ -200,6 +208,7 @@ class Two extends AbstractMethod
         }
 
         if ($response['status'] !== static::STATUS_APPROVED) {
+            $this->logRepository->addDebugLog('Order was not accepted', $response);
             throw new LocalizedException(__('Your order was not accepted'));
         }
 

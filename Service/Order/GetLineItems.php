@@ -64,7 +64,7 @@ class GetLineItems extends OrderService
                 'type' => $item->getIsVirtual() ? 'DIGITAL' : 'PHYSICAL',
                 'unit_price' => $this->roundAmt($item->getPrice()),
             ];
-            $items[$item->getProductId()] = $productData;
+            $items[] = $productData;
         }
 
         if (!$order->getIsVirtual()) {
@@ -72,7 +72,7 @@ class GetLineItems extends OrderService
             if ($shippingAmount == 0) {
                 $shippingAmount = 1;
             }
-            $items['shipping'] = [
+            $items[] = [
                 'name' => 'Shipping - ' . $order->getShippingDescription(),
                 'description' => '',
                 'gross_amount' => $this->roundAmt($order->getShippingInclTax()),
@@ -81,7 +81,7 @@ class GetLineItems extends OrderService
                 'tax_amount' => $this->roundAmt(abs($order->getShippingTaxAmount())),
                 'tax_class_name' => '',
                 'tax_rate' => $this->roundAmt((1.0 * $order->getShippingTaxAmount() / $shippingAmount)),
-                'unit_price' => $this->roundAmt($order->getShippingInclTax()),
+                'unit_price' => $this->roundAmt($order->getShippingInclTax() - abs($order->getShippingTaxAmount())),
                 'quantity' => (float)1,
                 'quantity_unit' => 'sc',
                 'image_url' => '',
