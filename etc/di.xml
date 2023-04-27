@@ -33,4 +33,8 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Sales\Model\Order">
+        <plugin name="two-after-place-order"
+                type="Two\Gateway\Plugin\Model\Sales\AfterPlaceOrder" sortOrder="10"/>
+    </type>
 </config>

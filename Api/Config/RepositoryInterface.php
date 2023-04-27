@@ -29,6 +29,7 @@ interface RepositoryInterface
     public const XML_PATH_FULFILL_ORDER_ORDER = 'payment/two_payment/fulfill_order';
     public const XML_PATH_INTERNATIONAL_TELEPHONE_ENABLED = 'payment/two_payment/international_telephone_enabled';
     public const XML_PATH_COMPANY_NAME_AUTOCOMPLETE_ENABLED = 'payment/two_payment/company_autocomplete_enabled';
+//    public const XML_PATH_ENABLE_SEARCH = 'payment/two_payment/enable_search';
     public const XML_PATH_ENABLE_DEPARTMENT_NAME = 'payment/two_payment/enable_department';
     public const XML_PATH_ENABLE_PROJECT_NAME = 'payment/two_payment/enable_project';
     public const XML_PATH_ENABLE_ORDER_NOTE = 'payment/two_payment/enable_order_note';

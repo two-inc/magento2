@@ -44,6 +44,7 @@ class Two extends AbstractMethod
     public const STATUS_NEW = 'two_new';
     public const STATUS_FAILED = 'two_failed';
     public const STATUS_APPROVED = 'APPROVED';
+    public const STATUS_TWO_PENDING = 'pending_two_payment';
     /**
      * @var RequestInterface
      */
