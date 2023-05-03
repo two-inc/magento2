@@ -99,7 +99,7 @@ class ComposeOrder extends OrderService
             'buyer_purchase_order_number' => $additionalData['poNumber'] ?? '',
 
             'currency' => $order->getOrderCurrencyCode(),
-            'discount_amount' => $this->roundAmt(abs($order->getDiscountAmount())),
+            'discount_amount' => $this->roundAmt(abs((float)$order->getDiscountAmount())),
             'gross_amount' => $this->roundAmt($order->getGrandTotal()),
 
             'invoice_details' => [
@@ -127,8 +127,8 @@ class ComposeOrder extends OrderService
                     ['_two_order_reference' => base64_encode($orderReference)]
                 ),
             ],
-            'net_amount' => $this->roundAmt($order->getGrandTotal() - abs($order->getTaxAmount())),
-            'tax_amount' => $this->roundAmt(abs($order->getTaxAmount())),
+            'net_amount' => $this->roundAmt($order->getGrandTotal() - abs((float)$order->getTaxAmount())),
+            'tax_amount' => $this->roundAmt(abs((float)$order->getTaxAmount())),
             'tax_subtotals' => $this->getTaxSubtotals($order),
             'tax_rate' => $this->roundAmt((1.0 * $order->getTaxAmount() / $order->getGrandTotal())),
             'order_note' => $additionalData['orderNote'] ?? ''

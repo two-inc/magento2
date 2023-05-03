@@ -53,10 +53,10 @@ class ComposeCapture extends OrderService
             $reqBody = [
                 'currency' => $invoice->getOrderCurrencyCode(),
                 'gross_amount' => ($this->roundAmt($invoice->getGrandTotal())),
-                'net_amount' => ($this->roundAmt($invoice->getGrandTotal() - abs($invoice->getTaxAmount()))),
+                'net_amount' => ($this->roundAmt($invoice->getGrandTotal() - abs((float)$invoice->getTaxAmount()))),
                 'tax_amount' => ($this->roundAmt($invoice->getTaxAmount())),
                 'tax_rate' => $this->roundAmt((1.0 * $order->getTaxAmount() / $order->getGrandTotal())),
-                'discount_amount' => (string)($this->roundAmt(abs($invoice->getDiscountAmount()))),
+                'discount_amount' => (string)($this->roundAmt(abs((float)$invoice->getDiscountAmount()))),
                 'discount_rate' => '0',
                 'invoice_type' => 'FUNDED_INVOICE',
                 'line_items' => $this->getInvoiceLineItems($invoice->getItems(), $order),
@@ -152,13 +152,13 @@ class ComposeCapture extends OrderService
                     'description' => substr($item->getDescription(), 0, 255),
                     'gross_amount' => (string)(
                     $this->roundAmt(
-                        $item->getRowTotal() - abs($item->getDiscountAmount()) + $item->getTaxAmount()
+                        $item->getRowTotal() - abs((float)$item->getDiscountAmount()) + (float)$item->getTaxAmount()
                     )
                     ),
                     'net_amount' => (string)(
-                    $this->roundAmt($item->getRowTotal() - abs($item->getDiscountAmount()))
+                    $this->roundAmt($item->getRowTotal() - abs((float)$item->getDiscountAmount()))
                     ),
-                    'discount_amount' => $this->roundAmt(abs($item->getDiscountAmount())),
+                    'discount_amount' => $this->roundAmt(abs((float)$item->getDiscountAmount())),
                     'tax_amount' => $this->roundAmt($item->getTaxAmount()),
                     'tax_class_name' => 'VAT ' . $this->roundAmt($orderItem->getTaxPercent()) . '%',
                     'tax_rate' => $this->roundAmt(($orderItem->getTaxPercent() / 100)),

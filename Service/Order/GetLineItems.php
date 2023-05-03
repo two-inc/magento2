@@ -50,19 +50,21 @@ class GetLineItems extends OrderService
                     ],
                     'categories' => $this->getCategories($product->getCategoryIds()),
                 ],
-                'discount_amount' => $this->roundAmt(abs($item->getDiscountAmount())),
+                'discount_amount' => $this->roundAmt(abs((float)$item->getDiscountAmount())),
                 'gross_amount' => $this->roundAmt($item->getRowTotalInclTax()),
                 'image_url' => $this->getProductImageUrl($product),
                 'name' => $item->getName(),
                 'net_amount' => $this->roundAmt($item->getRowTotal()),
                 'product_page_url' => $product->getProductUrl(),
                 'quantity' => $item->getQtyOrdered(),
+                'qty_to_ship' => $item->getQtyToShip(), //need for partial shipment
                 'quantity_unit' => $this->configRepository->getWeightUnit((int)$order->getStoreId()),
-                'tax_amount' => $this->roundAmt(abs($item->getTaxAmount())),
+                'tax_amount' => $this->roundAmt(abs((float)$item->getTaxAmount())),
                 'tax_class_name' => '',
                 'tax_rate' => $this->roundAmt(($item->getTaxPercent() / 100)),
                 'type' => $item->getIsVirtual() ? 'DIGITAL' : 'PHYSICAL',
                 'unit_price' => $this->roundAmt($item->getPrice()),
+                'order_item_id' => $item->getId() //need for partial shipment
             ];
             $items[] = $productData;
         }
@@ -76,17 +78,21 @@ class GetLineItems extends OrderService
                 'name' => 'Shipping - ' . $order->getShippingDescription(),
                 'description' => '',
                 'gross_amount' => $this->roundAmt($order->getShippingInclTax()),
-                'net_amount' => $this->roundAmt($order->getShippingInclTax() - abs($order->getShippingTaxAmount())),
-                'discount_amount' => $this->roundAmt(abs($order->getShippingDiscountAmount())),
-                'tax_amount' => $this->roundAmt(abs($order->getShippingTaxAmount())),
+                'net_amount' => $this->roundAmt($order->getShippingInclTax() -
+                    abs((float)$order->getShippingTaxAmount())),
+                'discount_amount' => $this->roundAmt(abs((float)$order->getShippingDiscountAmount())),
+                'tax_amount' => $this->roundAmt(abs((float)$order->getShippingTaxAmount())),
                 'tax_class_name' => '',
                 'tax_rate' => $this->roundAmt((1.0 * $order->getShippingTaxAmount() / $shippingAmount)),
-                'unit_price' => $this->roundAmt($order->getShippingInclTax() - abs($order->getShippingTaxAmount())),
+                'unit_price' => $this->roundAmt($order->getShippingInclTax() -
+                    abs((float)$order->getShippingTaxAmount())),
                 'quantity' => (float)1,
+                'qty_to_ship' => 1, //need for partial shipment
                 'quantity_unit' => 'sc',
                 'image_url' => '',
                 'product_page_url' => '',
                 'type' => 'SHIPPING_FEE',
+                'order_item_id' => 'shipping' //need for partial shipment
             ];
         }
 
