@@ -271,10 +271,6 @@ class OrderService
                     $invoice->getOrder()
                 );
             $transactionSave->save();
-        } elseif ($this->configRepository->getFulfillOrderType() == 'invoice') {
-            $order->setState(Order::STATE_PENDING_PAYMENT);
-            $order->setStatus(Order::STATE_PENDING_PAYMENT);
-            $order->save();
         }
         return $this;
     }

@@ -105,6 +105,11 @@ class SalesOrderShipmentAfter implements ObserverInterface
             $response = $this->apiAdapter->execute(
                 "/v1/order/" . $order->getTwoOrderId() . "/fulfilled" . $langParams
             );
+            foreach ($order->getInvoiceCollection() as $invoice) {
+                $invoice->pay();
+                $invoice->setTransactionId($order->getPayment()->getLastTransId());
+                $invoice->save();
+            }
 
             $this->parseResponse($response, $order);
         }

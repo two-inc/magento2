@@ -178,7 +178,7 @@ class ComposeShipment extends OrderService
                     'payment_reference_ocr' => '',
                 ],
 
-                'line_items' => $orderItems,
+                'line_items' => array_values($orderItems),
 
                 'merchant_additional_info' => $order->getIncrementId(),
                 'merchant_order_id' => (string)($order->getIncrementId()),
@@ -199,23 +199,34 @@ class ComposeShipment extends OrderService
         /** @var ShipmentItemInterface $shipmentItem */
         foreach ($shipment->getAllItems() as $shipmentItem) {
             /** @var OrderItemInterface $orderItem */
-            $orderItem = $shipmentItem->getOrderItem();
-            $remaining = $orderItem->getQtyOrdered() - $orderItem->getQtyShipped();
-            $total = $orderItem->getQtyOrdered();
+            $orderShipmentItem = $shipmentItem->getOrderItem();
+            $remaining = $orderShipmentItem->getQtyToShip();
+            $total = $orderShipmentItem->getQtyOrdered();
 
-            if ($remaining == 0) {
-                unset($orderItems[$orderItem->getId()]);
+            //find order item
+            $orderShipmentItemId = null;
+            foreach ($orderItems as $id => $item) {
+                if ($item['qty_to_ship'] == 0) {
+                    unset($orderItems[$id]);
+                    continue;
+                }
+                if ($item['order_item_id'] == $orderShipmentItem->getId()) {
+                    $orderShipmentItemId = $id;
+                }
+            }
+            if ($orderShipmentItemId === null) {
                 continue;
             }
 
-            $item = $orderItems[$orderItem->getId()];
-            $item['quantity'] = '1.0000'; // $remaining;
+            $item = $orderItems[$orderShipmentItemId];
+            $item['quantity'] = $remaining;
             $item['gross_amount'] = $this->roundAmt(($item['gross_amount'] / $total) * $remaining);
             $item['net_amount'] = $this->roundAmt(($item['net_amount'] / $total) * $remaining);
+            $item['tax_amount'] = $this->roundAmt(($item['tax_amount'] / $total) * $remaining);
 
-            $orderItems[$orderItem->getId()] = $item;
+            $orderItems[$orderShipmentItemId] = $item;
         }
 
-        return array_values($orderItems);
+        return $orderItems;
     }
 }

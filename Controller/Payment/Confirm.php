@@ -53,9 +53,10 @@ class Confirm extends Action
         try {
             $order = $this->orderService->getOrderByReference();
             $twoOrder = $this->orderService->getTwoOrderFromApi($order);
-            if (isset($twoOrder['state']) && $twoOrder['state'] == self::STATE_VERIFIED) {
+            if (isset($twoOrder['state']) &&
+                (($twoOrder['state'] == self::STATE_VERIFIED) || ($twoOrder['state'] == self::STATE_CONFIRMED))
+            ) {
                 $this->orderService->confirmOrder($order);
-                $payment = $order->getPayment();
                 if ($order->getCustomerId()) {
                     if ($order->getBillingAddress()->getCustomerAddressId()) {
                         $customerAddress = $this->customerAddress->create()->load(

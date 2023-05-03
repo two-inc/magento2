@@ -106,7 +106,7 @@ class GetLineItemsRefund extends OrderService
                 'product_page_url' => $product->getProductUrl(),
                 'quantity' => $item->getQty(),
                 'quantity_unit' => $this->configRepository->getWeightUnit((int)$order->getStoreId()),
-                'tax_amount' => $this->roundAmt(abs($item->getTaxAmount())),
+                'tax_amount' => $this->roundAmt(abs((float)$item->getTaxAmount())),
                 'tax_class_name' => '',
                 'tax_rate' => $this->roundAmt(($orderItem->getTaxPercent() / 100)),
                 'type' => $orderItem->getIsVirtual() ? 'DIGITAL' : 'PHYSICAL',

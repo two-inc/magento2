@@ -104,7 +104,7 @@ class GetLineItemsShipment extends OrderService
                     'categories' => $this->getCategories($product->getCategoryIds()),
                 ],
                 'discount_amount' => $this->roundAmt(
-                    (abs($orderItem->getDiscountAmount()) / $qtyOrdered) / $qtyShipped
+                    (abs((float)$orderItem->getDiscountAmount()) / $qtyOrdered) / $qtyShipped
                 ),
                 'gross_amount' => $this->roundAmt(($orderItem->getRowTotalInclTax() / $qtyOrdered) / $qtyShipped),
                 'image_url' => $this->getProductImageUrl($product),
@@ -113,7 +113,7 @@ class GetLineItemsShipment extends OrderService
                 'product_page_url' => $product->getProductUrl(),
                 'quantity' => $item->getQty(),
                 'quantity_unit' => $this->configRepository->getWeightUnit((int)$order->getStoreId()),
-                'tax_amount' => $this->roundAmt((abs($orderItem->getTaxAmount()) / $qtyOrdered) / $qtyShipped),
+                'tax_amount' => $this->roundAmt((abs((float)$orderItem->getTaxAmount()) / $qtyOrdered) / $qtyShipped),
                 'tax_class_name' => '',
                 'tax_rate' => $this->roundAmt(($orderItem->getTaxPercent() / 100)),
                 'type' => $orderItem->getIsVirtual() ? 'DIGITAL' : 'PHYSICAL',
