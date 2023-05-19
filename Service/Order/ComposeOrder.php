@@ -92,25 +92,15 @@ class ComposeOrder extends OrderService
                     'country_prefix' => $billingAddress->getCountryId(),
                     'company_name' => $additionalData['companyName'],
                 ],
-
             ],
             'buyer_department' => $additionalData['department'] ?? '',
             'buyer_project' => $additionalData['project'] ?? '',
             'buyer_purchase_order_number' => $additionalData['poNumber'] ?? '',
-
             'currency' => $order->getOrderCurrencyCode(),
             'discount_amount' => $this->roundAmt(abs((float)$order->getDiscountAmount())),
             'gross_amount' => $this->roundAmt($order->getGrandTotal()),
-
-            'invoice_details' => [
-                'due_in_days' => $this->configRepository->getDueInDays($storeId),
-                'payment_reference_message' => '',
-                'payment_reference_ocr' => '',
-            ],
             'invoice_type' => 'FUNDED_INVOICE',
-
             'line_items' => $this->getLineItems->execute($order),
-
             'merchant_order_id' => (string)($order->getIncrementId()),
             'merchant_urls' => [
                 'merchant_confirmation_url' => $this->url->getUrl(

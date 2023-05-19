@@ -63,11 +63,6 @@ class ComposeCapture extends OrderService
                 'merchant_order_id' => (string)($order->getIncrementId()),
                 'merchant_reference' => '',
                 'merchant_additional_info' => '',
-                'invoice_details' => [
-                    'due_in_days' => (int)$daysOnInvoice,
-                    'payment_reference_message' => '',
-                    'payment_reference_ocr' => '',
-                ],
                 'billing_address' => [
                     'city' => $billingAddress->getCity(),
                     'country' => $billingAddress->getCountryId(),

@@ -138,56 +138,32 @@ class ComposeShipment extends OrderService
             'partially_fulfilled_order' => [
                 'billing_address' => $billingAddressData,
                 'currency' => $order->getOrderCurrencyCode(),
-
                 'discount_amount' => $this->roundAmt($totalDiscountAmountPartially),
                 'discount_rate' => '0',
                 'gross_amount' => $this->roundAmt($totalGrossAmountPartially),
                 'invoice_type' => 'FUNDED_INVOICE',
-
-                'invoice_details' => [
-                    'due_in_days' => $this->configRepository->getDueInDays($storeId),
-                    'payment_reference_message' => '',
-                    'payment_reference_ocr' => '',
-                ],
-
                 'line_items' => $shipmentItems,
-
                 'merchant_additional_info' => $order->getIncrementId(),
                 'merchant_order_id' => (string)($order->getIncrementId()),
                 'merchant_reference' => $order->getIncrementId(),
-
                 'net_amount' => $this->roundAmt($totalNetAmountPartially),
-
                 'shipping_address' => $shippingAddressData,
-
                 'tax_amount' => $this->roundAmt($totalTaxAmountAmountPartially),
                 'tax_rate' => $this->roundAmt($totalTaxRateAmountPartially),
             ],
             'remained_order' => [
                 'billing_address' => $billingAddressData,
                 'currency' => $order->getOrderCurrencyCode(),
-
                 'discount_amount' => $this->roundAmt($totalDiscountAmountRemained),
                 'discount_rate' => '0',
                 'gross_amount' => $this->roundAmt($totalGrossAmountRemained),
                 'invoice_type' => 'FUNDED_INVOICE',
-
-                'invoice_details' => [
-                    'due_in_days' => $this->configRepository->getDueInDays($storeId),
-                    'payment_reference_message' => '',
-                    'payment_reference_ocr' => '',
-                ],
-
                 'line_items' => array_values($orderItems),
-
                 'merchant_additional_info' => $order->getIncrementId(),
                 'merchant_order_id' => (string)($order->getIncrementId()),
                 'merchant_reference' => $order->getIncrementId(),
-
                 'net_amount' => $this->roundAmt($totalNetAmountRemained),
-
                 'shipping_address' => $shippingAddressData,
-
                 'tax_amount' => $this->roundAmt($totalTaxAmountAmountRemained),
                 'tax_rate' => $this->roundAmt($totalTaxRateAmountRemained),
             ],
