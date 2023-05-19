@@ -12,8 +12,12 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\DB\Transaction;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Url\DecoderInterface;
+use Magento\Sales\Api\OrderPaymentRepositoryInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice;
+use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface as TransactionBuilder;
+use Magento\Sales\Model\Order\Payment\Transaction\Repository as PaymentTransactionRepository;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Model\ResourceModel\Order as OrderResource;
 use Magento\Sales\Model\Service\InvoiceService;
@@ -21,6 +25,7 @@ use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 use Two\Gateway\Model\Two;
 use Two\Gateway\Service\Api\Adapter;
 use Two\Gateway\Service\UrlCookie;
+use Two\Gateway\Api\Log\RepositoryInterface as LogRepository;
 
 /**
  * Payment Order Service
@@ -73,10 +78,29 @@ class OrderService
      * @var RequestInterface
      */
     private $request;
+    /**
+     * @var TransactionBuilder
+     */
+    private $transactionBuilder;
+    /**
+     * @var PaymentTransactionRepository
+     */
+    private $paymentTransactionRepository;
+    /**
+     * @var OrderPaymentRepositoryInterface
+     */
+    private $orderPaymentRepository;
+    /**
+     * @var OrderRepositoryInterface
+     */
+    private $orderRepository;
+    /**
+     * @var LogRepository
+     */
+    private $logRepository;
 
     /**
-     * PaymentAbstract constructor.
-     *
+     * OrderService constructor.
      * @param Adapter $apiAdapter
      * @param RestoreQuote $restoreQuote
      * @param OrderResource $orderResource
@@ -85,6 +109,13 @@ class OrderService
      * @param InvoiceService $invoiceService
      * @param Transaction $transaction
      * @param DecoderInterface $urlDecoder
+     * @param ConfigRepository $configRepository
+     * @param RequestInterface $request
+     * @param TransactionBuilder $transactionBuilder
+     * @param PaymentTransactionRepository $paymentTransactionRepository
+     * @param OrderPaymentRepositoryInterface $orderPaymentRepository
+     * @param OrderRepositoryInterface $orderRepository
+     * @param LogRepository $logRepository
      */
     public function __construct(
         Adapter $apiAdapter,
@@ -96,7 +127,12 @@ class OrderService
         Transaction $transaction,
         DecoderInterface $urlDecoder,
         ConfigRepository $configRepository,
-        RequestInterface $request
+        RequestInterface $request,
+        TransactionBuilder $transactionBuilder,
+        PaymentTransactionRepository $paymentTransactionRepository,
+        OrderPaymentRepositoryInterface $orderPaymentRepository,
+        OrderRepositoryInterface $orderRepository,
+        LogRepository $logRepository
     ) {
         $this->apiAdapter = $apiAdapter;
         $this->restoreQuote = $restoreQuote;
@@ -108,6 +144,11 @@ class OrderService
         $this->urlDecoder = $urlDecoder;
         $this->configRepository = $configRepository;
         $this->request = $request;
+        $this->transactionBuilder = $transactionBuilder;
+        $this->paymentTransactionRepository = $paymentTransactionRepository;
+        $this->orderRepository = $orderRepository;
+        $this->orderPaymentRepository = $orderPaymentRepository;
+        $this->logRepository = $logRepository;
     }
 
     /**
@@ -251,7 +292,7 @@ class OrderService
      * @return $this
      * @throws LocalizedException
      */
-    public function processOrder(Order $order)
+    public function processOrder(Order $order, string $transactionId)
     {
         $payment = $order->getPayment();
         if ($this->configRepository->getFulfillOrderType() == 'shipment') {
@@ -271,7 +312,33 @@ class OrderService
                     $invoice->getOrder()
                 );
             $transactionSave->save();
+            $this->addAuthorizationTransaction($order, $transactionId);
         }
         return $this;
+    }
+
+    /**
+     * @param int $orderId
+     * @param string $transactionId
+     */
+    private function addAuthorizationTransaction(Order $order, string $transactionId)
+    {
+        try {
+            $transactionId .= '-auth';
+            $payment = $order->getPayment();
+            $payment->setLastTransId($transactionId);
+
+            $transaction = $this->transactionBuilder->setPayment($payment)
+                ->setOrder($order)
+                ->setTransactionId($transactionId)
+                ->setFailSafe(true)
+                ->build(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH);
+
+            $this->orderPaymentRepository->save($payment);
+            $this->orderRepository->save($order);
+            $this->paymentTransactionRepository->save($transaction);
+        } catch (\Exception $e) {
+            $this->logRepository->addDebugLog('auth transaction', $e->getMessage());
+        }
     }
 }
