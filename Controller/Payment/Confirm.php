@@ -14,6 +14,7 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Two\Gateway\Service\Payment\OrderService;
 
 /**
@@ -34,13 +35,20 @@ class Confirm extends Action
      */
     private $orderService;
 
+    /**
+     * @var OrderSender
+     */
+    private $orderSender;
+
     public function __construct(
         Context $context,
         AddressFactory $customerAddress,
-        OrderService $orderService
+        OrderService $orderService,
+        OrderSender $orderSender
     ) {
         $this->customerAddress = $customerAddress;
         $this->orderService = $orderService;
+        $this->orderSender = $orderSender;
         parent::__construct($context);
     }
 
@@ -57,6 +65,7 @@ class Confirm extends Action
                 (($twoOrder['state'] == self::STATE_VERIFIED) || ($twoOrder['state'] == self::STATE_CONFIRMED))
             ) {
                 $this->orderService->confirmOrder($order);
+                $this->orderSender->send($order);
                 if ($order->getCustomerId()) {
                     if ($order->getBillingAddress()->getCustomerAddressId()) {
                         $customerAddress = $this->customerAddress->create()->load(
@@ -77,7 +86,7 @@ class Confirm extends Action
                         );
                     }
                 }
-                $this->orderService->processOrder($order);
+                $this->orderService->processOrder($order, $twoOrder['id']);
                 return $this->getResponse()->setRedirect($this->_url->getUrl('checkout/onepage/success'));
             } else {
                 $message = 'Unable to retrieve the order payment information';

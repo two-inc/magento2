@@ -12,4 +12,7 @@
     <event name="payment_method_assign_data_two_payment">
         <observer name="two_payment_data_assign" instance="Two\Gateway\Observer\DataAssignObserver"/>
     </event>
+    <event name="sales_order_place_after">
+        <observer name="two_sales_order_place_after" instance="Two\Gateway\Observer\SalesOrderPlaceAfter" />
+    </event>
 </config>
