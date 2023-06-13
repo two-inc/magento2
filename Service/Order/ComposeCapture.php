@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Two\Gateway\Service\Order;
 
-use Exception;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order;
 use Two\Gateway\Service\Order as OrderService;
@@ -21,148 +20,75 @@ class ComposeCapture extends OrderService
     /**
      * Compose request body for two capture order
      *
-     * @param Order $order
-     * @param int $daysOnInvoice
      * @param Order\Invoice $invoice
      * @param string|null $twoOriginalOrderId
      * @return array
      * @throws LocalizedException
      */
-    public function execute(
-        Order $order,
-        int $daysOnInvoice,
-        Order\Invoice $invoice,
-        ?string $twoOriginalOrderId = ''
-    ): array {
-        try {
-            // Get the order taxes
-            $taxRate = 0;
-            $billingAddress = $order->getBillingAddress();
-            $shippingAddress = $order->getShippingAddress();
-            $shipment = $order->getShipment();
-            $trackNumber = '';
-            $carrierName = '';
-            if ($shipment) {
-                $tracksCollection = $shipment->getTracksCollection();
-                foreach ($tracksCollection->getItems() as $track) {
-                    $trackNumber = $track->getTrackNumber();
-                    $carrierName = $track->getTitle();
-                }
-            }
-
-            $reqBody = [
-                'currency' => $invoice->getOrderCurrencyCode(),
-                'gross_amount' => ($this->roundAmt($invoice->getGrandTotal())),
-                'net_amount' => ($this->roundAmt($invoice->getGrandTotal() - abs((float)$invoice->getTaxAmount()))),
-                'tax_amount' => ($this->roundAmt($invoice->getTaxAmount())),
-                'tax_rate' => $this->roundAmt((1.0 * $order->getTaxAmount() / $order->getGrandTotal())),
-                'discount_amount' => (string)($this->roundAmt(abs((float)$invoice->getDiscountAmount()))),
-                'discount_rate' => '0',
-                'invoice_type' => 'FUNDED_INVOICE',
-                'line_items' => $this->getInvoiceLineItems($invoice->getItems(), $order),
-                'merchant_order_id' => (string)($order->getIncrementId()),
-                'merchant_reference' => '',
-                'merchant_additional_info' => '',
-                'billing_address' => [
-                    'city' => $billingAddress->getCity(),
-                    'country' => $billingAddress->getCountryId(),
-                    'organization_name' => $billingAddress->getCompany(),
-                    'postal_code' => $billingAddress->getPostcode(),
-                    'region' => ($billingAddress->getRegion() != '') ? $billingAddress->getRegion() : '',
-                    'street_address' => $billingAddress->getStreet()[0] .
-                        (isset($billingAddress->getStreet()[1]) ? $billingAddress->getStreet()[1] : '')
-                ],
-            ];
-
-            if (!$order->getIsVirtual()) {
-                $reqBody['shipping_address'] = [
-                    'city' => ($shippingAddress) ? $shippingAddress->getCity() : '',
-                    'country' => ($shippingAddress) ? $shippingAddress->getCountryId() : '',
-                    'organization_name' => ($shippingAddress) ? $shippingAddress->getCompany() : '',
-                    'postal_code' => ($shippingAddress) ? $shippingAddress->getPostcode() : '',
-                    'region' => ($shippingAddress && $shippingAddress->getRegion() != '') ?
-                        $shippingAddress->getRegion() : '',
-                    'street_address' => ($shippingAddress) ? $shippingAddress->getStreet()[0] .
-                        (isset($shippingAddress->getStreet()[1]) ? $shippingAddress->getStreet()[1] : '') : ''
-                ];
-                $reqBody['shipping_details'] = [
-                    'carrier_name' => $carrierName,
-                    'tracking_number' => $trackNumber,
-                    'expected_delivery_date' => date('Y-m-d', strtotime('+ 7 days'))
-                ];
-            } else {
-                $reqBody['shipping_address'] = [
-                    'city' => $billingAddress->getCity(),
-                    'country' => $billingAddress->getCountryId(),
-                    'organization_name' => $billingAddress->getCompany(),
-                    'postal_code' => $billingAddress->getPostcode(),
-                    'region' => ($billingAddress->getRegion() != '') ? $billingAddress->getRegion() : '',
-                    'street_address' => $billingAddress->getStreet()[0]
-                        . (
-                        isset($billingAddress->getStreet()[1])
-                            ? $billingAddress->getStreet()[1] : ''
-                        )
-                ];
-            }
-
-            if ($twoOriginalOrderId) {
-                $reqBody['original_order_id'] = $twoOriginalOrderId;
-            }
-            return $reqBody;
-        } catch (Exception $e) {
-            throw new LocalizedException(__($e->getMessage()));
+    public function execute(Order\Invoice $invoice, ?string $twoOriginalOrderId = ''): array
+    {
+        $order = $invoice->getOrder();
+        $reqBody = [
+            'billing_address' => $this->getAddress($order, [], 'billing'),
+            'shipping_address' => $this->getAddress($order, [], 'shipping'),
+            'currency' => $invoice->getOrderCurrencyCode(),
+            'discount_amount' => $this->roundAmt(abs((float)$invoice->getDiscountAmount())),
+            'gross_amount' => $this->roundAmt($invoice->getGrandTotal()),
+            'net_amount' => $this->roundAmt($invoice->getGrandTotal() - $invoice->getTaxAmount()),
+            'tax_amount' => $this->roundAmt($invoice->getTaxAmount()),
+            'tax_rate' => $this->roundAmt(
+                (1.0 * $order->getTaxAmount() / ($order->getGrandTotal() - $order->getTaxAmount()))
+            ),
+            'discount_rate' => '0',
+            'invoice_type' => 'FUNDED_INVOICE',
+            'line_items' => $this->getLineItemsInvoice($invoice, $order),
+            'merchant_order_id' => (string)($order->getIncrementId()),
+            'merchant_reference' => '',
+            'merchant_additional_info' => '',
+        ];
+        if (!$order->getIsVirtual()) {
+            $reqBody['shipping_details'] = $this->getShippingDetails($order);
         }
+        if ($twoOriginalOrderId) {
+            $reqBody['original_order_id'] = $twoOriginalOrderId;
+        }
+        return $reqBody;
     }
 
     /**
      * Get Invoice Line Items
      *
-     * @param array $lineItems
+     * @param Order\Invoice $invoice
      * @param Order $order
      * @return array
      * @throws LocalizedException
      */
-    public function getInvoiceLineItems(array $lineItems, Order $order): array
+    public function getLineItemsInvoice(Order\Invoice $invoice, Order $order): array
     {
         $items = [];
-
-        foreach ($lineItems as $item) {
+        foreach ($invoice->getAllItems() as $item) {
             if ($item->getQty() > 0) {
                 $orderItem = $order->getItemById($item->getOrderItemId());
-
-                $product = $orderItem->getProduct();
-
-                $parentItem = $orderItem->getParentItem()
-                    ?: ($orderItem->getParentItemId() ? $order->getItemById($orderItem->getParentItemId()) : null);
-
-                if ($this->shouldSkip($parentItem, $orderItem)) {
+                if (!$product = $this->getProduct($order, $item)) {
                     continue;
                 }
-                if (isset($parentItem)) {
-                    $product = $parentItem->getProduct();
-                }
 
-                $productData = [
+                $items[] = [
+                    'order_item_id' => $item->getOrderItemId(),
                     'name' => $item->getName(),
-                    'description' => substr($item->getDescription(), 0, 255),
-                    'gross_amount' => (string)(
-                    $this->roundAmt(
-                        $item->getRowTotal() - abs((float)$item->getDiscountAmount()) + (float)$item->getTaxAmount()
-                    )
-                    ),
-                    'net_amount' => (string)(
-                    $this->roundAmt($item->getRowTotal() - abs((float)$item->getDiscountAmount()))
-                    ),
-                    'discount_amount' => $this->roundAmt(abs((float)$item->getDiscountAmount())),
-                    'tax_amount' => $this->roundAmt($item->getTaxAmount()),
+                    'description' => $item->getName(),
+                    'gross_amount' => $this->roundAmt($this->getGrossAmountItem($item)),
+                    'net_amount' => $this->roundAmt($this->getNetAmountItem($item)),
+                    'discount_amount' => $this->roundAmt($this->getDiscountAmountItem($item)),
+                    'tax_amount' => $this->roundAmt($this->getTaxAmountItem($item)),
                     'tax_class_name' => 'VAT ' . $this->roundAmt($orderItem->getTaxPercent()) . '%',
                     'tax_rate' => $this->roundAmt(($orderItem->getTaxPercent() / 100)),
-                    'unit_price' => $this->roundAmt($item->getPrice()),
+                    'unit_price' => $this->roundAmt($this->getUnitPriceItem($item)),
                     'quantity' => $item->getQty(),
-                    'quantity_unit' => 'item',
+                    'quantity_unit' => $this->configRepository->getWeightUnit((int)$order->getStoreId()),
                     'image_url' => $this->getProductImageUrl($product),
                     'product_page_url' => $product->getProductUrl(),
-                    'type' => 'PHYSICAL',
+                    'type' => $orderItem->getIsVirtual() ? 'DIGITAL' : 'PHYSICAL',
                     'details' => [
                         'barcodes' => [
                             [
@@ -173,35 +99,55 @@ class ComposeCapture extends OrderService
                         'categories' => $this->getCategories($product->getCategoryIds()),
                     ]
                 ];
-
-                $items[] = $productData;
             }
         }
 
         if ($order->getShippingAmount() != 0) {
             $taxRate = round((1.0 * $order->getShippingTaxAmount() / $order->getShippingAmount()), 6);
-            $shipping_line = [
+            $items[] = [
+                'order_item_id' => 'shipping',
                 'name' => 'Shipping - ' . $order->getShippingMethod(),
                 'description' => '',
-                'gross_amount' => $this->roundAmt($order->getShippingInclTax()),
-                'net_amount' => (string)(
-                $this->roundAmt($order->getShippingInclTax() - $order->getShippingTaxAmount())
-                ),
-                'discount_amount' => '0',
-                'tax_amount' => $this->roundAmt($order->getShippingTaxAmount()),
-                'tax_class_name' => 'VAT ' . $this->roundAmt($taxRate * 100) . '%',
-                'tax_rate' => (string)($taxRate),
-                'unit_price' => $this->roundAmt($order->getShippingInclTax()),
-                'quantity' => 1,
-                'quantity_unit' => 'sc', // shipment charge
+                'type' => 'SHIPPING_FEE',
                 'image_url' => '',
                 'product_page_url' => '',
-                'type' => 'SHIPPING_FEE'
+                'gross_amount' => $this->roundAmt($this->getGrossAmountShipping($order)),
+                'net_amount' => $this->roundAmt($this->getNetAmountShipping($order)),
+                'tax_amount' => $this->roundAmt((float)$order->getShippingTaxAmount()),
+                'discount_amount' => $this->roundAmt($this->getDiscountAmountShipping($order)),
+                'tax_rate' => $this->roundAmt((1.0 * $order->getShippingTaxAmount() / $order->getShippingAmount())),
+                'unit_price' => $this->roundAmt($this->getUnitPriceShipping($order)),
+                'tax_class_name' => 'VAT ' . $this->roundAmt($taxRate * 100) . '%',
+                'quantity' => 1,
+                'quantity_unit' => 'sc',
             ];
-
-            $items[] = $shipping_line;
         }
 
         return $items;
+    }
+
+    /**
+     * @param Order $order
+     * @return array
+     */
+    private function getShippingDetails(Order $order): array
+    {
+        $trackNumber = '';
+        $carrierName = '';
+
+        $shipments = $order->getShipmentsCollection();
+        foreach ($shipments as $shipment) {
+            $tracksCollection = $shipment->getTracksCollection();
+            foreach ($tracksCollection->getItems() as $track) {
+                $trackNumber = $track->getTrackNumber();
+                $carrierName = $track->getTitle();
+            }
+        }
+
+        return [
+            'carrier_name' => $carrierName,
+            'tracking_number' => $trackNumber,
+            'expected_delivery_date' => date('Y-m-d', strtotime('+ 7 days'))
+        ];
     }
 }

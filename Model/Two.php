@@ -384,18 +384,8 @@ class Two extends AbstractMethod
     public function partialMainOrder(Order $order, ?Order\Invoice $invoice, Order\Invoice $remainItemInvoice): array
     {
         $twoOrderId = $order->getTwoOrderId();
-
-        $payload['partially_fulfilled_order'] = $this->composeCapture->execute(
-            $order,
-            $this->configRepository->getDueInDays(),
-            $invoice
-        );
-
-        $payload['remained_order'] = $this->composeCapture->execute(
-            $order,
-            $this->configRepository->getDueInDays(),
-            $remainItemInvoice
-        );
+        $payload['partially_fulfilled_order'] = $this->composeCapture->execute($invoice);
+        $payload['remained_order'] = $this->composeCapture->execute($remainItemInvoice);
 
         /* Partially fulfill order*/
         return $this->apiAdapter->execute('/v1/order/' . $twoOrderId . '/fulfilled', $payload);
