@@ -85,6 +85,15 @@ class Confirm extends Action
                             $customerAddress
                         );
                     }
+                } else {
+                    $this->saveAddressMetadata(
+                        $twoOrder,
+                        $order->getShippingAddress()
+                    );
+                    $this->saveAddressMetadata(
+                        $twoOrder,
+                        $order->getBillingAddress()
+                    );
                 }
                 $this->orderService->processOrder($order, $twoOrder['id']);
                 return $this->getResponse()->setRedirect($this->_url->getUrl('checkout/onepage/success'));
@@ -111,11 +120,11 @@ class Confirm extends Action
      * Set metadata to customer address
      *
      * @param array $twoOrder
-     * @param Address $address
+     * @param $address
      *
      * @throws Exception
      */
-    public function saveAddressMetadata(array $twoOrder, Address $address)
+    public function saveAddressMetadata(array $twoOrder, $address)
     {
         if (isset($twoOrder['buyer']['company']['organization_number'])) {
             $address->setData('company_id', $twoOrder['buyer']['company']['organization_number']);
