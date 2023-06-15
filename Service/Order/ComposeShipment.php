@@ -7,17 +7,12 @@ declare(strict_types=1);
 
 namespace Two\Gateway\Service\Order;
 
-use Magento\Catalog\Helper\Image;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollection;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Url;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\Data\ShipmentInterface;
 use Magento\Sales\Api\Data\ShipmentItemInterface;
 use Magento\Sales\Model\Order;
-use Magento\Store\Model\App\Emulation;
-use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 use Two\Gateway\Service\Order as OrderService;
 
 /**
@@ -25,40 +20,6 @@ use Two\Gateway\Service\Order as OrderService;
  */
 class ComposeShipment extends OrderService
 {
-    /**
-     * @var GetLineItemsShipment
-     */
-    private $getLineItemsShipment;
-
-    /**
-     * @var GetLineItems
-     */
-    private $getLineItems;
-
-    /**
-     * ComposeShipment constructor.
-     *
-     * @param GetLineItemsShipment $getLineItemsShipment
-     * @param GetLineItems $getLineItems
-     * @param Image $imageHelper
-     * @param ConfigRepository $configRepository
-     * @param CategoryCollection $categoryCollectionFactory
-     * @param Emulation $appEmulation
-     * @param Url $url
-     */
-    public function __construct(
-        GetLineItemsShipment $getLineItemsShipment,
-        GetLineItems $getLineItems,
-        Image $imageHelper,
-        ConfigRepository $configRepository,
-        CategoryCollection $categoryCollectionFactory,
-        Emulation $appEmulation,
-        Url $url
-    ) {
-        parent::__construct($imageHelper, $configRepository, $categoryCollectionFactory, $appEmulation, $url);
-        $this->getLineItemsShipment = $getLineItemsShipment;
-        $this->getLineItems = $getLineItems;
-    }
 
     /**
      * Compose request body for two ship order
@@ -71,105 +32,105 @@ class ComposeShipment extends OrderService
      */
     public function execute(Order\Shipment $shipment, Order $order): array
     {
-        $orderItems = $this->getLineItems->execute($order); //items
-        $shipmentItems = $this->getLineItemsShipment->execute($order, $shipment); //one shipment items
-
-        $orderItems = $this->getRemainingItems($shipment, $orderItems);
-        $shipmentItems = array_values($shipmentItems);
-        $storeId = (int)$order->getStoreId();
-        $billingAddress = $order->getBillingAddress();
-        $additionalInformation = $order->getPayment()->getAdditionalInformation();
-        $billingAddressData = [
-            'city' => $billingAddress->getCity(),
-            'country' => $billingAddress->getCountryId(),
-            'organization_name' => $additionalInformation['buyer']['company']['company_name'],
-            'postal_code' => $billingAddress->getPostcode(),
-            'region' => ($billingAddress->getRegion() != '') ? $billingAddress->getRegion() : '',
-            'street_address' => $billingAddress->getStreet()[0]
-                . (isset($billingAddress->getStreet()[1]) ? $billingAddress->getStreet()[1] : ''),
-        ];
-        if (!$order->getIsVirtual()) {
-            $shippingAddress = $order->getShippingAddress();
-        } else {
-            $shippingAddress = $billingAddress;
-        }
-
-        $shippingAddressData = [
-            'city' => $shippingAddress->getCity(),
-            'country' => $shippingAddress->getCountryId(),
-            'organization_name' => $additionalInformation['buyer']['company']['company_name'],
-            'postal_code' => $shippingAddress->getPostcode(),
-            'region' => ($shippingAddress->getRegion() != '') ? $shippingAddress->getRegion() : '',
-            'street_address' => $shippingAddress->getStreet()[0]
-                . (isset($shippingAddress->getStreet()[1]) ? $shippingAddress->getStreet()[1] : ''),
-        ];
-
-        $totalDiscountAmountPartially = 0;
-        $totalGrossAmountPartially = 0;
-        $totalNetAmountPartially = 0;
-        $totalTaxAmountAmountPartially = 0;
-        $totalTaxRateAmountPartially = 0;
-        foreach ($shipmentItems as $item) {
-            $totalDiscountAmountPartially += $item['discount_amount'];
-            $totalGrossAmountPartially += $item['gross_amount'];
-            $totalNetAmountPartially += $item['net_amount'];
-            $totalTaxAmountAmountPartially += $item['tax_amount'];
-            $totalTaxRateAmountPartially += $item['tax_rate'];
-        }
-
-        $totalTaxRateAmountPartially = $totalTaxRateAmountPartially / count($shipmentItems);
-
-        $totalDiscountAmountRemained = 0;
-        $totalGrossAmountRemained = 0;
-        $totalNetAmountRemained = 0;
-        $totalTaxAmountAmountRemained = 0;
-        $totalTaxRateAmountRemained = 0;
-        foreach ($orderItems as $item) {
-            $totalDiscountAmountRemained += $item['discount_amount'];
-            $totalGrossAmountRemained += $item['gross_amount'];
-            $totalNetAmountRemained += $item['net_amount'];
-            $totalTaxAmountAmountRemained += $item['tax_amount'];
-            $totalTaxRateAmountRemained += $item['tax_rate'];
-        }
-
-        $totalTaxRateAmountRemained = $totalTaxRateAmountRemained / count($shipmentItems);
+        $shipmentItems = $this->getLineItemsShipment($order, $shipment);
+        $orderItems = $this->getRemainingItems($shipment, $this->getLineItemsOrder($order));
 
         return [
             'partially_fulfilled_order' => [
-                'billing_address' => $billingAddressData,
+                'billing_address' => $this->getAddress($order, [], 'billing'),
+                'shipping_address' => $this->getAddress($order, [], 'shipping'),
                 'currency' => $order->getOrderCurrencyCode(),
-                'discount_amount' => $this->roundAmt($totalDiscountAmountPartially),
+                'discount_amount' => $this->getSum($shipmentItems, 'discount_amount'),
+                'gross_amount' => $this->getSum($shipmentItems, 'gross_amount'),
+                'net_amount' => $this->getSum($shipmentItems, 'net_amount'),
+                'tax_amount' => $this->getSum($shipmentItems, 'tax_amount'),
+                'tax_rate' => reset($shipmentItems)['tax_rate'] ?? 0,
                 'discount_rate' => '0',
-                'gross_amount' => $this->roundAmt($totalGrossAmountPartially),
                 'invoice_type' => 'FUNDED_INVOICE',
-                'line_items' => $shipmentItems,
+                'line_items' => array_values($shipmentItems),
                 'merchant_additional_info' => $order->getIncrementId(),
                 'merchant_order_id' => (string)($order->getIncrementId()),
                 'merchant_reference' => $order->getIncrementId(),
-                'net_amount' => $this->roundAmt($totalNetAmountPartially),
-                'shipping_address' => $shippingAddressData,
-                'tax_amount' => $this->roundAmt($totalTaxAmountAmountPartially),
-                'tax_rate' => $this->roundAmt($totalTaxRateAmountPartially),
             ],
             'remained_order' => [
-                'billing_address' => $billingAddressData,
+                'billing_address' => $this->getAddress($order, [], 'billing'),
+                'shipping_address' => $this->getAddress($order, [], 'shipping'),
                 'currency' => $order->getOrderCurrencyCode(),
-                'discount_amount' => $this->roundAmt($totalDiscountAmountRemained),
+                'discount_amount' => $this->getSum($orderItems, 'discount_amount'),
+                'gross_amount' => $this->getSum($orderItems, 'gross_amount'),
+                'net_amount' => $this->getSum($orderItems, 'net_amount'),
+                'tax_amount' => $this->getSum($orderItems, 'tax_amount'),
+                'tax_rate' => reset($orderItems)['tax_rate'] ?? 0,
                 'discount_rate' => '0',
-                'gross_amount' => $this->roundAmt($totalGrossAmountRemained),
                 'invoice_type' => 'FUNDED_INVOICE',
                 'line_items' => array_values($orderItems),
                 'merchant_additional_info' => $order->getIncrementId(),
                 'merchant_order_id' => (string)($order->getIncrementId()),
                 'merchant_reference' => $order->getIncrementId(),
-                'net_amount' => $this->roundAmt($totalNetAmountRemained),
-                'shipping_address' => $shippingAddressData,
-                'tax_amount' => $this->roundAmt($totalTaxAmountAmountRemained),
-                'tax_rate' => $this->roundAmt($totalTaxRateAmountRemained),
             ],
         ];
     }
 
+    /**
+     * @param Order $order
+     * @param Order\Shipment $shipment
+     * @return array
+     * @throws LocalizedException
+     */
+    public function getLineItemsShipment(Order $order, Order\Shipment $shipment): array
+    {
+        $items = [];
+        foreach ($shipment->getAllItems() as $item) {
+            $orderItem = $this->getOrderItem((int)$item->getOrderItemId());
+            if (!$item->getQty() || !$product = $this->getProduct($order, $orderItem)) {
+                continue;
+            }
+
+            // Part of the item line that is shipped.
+            $part = $orderItem->getQtyOrdered() / $item->getQty();
+
+            $items[$orderItem->getItemId()] = [
+                'order_item_id' => $item->getOrderItemId(),
+                'name' => $item->getName(),
+                'description' => $item->getName(),
+                'gross_amount' => $this->roundAmt($this->getGrossAmountItem($orderItem) / $part),
+                'net_amount' => $this->roundAmt($this->getNetAmountItem($orderItem) / $part),
+                'discount_amount' => $this->roundAmt($this->getDiscountAmountItem($orderItem) / $part),
+                'tax_amount' => $this->roundAmt($this->getTaxAmountItem($orderItem) / $part),
+                'tax_class_name' => 'VAT ' . $this->roundAmt($orderItem->getTaxPercent()) . '%',
+                'tax_rate' => $this->roundAmt(($orderItem->getTaxPercent() / 100)),
+                'unit_price' => $this->roundAmt($this->getUnitPriceItem($orderItem)),
+                'quantity' => $item->getQty(),
+                'quantity_unit' => $this->configRepository->getWeightUnit((int)$order->getStoreId()),
+                'image_url' => $this->getProductImageUrl($product),
+                'product_page_url' => $product->getProductUrl(),
+                'type' => $orderItem->getIsVirtual() ? 'DIGITAL' : 'PHYSICAL',
+                'details' => [
+                    'barcodes' => [
+                        [
+                            'type' => 'SKU',
+                            'value' => $item->getSku(),
+                        ],
+                    ],
+                    'categories' => $this->getCategories($product->getCategoryIds()),
+                ],
+            ];
+        }
+
+        // Add shipping amount as orderLine on first shipment
+        $firstShipmentId = $order->getShipmentsCollection()->getFirstItem()->getId();
+        if ($firstShipmentId == $shipment->getId() && $order->getShippingAmount() > 0) {
+            $items['shipping'] = $this->getShippingLineOrder($order);
+        }
+
+        return $items;
+    }
+
+    /**
+     * @param ShipmentInterface $shipment
+     * @param array $orderItems
+     * @return array
+     */
     private function getRemainingItems(ShipmentInterface $shipment, array $orderItems): array
     {
         /** @var ShipmentItemInterface $shipmentItem */
@@ -179,7 +140,7 @@ class ComposeShipment extends OrderService
             $remaining = $orderShipmentItem->getQtyToShip();
             $total = $orderShipmentItem->getQtyOrdered();
 
-            //find order item
+            // find order item
             $orderShipmentItemId = null;
             foreach ($orderItems as $id => $item) {
                 if ($item['qty_to_ship'] == 0) {
@@ -201,6 +162,13 @@ class ComposeShipment extends OrderService
             $item['tax_amount'] = $this->roundAmt(($item['tax_amount'] / $total) * $remaining);
 
             $orderItems[$orderShipmentItemId] = $item;
+        }
+
+        // Remove Shipping cost line from remaining items if it is set
+        foreach ($orderItems as $k => $v) {
+            if ($v['order_item_id'] == 'shipping') {
+                unset($orderItems[$k]);
+            }
         }
 
         return $orderItems;
