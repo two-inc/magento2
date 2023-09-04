@@ -234,11 +234,22 @@ abstract class Order
 
     /**
      * @param OrderItem|InvoiceItem|CreditmemoItem $item
+     * @return int
+     */
+    public function getQuantity($item): int
+    {
+        return $item instanceof OrderItem
+            ? $item->getQtyOrdered()
+            : $item->getQty();
+    }
+
+    /**
+     * @param OrderItem|InvoiceItem|CreditmemoItem $item
      * @return float
      */
     public function getGrossAmountItem($item): float
     {
-        return (float)($this->getNetAmountItem($item) + $this->getTaxAmountItem($item));
+        return (float)($this->getUnitPriceInclTaxItem($item) * $this->getQuantity($item));
     }
 
     /**
@@ -247,13 +258,18 @@ abstract class Order
      */
     public function getNetAmountItem($item): float
     {
-        $qty = $item instanceof OrderItem
-            ? $item->getQtyOrdered()
-            : $item->getQty();
-
         return (float)(
-            ($qty * $this->getUnitPriceItem($item)) - $this->getDiscountAmountItem($item)
+            $this->getGrossAmountItem($item) - $this->getTaxAmountItem($item) - $this->getDiscountAmountItem($item)
         );
+    }
+
+    /**
+     * @param OrderItem|InvoiceItem|CreditmemoItem $item
+     * @return float
+     */
+    public function getUnitPriceInclTaxItem($item): float
+    {
+        return $item->getPriceInclTax();
     }
 
     /**
@@ -262,11 +278,7 @@ abstract class Order
      */
     public function getUnitPriceItem($item): float
     {
-        $qty = $item instanceof OrderItem
-            ? $item->getQtyOrdered()
-            : $item->getQty();
-
-        return $item->getPriceInclTax() - ($this->getTaxAmountItem($item) / $qty);
+        return $this->getUnitPriceInclTaxItem($item) - $this->getUnitTaxAmountItem($item);
     }
 
     /**
@@ -276,6 +288,15 @@ abstract class Order
     public function getTaxAmountItem($item): float
     {
         return (float)$item->getTaxAmount();
+    }
+
+    /**
+     * @param OrderItem|InvoiceItem|CreditmemoItem $item
+     * @return float
+     */
+    public function getUnitTaxAmountItem($item): float
+    {
+        return $this->getTaxAmountItem($item) / $this->getQuantity($item);
     }
 
     /**
