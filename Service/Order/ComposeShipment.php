@@ -123,7 +123,7 @@ class ComposeShipment extends OrderService
             $items['shipping'] = $this->getShippingLineOrder($order);
         }
 
-        return $items;
+        return $this->lineItemsProcessor->execute($items);
     }
 
     /**
