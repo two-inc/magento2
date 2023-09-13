@@ -12,6 +12,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Creditmemo;
 use Two\Gateway\Service\Order as OrderService;
+use Two\Gateway\Service\LineItemsProcessor;
 
 /**
  * Compose Refund Service
@@ -109,6 +110,7 @@ class ComposeRefund extends OrderService
             ];
         }
 
-        return $items;
+        $netAmount = (float)$this->roundAmt($creditmemo->getGrandTotal() - $creditmemo->getTaxAmount());
+        return $this->lineItemsProcessor->execute($items, $netAmount);
     }
 }

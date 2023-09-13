@@ -55,6 +55,10 @@ abstract class Order
      * @var OrderItemRepositoryInterface
      */
     private $orderItemRepository;
+    /**
+     * @var LineItemsProcessor
+     */
+    protected $lineItemsProcessor;
 
     /**
      * Order constructor.
@@ -65,6 +69,7 @@ abstract class Order
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param Emulation $appEmulation
      * @param Url $url
+     * @param LineItemsProcessor $lineItemsProcessor
      */
     public function __construct(
         Image $imageHelper,
@@ -72,7 +77,8 @@ abstract class Order
         CategoryCollection $categoryCollectionFactory,
         OrderItemRepositoryInterface $orderItemRepository,
         Emulation $appEmulation,
-        Url $url
+        Url $url,
+        LineItemsProcessor $lineItemsProcessor
     ) {
         $this->imageHelper = $imageHelper;
         $this->configRepository = $configRepository;
@@ -80,6 +86,7 @@ abstract class Order
         $this->orderItemRepository = $orderItemRepository;
         $this->appEmulation = $appEmulation;
         $this->url = $url;
+        $this->lineItemsProcessor = $lineItemsProcessor;
     }
 
     /**
@@ -175,12 +182,18 @@ abstract class Order
                 'image_url' => $this->getProductImageUrl($product),
                 'product_page_url' => $product->getProductUrl(),
                 'gross_amount' => $this->roundAmt($this->getGrossAmountItem($item)),
-                'net_amount' => $this->roundAmt($this->getNetAmountItem($item)),
+                'net_amount' => $this->roundAmt(
+                    $this->getNetAmountItem($item) - $this->getDiscountTaxCompensationAmount($item)
+                ),
                 'tax_amount' => $this->roundAmt($this->getTaxAmountItem($item)),
                 'discount_amount' => $this->roundAmt($this->getDiscountAmountItem($item)),
                 'tax_rate' => $this->roundAmt(($item->getTaxPercent() / 100)),
                 'tax_class_name' => 'VAT ' . $this->roundAmt($item->getTaxPercent()) . '%',
-                'unit_price' => $this->roundAmt($this->getUnitPriceItem($item)),
+                'unit_price' => $this->roundAmt(
+                    $this->getUnitPriceItem($item) -
+                    $this->getDiscountTaxCompensationAmount($item) /
+                    ($item instanceof OrderItem ? $item->getQtyOrdered() : $item->getQty())
+                ),
                 'quantity' => $item->getQtyOrdered(),
                 'qty_to_ship' => $item->getQtyToShip(), //need for partial shipment
                 'quantity_unit' => $this->configRepository->getWeightUnit((int)$order->getStoreId()),
@@ -200,7 +213,8 @@ abstract class Order
             $items[] = $this->getShippingLineOrder($order);
         }
 
-        return $items;
+        $netAmount = (float)$this->roundAmt($order->getGrandTotal() - $order->getTaxAmount());
+        return $this->lineItemsProcessor->execute($items, $netAmount);
     }
 
     /**
@@ -285,6 +299,15 @@ abstract class Order
     public function getDiscountAmountItem($item): float
     {
         return (float)$item->getDiscountAmount();
+    }
+
+    /**
+     * @param OrderItem|InvoiceItem|CreditmemoItem $item
+     * @return float
+     */
+    private function getDiscountTaxCompensationAmount($item)
+    {
+        return (float)($item->getDiscountAmount() * $item->getTaxPercent() / 100);
     }
 
     /**
@@ -464,7 +487,7 @@ abstract class Order
         foreach ($linesItems as $linesItem) {
             $taxSubtotals[$linesItem['tax_rate']][] = [
                 'tax_amount' => $linesItem['tax_amount'],
-                'taxable_amount' => $linesItem['net_amount'],
+                'taxable_amount' => $linesItem['net_amount']
             ];
         }
 
