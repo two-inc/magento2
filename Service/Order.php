@@ -182,18 +182,12 @@ abstract class Order
                 'image_url' => $this->getProductImageUrl($product),
                 'product_page_url' => $product->getProductUrl(),
                 'gross_amount' => $this->roundAmt($this->getGrossAmountItem($item)),
-                'net_amount' => $this->roundAmt(
-                    $this->getNetAmountItem($item) - $this->getDiscountTaxCompensationAmount($item)
-                ),
+                'net_amount' => $this->roundAmt($this->getNetAmountItem($item)),
                 'tax_amount' => $this->roundAmt($this->getTaxAmountItem($item)),
                 'discount_amount' => $this->roundAmt($this->getDiscountAmountItem($item)),
                 'tax_rate' => $this->roundAmt(($item->getTaxPercent() / 100)),
                 'tax_class_name' => 'VAT ' . $this->roundAmt($item->getTaxPercent()) . '%',
-                'unit_price' => $this->roundAmt(
-                    $this->getUnitPriceItem($item) -
-                    $this->getDiscountTaxCompensationAmount($item) /
-                    ($item instanceof OrderItem ? $item->getQtyOrdered() : $item->getQty())
-                ),
+                'unit_price' => $this->roundAmt($this->getUnitPriceItem($item)),
                 'quantity' => $item->getQtyOrdered(),
                 'qty_to_ship' => $item->getQtyToShip(), //need for partial shipment
                 'quantity_unit' => $this->configRepository->getWeightUnit((int)$order->getStoreId()),
@@ -276,11 +270,7 @@ abstract class Order
      */
     public function getUnitPriceItem($item): float
     {
-        $qty = $item instanceof OrderItem
-            ? $item->getQtyOrdered()
-            : $item->getQty();
-
-        return $item->getPriceInclTax() - ($this->getTaxAmountItem($item) / $qty);
+        return $item->getPrice();
     }
 
     /**
