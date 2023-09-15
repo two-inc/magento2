@@ -87,7 +87,7 @@ class ComposeShipment extends OrderService
             }
 
             // Part of the item line that is shipped.
-            $part = $item->getQty() / $orderItem->getQtyOrdered();
+            $part = $item->getQty() / $orderItem->getQty();
 
             $items[$orderItem->getItemId()] = [
                 'order_item_id' => $item->getOrderItemId(),
