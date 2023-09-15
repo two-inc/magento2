@@ -138,7 +138,6 @@ class ComposeShipment extends OrderService
             /** @var OrderItemInterface $orderItem */
             $orderShipmentItem = $shipmentItem->getOrderItem();
             $remaining = $orderShipmentItem->getQtyToShip();
-            $total = $orderShipmentItem->getQtyOrdered();
 
             // find order item
             $orderShipmentItemId = null;
@@ -157,9 +156,6 @@ class ComposeShipment extends OrderService
 
             $item = $orderItems[$orderShipmentItemId];
             $item['quantity'] = $remaining;
-            $item['gross_amount'] = $this->roundAmt(($item['gross_amount'] / $total) * $remaining);
-            $item['net_amount'] = $this->roundAmt(($item['net_amount'] / $total) * $remaining);
-            $item['tax_amount'] = $this->roundAmt(($item['tax_amount'] / $total) * $remaining);
 
             $orderItems[$orderShipmentItemId] = $item;
         }
