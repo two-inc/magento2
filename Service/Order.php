@@ -257,7 +257,7 @@ abstract class Order
     {
         $qty = $item instanceof OrderItem
             ? $item->getQtyOrdered()
-            : $item->getQty();
+            : $item->getQtyToShip();
 
         return (float)(
             ($qty * $this->getUnitPriceItem($item)) - $this->getDiscountAmountItem($item)
