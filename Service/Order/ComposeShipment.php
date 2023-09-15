@@ -86,14 +86,17 @@ class ComposeShipment extends OrderService
                 continue;
             }
 
+            // Part of the item line that is shipped.
+            $part = $orderItem->getQtyOrdered() / $item->getQty();
+
             $items[$orderItem->getItemId()] = [
                 'order_item_id' => $item->getOrderItemId(),
                 'name' => $item->getName(),
                 'description' => $item->getName(),
-                'gross_amount' => $this->roundAmt($this->getGrossAmountItem($orderItem)),
-                'net_amount' => $this->roundAmt($this->getNetAmountItem($orderItem)),
-                'discount_amount' => $this->roundAmt($this->getDiscountAmountItem($orderItem)),
-                'tax_amount' => $this->roundAmt($this->getTaxAmountItem($orderItem)),
+                'gross_amount' => $this->roundAmt($this->getGrossAmountItem($orderItem) / $part),
+                'net_amount' => $this->roundAmt($this->getNetAmountItem($orderItem) / $part),
+                'discount_amount' => $this->roundAmt($this->getDiscountAmountItem($orderItem) / $part),
+                'tax_amount' => $this->roundAmt($this->getTaxAmountItem($orderItem) / $part),
                 'tax_class_name' => 'VAT ' . $this->roundAmt($orderItem->getTaxPercent()) . '%',
                 'tax_rate' => $this->roundAmt(($orderItem->getTaxPercent() / 100)),
                 'unit_price' => $this->roundAmt($this->getUnitPriceItem($orderItem)),
