@@ -256,8 +256,8 @@ abstract class Order
     public function getNetAmountItem($item): float
     {
         $qty = $item instanceof OrderItem
-            ? $item->getQtyOrdered()
-            : $item->getQtyToShip();
+            ? $item->getQtyToShip()
+            : $item->getQty();
 
         return (float)(
             ($qty * $this->getUnitPriceItem($item)) - $this->getDiscountAmountItem($item)
