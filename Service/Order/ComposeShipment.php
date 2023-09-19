@@ -166,12 +166,23 @@ class ComposeShipment extends OrderService
         }
 
         // Remove Shipping cost line from remaining items if it is set
-        foreach ($orderItems as $k => $v) {
-            if ($v['order_item_id'] == 'shipping') {
-                unset($orderItems[$k]);
+        $items = [];
+        foreach ($orderItems as $id => $item) {
+            if ($item['order_item_id'] == 'shipping') {
+                continue;
             }
+            $remaining = $item['qty_to_ship'];
+            $total = $item['quantity'];
+            if ($remaining < $total) {
+                $item['quantity'] = $remaining;
+                $item['gross_amount'] = $this->roundAmt(($item['gross_amount'] / $total) * $remaining);
+                $item['discount_amount'] = $this->roundAmt(($item['discount_amount'] / $total) * $remaining);
+                $item['net_amount'] = $this->roundAmt(($item['net_amount'] / $total) * $remaining);
+                $item['tax_amount'] = $this->roundAmt(($item['tax_amount'] / $total) * $remaining);
+            }
+            $items[$id] = $item;
         }
 
-        return $orderItems;
+        return $items;
     }
 }
