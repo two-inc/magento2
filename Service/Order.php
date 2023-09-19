@@ -207,8 +207,7 @@ abstract class Order
             $items[] = $this->getShippingLineOrder($order);
         }
 
-        $netAmount = (float)$this->roundAmt($order->getGrandTotal() - $order->getTaxAmount());
-        return $this->lineItemsProcessor->execute($items, $netAmount);
+        return $items;
     }
 
     /**

@@ -110,7 +110,6 @@ class ComposeRefund extends OrderService
             ];
         }
 
-        $netAmount = (float)$this->roundAmt($creditmemo->getGrandTotal() - $creditmemo->getTaxAmount());
-        return $this->lineItemsProcessor->execute($items, $netAmount);
+        return $items;
     }
 }

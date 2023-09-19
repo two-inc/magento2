@@ -123,8 +123,7 @@ class ComposeCapture extends OrderService
             ];
         }
 
-        $netAmount = (float)$this->roundAmt($invoice->getGrandTotal() - $invoice->getTaxAmount());
-        return $this->lineItemsProcessor->execute($items, $netAmount);
+        return $items;
     }
 
     /**
