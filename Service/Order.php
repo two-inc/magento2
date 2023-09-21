@@ -262,11 +262,7 @@ abstract class Order
      */
     public function getUnitPriceItem($item): float
     {
-        $qty = $item instanceof OrderItem
-            ? $item->getQtyOrdered()
-            : $item->getQty();
-
-        return $item->getPriceInclTax() - ($this->getTaxAmountItem($item) / $qty);
+        return $item->getPrice();
     }
 
     /**

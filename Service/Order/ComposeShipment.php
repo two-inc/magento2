@@ -33,7 +33,7 @@ class ComposeShipment extends OrderService
     public function execute(Order\Shipment $shipment, Order $order): array
     {
         $shipmentItems = $this->getLineItemsShipment($order, $shipment);
-        $orderItems = $this->getRemainingItems($shipment, $this->getLineItemsOrder($order));
+        $orderItems = $this->getRemainingItems($order);
 
         return [
             'partially_fulfilled_order' => [
@@ -127,50 +127,31 @@ class ComposeShipment extends OrderService
     }
 
     /**
-     * @param ShipmentInterface $shipment
-     * @param array $orderItems
+     * @param Order $order
      * @return array
      */
-    private function getRemainingItems(ShipmentInterface $shipment, array $orderItems): array
+    private function getRemainingItems(Order $order): array
     {
-        /** @var ShipmentItemInterface $shipmentItem */
-        foreach ($shipment->getAllItems() as $shipmentItem) {
-            /** @var OrderItemInterface $orderItem */
-            $orderShipmentItem = $shipmentItem->getOrderItem();
-            $remaining = $orderShipmentItem->getQtyToShip();
-            $total = $orderShipmentItem->getQtyOrdered();
-
-            // find order item
-            $orderShipmentItemId = null;
-            foreach ($orderItems as $id => $item) {
-                if ($item['qty_to_ship'] == 0) {
-                    unset($orderItems[$id]);
-                    continue;
-                }
-                if ($item['order_item_id'] == $orderShipmentItem->getId()) {
-                    $orderShipmentItemId = $id;
-                }
-            }
-            if ($orderShipmentItemId === null) {
+        $orderItems = $this->getLineItemsOrder($order);
+        $items = [];
+        foreach ($orderItems as $id => $item) {
+            // Remove Shipping cost line from remaining items if it is set
+            if ($item['order_item_id'] == 'shipping') {
                 continue;
             }
-
-            $item = $orderItems[$orderShipmentItemId];
-            $item['quantity'] = $remaining;
-            $item['gross_amount'] = $this->roundAmt(($item['gross_amount'] / $total) * $remaining);
-            $item['net_amount'] = $this->roundAmt(($item['net_amount'] / $total) * $remaining);
-            $item['tax_amount'] = $this->roundAmt(($item['tax_amount'] / $total) * $remaining);
-
-            $orderItems[$orderShipmentItemId] = $item;
-        }
-
-        // Remove Shipping cost line from remaining items if it is set
-        foreach ($orderItems as $k => $v) {
-            if ($v['order_item_id'] == 'shipping') {
-                unset($orderItems[$k]);
+            $remaining = $item['qty_to_ship'];
+            if ($remaining == 0) {
+                continue;
             }
+            $total = $item['quantity'];
+            $part = $remaining / $total;
+            $item['quantity'] = $remaining;
+            $item['gross_amount'] = $this->roundAmt($item['gross_amount'] * $part);
+            $item['discount_amount'] = $this->roundAmt($item['discount_amount'] * $part);
+            $item['net_amount'] = $this->roundAmt($item['net_amount'] * $part);
+            $item['tax_amount'] = $this->roundAmt($item['tax_amount'] * $part);
+            $items[$id] = $item;
         }
-
-        return $orderItems;
+        return $items;
     }
 }

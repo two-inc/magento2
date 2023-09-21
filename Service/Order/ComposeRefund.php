@@ -31,13 +31,14 @@ class ComposeRefund extends OrderService
      */
     public function execute(Creditmemo $creditmemo, float $amount, Order $order): array
     {
-        $linesItems = array_values($this->getLineItemsCreditmemo($order, $creditmemo));
+        $lineItems = array_values($this->getLineItemsCreditmemo($order, $creditmemo));
+        $grossAmount = $this->getSum($lineItems, 'gross_amount');
         return [
-            'amount' => $this->roundAmt($amount) * -1,
+            'amount' => min($this->roundAmt($amount) * -1, $grossAmount),
             'currency' => $order->getOrderCurrencyCode(),
             'initiate_payment_to_buyer' => true,
-            'tax_subtotals' => $this->getTaxSubtotals($linesItems),
-            'line_items' => array_values($this->getLineItemsCreditmemo($order, $creditmemo)),
+            'tax_subtotals' => $this->getTaxSubtotals($lineItems),
+            'line_items' => $lineItems,
         ];
     }
 
