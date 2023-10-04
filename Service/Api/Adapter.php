@@ -64,7 +64,7 @@ class Adapter
         try {
             $this->logRepository->addDebugLog(sprintf('Api call: %s %s', $method, $endpoint), $payload);
             $url = $this->configRepository->addVersionDataInURL(
-                sprintf('%s%s', $this->configRepository->getCheckoutHostUrl(), $endpoint)
+                sprintf('%s%s', $this->configRepository->getCheckoutApiUrl(), $endpoint)
             );
             $this->curlClient->addHeader("Content-Type", "application/json");
             $this->curlClient->addHeader("X-API-Key", $this->configRepository->getApiKey());

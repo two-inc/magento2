@@ -39,4 +39,12 @@
         <plugin name="two-after-place-order"
                 type="Two\Gateway\Plugin\Model\Sales\AfterPlaceOrder" sortOrder="10"/>
     </type>
+    <type name="Magento\Config\Model\Config\TypePool">
+        <arguments>
+            <argument name="environment" xsi:type="array">
+                <item name="payment/two_payment/mode" xsi:type="string">1</item>
+                <item name="payment/two_payment/debug" xsi:type="string">1</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

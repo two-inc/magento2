@@ -2,8 +2,8 @@
 "Verification Failed","Verification Failed"
 "Funded Invoice","Funded Invoice"
 "Direct Invoice","Direct Invoice"
-Production,Production
-Sandbox,Sandbox
+"Production","Production"
+"Sandbox","Sandbox"
 "Your order was not accepted","Your order was not accepted"
 "Could not update status to cancelled, please check with Two admin for id %1. Error - %2","Could not update status to cancelled, please check with Two admin for id %1. Error - %2"
 "Two Order marked as cancelled","Two Order marked as cancelled"

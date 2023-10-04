@@ -61,7 +61,7 @@ class ConfigProvider implements ConfigProviderInterface
         }
 
         $intentOrderConfig = [
-            'host' => $this->configRepository->getCheckoutHostUrl(),
+            'host' => $this->configRepository->getCheckoutApiUrl(),
             'extensionPlatformName' => $this->configRepository->getExtensionPlatformName(),
             'extensionDBVersion' => $this->configRepository->getExtensionDBVersion(),
             'invoiceType' => 'FUNDED_INVOICE',
@@ -72,10 +72,8 @@ class ConfigProvider implements ConfigProviderInterface
         return [
             'payment' => [
                 ConfigRepository::CODE => [
-                    'api_url' => ($this->configRepository->getMode() == 'sandbox') ?
-                        ConfigRepository::API_SANDBOX : ConfigRepository::API_LIVE,
-                    'popup_url' => ($this->configRepository->getMode() == 'sandbox') ?
-                        ConfigRepository::SOLETRADER_POPUP_SANDBOX : ConfigRepository::SOLETRADER_POPUP_LIVE,
+                    'api_url' => $this->configRepository->getCheckoutApiUrl(),
+                    'popup_url' => $this->configRepository->getCheckoutPageUrl(),
                     'redirectUrlCookieCode' => UrlCookie::COOKIE_NAME,
                     'isOrderIntentEnabled' => 1,
                     'isCompanyNameAutoCompleteEnabled' => $this->configRepository->isCompanyAutocompleteEnabled(),

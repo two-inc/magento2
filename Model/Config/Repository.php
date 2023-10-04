@@ -227,17 +227,29 @@ class Repository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function getCheckoutHostUrl(): string
+    public function getMode(?int $storeId = null): string
     {
-        return $this->getMode() === 'production' ? self::API_LIVE : self::API_SANDBOX;
+        return (string)$this->getConfig(self::XML_PATH_MODE, $storeId);
     }
 
     /**
      * @inheritDoc
      */
-    public function getMode(?int $storeId = null): string
+    public function getCheckoutApiUrl(?string $mode = null): string
     {
-        return (string)$this->getConfig(self::XML_PATH_MODE, $storeId);
+        $mode = $mode ?: $this->getMode();
+        $prefix = $mode == 'production' ? 'api' : ('api.' . $mode);
+        return sprintf(self::URL_TEMPLATE, $prefix);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCheckoutPageUrl(?string $mode = null): string
+    {
+        $mode = $mode ?: $this->getMode();
+        $prefix = $mode == 'production' ? 'checkout' : ('checkout.' . $mode);
+        return sprintf(self::URL_TEMPLATE, $prefix);
     }
 
     /**

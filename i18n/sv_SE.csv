@@ -3,7 +3,7 @@
 "Funded Invoice","Finansierad faktura"
 "Direct Invoice","Faktura"
 "Production","Produktion"
-Sandbox,Sandbox
+"Sandbox","Sandbox"
 "Your order was not accepted","Din beställning blev inte accepterad"
 "Could not update status to cancelled, please check with Two admin for id %1. Error - %2","Kunna inte uppdatera status till avbruten"
 "Tillit Order marked as cancelled","Two-beställning markerad som annullerad"
