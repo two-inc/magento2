@@ -15,6 +15,7 @@ define([
         'mage/translate',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Checkout/js/action/redirect-on-success',
+        'mage/url',
         'Magento_Ui/js/lib/view/utils/async',
         'mage/validation',
         'jquery/jquery-storageapi'
@@ -30,7 +31,8 @@ define([
         uiRegistry,
         additionalValidators,
         $t, fullScreenLoader,
-        redirectOnSuccessAction
+        redirectOnSuccessAction,
+        url
     ) {
         'use strict';
 
@@ -71,8 +73,8 @@ define([
             isPONumberFieldEnabled: config.isPONumberFieldEnabled,
             isTwoLinkEnabled: config.isTwoLinkEnabled,
             supportedCountryCodes: config.supportedCountryCodes,
-            companyName: customerData.get('twoCompanyName'),
-            companyId: customerData.get('twoCompanyId'),
+            companyName: ko.observable(''),
+            companyId: ko.observable(''),
             project: ko.observable(customAttributesObject.project),
             department: ko.observable(customAttributesObject.department),
             orderNote: ko.observable(''),
@@ -83,6 +85,12 @@ define([
             fullTelephoneSelector: 'input#two_telephone_full',
             companyNameSelector: 'input#two_company_name',
             generalErrorMessage: $t('Something went wrong with your request. Please check your data and try again.'),
+            token: {
+                delegation: '',
+                autofill: '',
+            },
+            showErrorMessage: ko.observable(false),
+
             initialize: function () {
                 this._super();
                 if (this.showTwoTelephone()) {
@@ -92,6 +100,12 @@ define([
                     this.enableCompanyAutoComplete();
                 }
                 this.configureFormValidation();
+
+                this.getTokens();
+                this.addVerifyEvent();
+
+                this.companyName(customerData.get('twoCompanyName')());
+                this.companyId(customerData.get('twoCompanyName')());
             },
             afterPlaceOrder: function () {
                 var url = $.mage.cookies.get(config.redirectUrlCookieCode);
@@ -437,6 +451,64 @@ define([
                 jQuery('#two_company_id').val('')
                 jQuery('span.select2').remove();
                 jQuery('#two_company_name').removeClass('select2-hidden-accessible').val('');
+            },
+
+            getTokens() {
+                const URL = url.build('rest/V1/two/get-tokens');
+                const OPTIONS = {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cartId: quote.getQuoteId() }),
+                };
+
+                fetch(URL, OPTIONS)
+                .then((response) => response.json())
+                .then((json) => {
+                    this.token.delegation = json[0].delegation_token;
+                    this.token.autofill = json[0].autofill_token;
+                })
+                .catch(() => { console.error(new Error("Something went wrong. There's no way to get the tokens.")); });
+            },
+
+            openIframe() {
+                const URL = config.popup_url + `/soletrader/signup?businessToken=${this.token.delegation}&autofillToken=${this.token.autofill}`;
+                const windowFeatures = 'location=yes,resizable=yes,scrollbars=yes,status=yes, height=805, width=610';
+                window.open(URL, '_blank', windowFeatures);
+            },
+
+            getCurrentBuyer() {
+                const URL = config.api_url + '/autofill/v1/buyer/current';
+                const OPTIONS = {
+                    credentials: "include",
+                    headers: {
+                        "two-delegated-authority-token": this.token.autofill,
+                    },
+                };
+
+                fetch(URL, OPTIONS)
+                .then((response) => response.json())
+                .then((json) => {
+                    this.clearCompany();
+                    this.companyName(json.company_name);
+                    this.companyId(json.organization_number);
+                })
+                .catch(() => { this.openIframe(); });
+            },
+
+            addVerifyEvent() {
+                const delay = 3000;
+
+                window.addEventListener("message", (event) => {
+                    if (event.data === 'ACCEPTED') {
+                        this.getCurrentBuyer();
+                    } else {
+                        this.showErrorMessage(true);
+                        setTimeout(() => this.showErrorMessage(false), delay);
+                    }
+                });
             }
         });
     }

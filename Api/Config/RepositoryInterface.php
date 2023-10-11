@@ -17,7 +17,11 @@ interface RepositoryInterface
 
     /** Endpoints */
     public const API_LIVE = 'https://api.two.inc';
-    public const API_SANDBOX = 'https://sandbox.api.two.inc';
+    public const API_SANDBOX = 'https://api.sandbox.two.inc';
+
+    /** Soletrader popup urls  */
+    public const SOLETRADER_POPUP_LIVE = 'https://checkout.two.inc';
+    public const SOLETRADER_POPUP_SANDBOX = 'https://sandbox.checkout.two.inc';
 
     /** Payment Group */
     public const XML_PATH_ENABLED = 'payment/two_payment/active';

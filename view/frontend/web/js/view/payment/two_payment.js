@@ -5,6 +5,7 @@ define(
     ],
     function (Component, rendererList) {
         'use strict';
+
         rendererList.push(
             {
                 type: 'two_payment',

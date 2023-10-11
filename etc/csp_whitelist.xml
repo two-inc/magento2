@@ -13,6 +13,8 @@
                     <value id="two" type="host">two.inc</value>
                     <value id="www_two" type="host">www.two.inc</value>
                     <value id="other_two" type="host">*.two.inc</value>
+                    <value id="sandbox_api" type="host">api.sandbox.two.inc</value>
+                    <value id="www_sandbox_api" type="host">www.api.sandbox.two.inc</value>
                 </values>
             </policy>
             <policy id="base-uri">
@@ -20,6 +22,8 @@
                     <value id="two" type="host">two.inc</value>
                     <value id="www_two" type="host">www.two.inc</value>
                     <value id="other_two" type="host">*.two.inc</value>
+                    <value id="sandbox_api" type="host">api.sandbox.two.inc</value>
+                    <value id="www_sandbox_api" type="host">api.sandbox.two.inc</value>
                 </values>
             </policy>
         </policies>
