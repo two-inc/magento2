@@ -11,6 +11,8 @@
                 type="Two\Gateway\Model\Config\Repository"/>
     <preference for="Two\Gateway\Api\Log\RepositoryInterface"
                 type="Two\Gateway\Model\Log\Repository"/>
+    <preference for="Two\Gateway\Api\Webapi\SoleTraderInterface"
+                type="Two\Gateway\Model\Webapi\SoleTrader"/>
 
     <type name="Two\Gateway\Logger\Handler">
         <arguments>

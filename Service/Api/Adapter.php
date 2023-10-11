@@ -12,6 +12,7 @@ use Magento\Framework\HTTP\Client\Curl;
 use Throwable;
 use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 use Two\Gateway\Api\Log\RepositoryInterface as LogRepository;
+use Two\Gateway\Api\Webapi\SoleTraderInterface;
 
 /**
  * Api Adapter
@@ -71,6 +72,16 @@ class Adapter
             $this->curlClient->setOption(CURLOPT_SSL_VERIFYHOST, 0);
             $this->curlClient->setOption(CURLOPT_SSL_VERIFYPEER, 0);
             $this->curlClient->setOption(CURLOPT_TIMEOUT, 60);
+            if (isset($payload['two-delegated-authority-token'])) {
+                $this->curlClient->addHeader(
+                    "two-delegated-authority-token",
+                    $payload['two-delegated-authority-token']
+                );
+                $this->curlClient->setOption(CURLOPT_COOKIESESSION, true);
+                $this->curlClient->setOption(CURLOPT_COOKIEFILE, 'cookie.txt');
+                $this->curlClient->setOption(CURLOPT_COOKIEJAR, 'cookie.txt');
+                $payload = [];
+            }
 
             if ($method == "POST" || $method == "PUT") {
                 $params = empty($payload) ? '' : json_encode($payload);
@@ -82,8 +93,13 @@ class Adapter
             }
 
             $body = trim($this->curlClient->getBody());
+
             if (in_array($this->curlClient->getStatus(), [200, 201, 202])) {
                 if ((!$body || $body === '""')) {
+                    if (($endpoint == SoleTraderInterface::DELEGATION_TOKEN_ENDPOINT) ||
+                        ($endpoint == SoleTraderInterface::AUTOFILL_TOKEN_ENDPOINT)) {
+                        return ['token' => $this->curlClient->getHeaders()['two-delegated-authority-token']];
+                    }
                     $result = [];
                 } else {
                     $result = json_decode($body, true);
