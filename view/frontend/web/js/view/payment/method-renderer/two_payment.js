@@ -465,7 +465,13 @@ define([
                 };
 
                 fetch(URL, OPTIONS)
-                .then((response) => response.json())
+                .then((response) => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error(`Error response from ${URL}.`);
+                    }
+                })
                 .then((json) => {
                     this.token.delegation = json[0].delegation_token;
                     this.token.autofill = json[0].autofill_token;
@@ -489,7 +495,13 @@ define([
                 };
 
                 fetch(URL, OPTIONS)
-                .then((response) => response.json())
+                .then((response) => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error(`Error response from ${URL}.`);
+                    }
+                })
                 .then((json) => {
                     this.clearCompany();
                     this.companyName(json.company_name);
