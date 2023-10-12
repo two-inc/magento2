@@ -10,20 +10,38 @@
         <policies>
             <policy id="form-action">
                 <values>
-                    <value id="two" type="host">two.inc</value>
-                    <value id="www_two" type="host">www.two.inc</value>
-                    <value id="other_two" type="host">*.two.inc</value>
-                    <value id="sandbox_api" type="host">api.sandbox.two.inc</value>
-                    <value id="www_sandbox_api" type="host">www.api.sandbox.two.inc</value>
+                    <value id="production" type="host">*.two.inc</value>
+                    <value id="sandbox" type="host">*.sandbox.two.inc</value>
+                    <value id="demo" type="host">*.demo.two.inc</value>
+                    <value id="staging" type="host">*.staging.two.inc</value>
+                    <value id="release" type="host">*.release.two.inc</value>
+                    <value id="experimental" type="host">*.experimental.two.inc</value>
+                    <value id="perf" type="host">*.perf.two.inc</value>
+                    <value id="cyber" type="host">*.cyber.two.inc</value>
                 </values>
             </policy>
             <policy id="base-uri">
                 <values>
-                    <value id="two" type="host">two.inc</value>
-                    <value id="www_two" type="host">www.two.inc</value>
-                    <value id="other_two" type="host">*.two.inc</value>
-                    <value id="sandbox_api" type="host">api.sandbox.two.inc</value>
-                    <value id="www_sandbox_api" type="host">api.sandbox.two.inc</value>
+                    <value id="production" type="host">*.two.inc</value>
+                    <value id="sandbox" type="host">*.sandbox.two.inc</value>
+                    <value id="demo" type="host">*.demo.two.inc</value>
+                    <value id="staging" type="host">*.staging.two.inc</value>
+                    <value id="release" type="host">*.release.two.inc</value>
+                    <value id="experimental" type="host">*.experimental.two.inc</value>
+                    <value id="perf" type="host">*.perf.two.inc</value>
+                    <value id="cyber" type="host">*.cyber.two.inc</value>
+                </values>
+            </policy>
+            <policy id="connect-src">
+                <values>
+                    <value id="production" type="host">*.two.inc</value>
+                    <value id="sandbox" type="host">*.sandbox.two.inc</value>
+                    <value id="demo" type="host">*.demo.two.inc</value>
+                    <value id="staging" type="host">*.staging.two.inc</value>
+                    <value id="release" type="host">*.release.two.inc</value>
+                    <value id="experimental" type="host">*.experimental.two.inc</value>
+                    <value id="perf" type="host">*.perf.two.inc</value>
+                    <value id="cyber" type="host">*.cyber.two.inc</value>
                 </values>
             </policy>
         </policies>
