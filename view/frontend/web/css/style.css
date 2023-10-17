@@ -67,6 +67,37 @@ button#clear_company_name {
     display: list-item;
 }
 
+.mode_selector {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 12px 6px;
+
+    border-top: 1px solid var(--color-gray89);
+    border-bottom: 1px solid var(--color-gray89);
+    color: var(--color-brownie-vanilla);
+}
+
+.mode_selector .mode_item {
+    text-decoration: none;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid var(--color-gray89);
+}
+
+.mode_selector [data-element="click-element"] {
+    color: var(--color-color-blue2);
+    background-color: var(--color-white);
+}
+
+.mode_selector [data-element="selected-element"] {
+    color: var(--color-white);
+    background-color: var(--color-color-blue2);
+}
+
 /* Sole trader part */
 .sole_trader_note {
     display: flex;
@@ -75,7 +106,6 @@ button#clear_company_name {
     margin-bottom: 20px;
     padding: 12px 6px;
 
-    border-top: 1px solid var(--color-gray89);
     border-bottom: 1px solid var(--color-gray89);
     color: var(--color-brownie-vanilla);
 }
@@ -94,6 +124,13 @@ button#clear_company_name {
 
 [data-element="error-message"] {
     margin-bottom: 24px !important;
+}
+
+.popup_message [data-element="click-element"] {
+    color: var(--color-color-blue2);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
 }
 
 .sole_trader_note .iframe-parent {

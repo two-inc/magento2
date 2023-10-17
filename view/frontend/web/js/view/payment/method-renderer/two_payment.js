@@ -90,22 +90,25 @@ define([
                 autofill: '',
             },
             showErrorMessage: ko.observable(false),
+            showPopupMessage: ko.observable(false),
+            showSoleTrader: ko.observable(false),
 
             initialize: function () {
                 this._super();
                 if (this.showTwoTelephone()) {
                     this.enableInternationalTelephone();
                 }
-                if (this.isCompanyNameAutoCompleteEnabled) {
-                    this.enableCompanyAutoComplete();
-                }
+                this.limitedCompanyMode();
                 this.configureFormValidation();
-
                 this.getTokens();
                 this.addVerifyEvent();
+            },
+            fillCustomerData: function() {
+                const companyName = customerData.get('twoCompanyName')()
+                this.companyName(typeof companyName == 'string' ? companyName : '');
 
-                this.companyName(customerData.get('twoCompanyName')());
-                this.companyId(customerData.get('twoCompanyName')());
+                const companyId = customerData.get('twoCompanyId')()
+                this.companyId(typeof companyId == 'string' ? companyId : '');
             },
             afterPlaceOrder: function () {
                 var url = $.mage.cookies.get(config.redirectUrlCookieCode);
@@ -449,6 +452,7 @@ define([
             },
             clearCompany: function () {
                 jQuery('#two_company_id').val('')
+                jQuery('#two_company_id').prop('disabled', false);
                 jQuery('span.select2').remove();
                 jQuery('#two_company_name').removeClass('select2-hidden-accessible').val('');
             },
@@ -485,6 +489,20 @@ define([
                 window.open(URL, '_blank', windowFeatures);
             },
 
+            limitedCompanyMode() {
+                if (this.isCompanyNameAutoCompleteEnabled) {
+                    this.enableCompanyAutoComplete();
+                }
+                this.fillCustomerData();
+                this.showSoleTrader(false);
+            },
+
+            soleTraderMode() {
+                this.clearCompany();
+                this.getCurrentBuyer();
+                this.showSoleTrader(true);
+            },
+
             getCurrentBuyer() {
                 const URL = config.api_url + '/autofill/v1/buyer/current';
                 const OPTIONS = {
@@ -498,27 +516,34 @@ define([
                 .then((response) => {
                     if (response.ok) {
                         return response.json();
+                    } else if (response.status == 404) {
+                        this.showPopupMessage(true);
+                        return null;
                     } else {
                         throw new Error(`Error response from ${URL}.`);
                     }
                 })
                 .then((json) => {
-                    this.clearCompany();
-                    this.companyName(json.company_name);
-                    this.companyId(json.organization_number);
+                    if (json) {
+                        $('#select2-two_company_name-container').html(json.company_name);
+                        this.companyName(json.company_name);
+                        this.companyId(json.organization_number);
+                        $('#two_company_id').prop('disabled', true);
+                    }
                 })
-                .catch(() => { this.openIframe(); });
+                .catch(() => {
+                    this.showErrorMessage(true);
+                    setTimeout(() => this.showErrorMessage(false), 3000);
+                });
             },
 
             addVerifyEvent() {
-                const delay = 3000;
-
                 window.addEventListener("message", (event) => {
                     if (event.data === 'ACCEPTED') {
                         this.getCurrentBuyer();
                     } else {
                         this.showErrorMessage(true);
-                        setTimeout(() => this.showErrorMessage(false), delay);
+                        setTimeout(() => this.showErrorMessage(false), 3000);
                     }
                 });
             }

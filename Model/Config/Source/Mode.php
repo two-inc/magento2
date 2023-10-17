@@ -36,21 +36,19 @@ class Mode implements OptionSourceInterface
      */
     public function toOptionArray(): array
     {
-        $mode = $this->configRepository->getMode();
-        $options = [
-            [
-                'value' => 'production',
-                'label' => __('Production'),
-            ],
-            [
-                'value' => 'sandbox',
-                'label' => __('Sandbox'),
-            ],
+        $modes = [
+            "production" => 1,
+            "sandbox" => 1,
         ];
-        if ($mode && ($mode != 'production' || $mode != 'sandbox')) {
+        $mode = $this->configRepository->getMode();
+        if ($mode) {
+            $modes[$mode] = 1;
+        }
+        $options = [];
+        foreach ($modes as $mode => $value) {
             $options[] = [
                 'value' => $mode,
-                'label' => ucfirst($mode),
+                'label' => __(ucfirst($mode)),
             ];
         }
         return $options;
