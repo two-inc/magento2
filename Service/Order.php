@@ -24,6 +24,7 @@ use Magento\Sales\Model\Order\Creditmemo\Item as CreditmemoItem;
 use Magento\Sales\Model\Order\Invoice\Item as InvoiceItem;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use Magento\Store\Model\App\Emulation;
+use Magento\Tax\Helper\Data as TaxData;
 use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 
 /**
@@ -35,6 +36,10 @@ abstract class Order
      * @var ConfigRepository
      */
     public $configRepository;
+    /**
+     * @var TaxData
+     */
+    public $taxData;
     /**
      * @var Url
      */
@@ -61,6 +66,7 @@ abstract class Order
      *
      * @param Image $imageHelper
      * @param ConfigRepository $configRepository
+     * @param TaxData $taxData
      * @param CategoryCollection $categoryCollectionFactory
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param Emulation $appEmulation
@@ -69,6 +75,7 @@ abstract class Order
     public function __construct(
         Image $imageHelper,
         ConfigRepository $configRepository,
+        TaxData $taxData,
         CategoryCollection $categoryCollectionFactory,
         OrderItemRepositoryInterface $orderItemRepository,
         Emulation $appEmulation,
@@ -76,6 +83,7 @@ abstract class Order
     ) {
         $this->imageHelper = $imageHelper;
         $this->configRepository = $configRepository;
+        $this->taxData = $taxData;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->orderItemRepository = $orderItemRepository;
         $this->appEmulation = $appEmulation;
@@ -180,7 +188,7 @@ abstract class Order
                 'discount_amount' => $this->roundAmt($this->getDiscountAmountItem($item)),
                 'tax_rate' => $this->roundAmt(($item->getTaxPercent() / 100)),
                 'tax_class_name' => 'VAT ' . $this->roundAmt($item->getTaxPercent()) . '%',
-                'unit_price' => $this->roundAmt($this->getUnitPriceItem($item)),
+                'unit_price' => $this->roundAmt($this->getUnitPriceItem($item), 5),
                 'quantity' => $item->getQtyOrdered(),
                 'qty_to_ship' => $item->getQtyToShip(), //need for partial shipment
                 'quantity_unit' => $this->configRepository->getWeightUnit((int)$order->getStoreId()),
@@ -225,11 +233,12 @@ abstract class Order
      * Format price
      *
      * @param mixed $amt
+     * @param int $dp
      * @return string
      */
-    public function roundAmt($amt): string
+    public function roundAmt($amt, $dp = 2): string
     {
-        return number_format((float)$amt, 2, '.', '');
+        return number_format((float)$amt, $dp, '.', '');
     }
 
     /**
@@ -238,7 +247,7 @@ abstract class Order
      */
     public function getGrossAmountItem($item): float
     {
-        return (float)($this->getNetAmountItem($item) + $this->getTaxAmountItem($item));
+        return (float)$this->getNetAmountItem($item) + (float)$this->getTaxAmountItem($item);
     }
 
     /**
@@ -247,13 +256,12 @@ abstract class Order
      */
     public function getNetAmountItem($item): float
     {
-        $qty = $item instanceof OrderItem
-            ? $item->getQtyOrdered()
-            : $item->getQty();
-
-        return (float)(
-            ($qty * $this->getUnitPriceItem($item)) - $this->getDiscountAmountItem($item)
-        );
+        $discountAmount = (float)$item->getDiscountAmount();
+        if ($this->taxData->discountTax()) {
+            // May also need to refer to $this->taxData->priceIncludesTax()
+            $discountAmount = $discountAmount - (float)$item->getDiscountTaxCompensationAmount();
+        }
+        return (float)$item->getRowTotal() - $discountAmount;
     }
 
     /**
@@ -262,7 +270,7 @@ abstract class Order
      */
     public function getUnitPriceItem($item): float
     {
-        return $item->getPrice();
+        return (float)$item->getRowTotalInclTax() / (1 + $item->getTaxPercent() / 100) / $item->getQtyOrdered();
     }
 
     /**
@@ -335,7 +343,7 @@ abstract class Order
             'tax_amount' => $this->roundAmt($this->getTaxAmountShipping($order)),
             'discount_amount' => $this->roundAmt($this->getDiscountAmountShipping($order)),
             'tax_rate' => $this->roundAmt($this->getTaxRateShipping($order)),
-            'unit_price' => $this->roundAmt($this->getUnitPriceShipping($order)),
+            'unit_price' => $this->roundAmt($this->getUnitPriceShipping($order), 5),
             'tax_class_name' => 'VAT ' . $this->roundAmt($this->getTaxRateShipping($order) * 100) . '%',
             'quantity' => 1,
             'qty_to_ship' => 1, //need for partial shipment
