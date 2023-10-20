@@ -100,7 +100,6 @@ define([
                 }
                 this.limitedCompanyMode();
                 this.configureFormValidation();
-                this.getTokens();
                 this.addVerifyEvent();
             },
             fillCustomerData: function() {
@@ -468,7 +467,7 @@ define([
                     body: JSON.stringify({ cartId: quote.getQuoteId() }),
                 };
 
-                fetch(URL, OPTIONS)
+                return fetch(URL, OPTIONS)
                 .then((response) => {
                     if (response.ok) {
                         return response.json();
@@ -477,16 +476,23 @@ define([
                     }
                 })
                 .then((json) => {
-                    this.token.delegation = json[0].delegation_token;
-                    this.token.autofill = json[0].autofill_token;
+                    return json[0];
                 })
-                .catch(() => { console.error(new Error("Something went wrong. There's no way to get the tokens.")); });
+                .catch((e) => {
+                    console.error(e);
+                    throw e;
+                });
             },
 
             openIframe() {
                 const URL = config.popup_url + `/soletrader/signup?businessToken=${this.token.delegation}&autofillToken=${this.token.autofill}`;
                 const windowFeatures = 'location=yes,resizable=yes,scrollbars=yes,status=yes, height=805, width=610';
                 window.open(URL, '_blank', windowFeatures);
+            },
+
+            flashErrorMessage () {
+                this.showErrorMessage(true);
+                setTimeout(() => this.showErrorMessage(false), 3000);
             },
 
             limitedCompanyMode() {
@@ -499,8 +505,15 @@ define([
 
             soleTraderMode() {
                 this.clearCompany();
-                this.getCurrentBuyer();
-                this.showSoleTrader(true);
+                this.getTokens()
+                .then((json) => {
+                    console.log(json);
+                    this.token.delegation = json.delegation_token;
+                    this.token.autofill = json.autofill_token;
+                    this.getCurrentBuyer();
+                    this.showSoleTrader(true);
+                })
+                .catch(() => this.flashErrorMessage());
             },
 
             getCurrentBuyer() {
@@ -532,8 +545,7 @@ define([
                     }
                 })
                 .catch(() => {
-                    this.showErrorMessage(true);
-                    setTimeout(() => this.showErrorMessage(false), 3000);
+                    this.flashErrorMessage();
                 });
             },
 
@@ -542,8 +554,7 @@ define([
                     if (event.data === 'ACCEPTED') {
                         this.getCurrentBuyer();
                     } else {
-                        this.showErrorMessage(true);
-                        setTimeout(() => this.showErrorMessage(false), 3000);
+                        this.flashErrorMessage();
                     }
                 });
             }
