@@ -16,8 +16,7 @@ interface RepositoryInterface
     public const CODE = 'two_payment';
 
     /** Endpoints */
-    public const API_LIVE = 'https://api.two.inc';
-    public const API_SANDBOX = 'https://sandbox.api.two.inc';
+    public const URL_TEMPLATE = 'https://%s.two.inc';
 
     /** Payment Group */
     public const XML_PATH_ENABLED = 'payment/two_payment/active';
@@ -196,11 +195,18 @@ interface RepositoryInterface
     public function getSearchHostUrls(): array;
 
     /**
-     * Get checkout host url
+     * Get checkout API url
      *
      * @return string
      */
-    public function getCheckoutHostUrl(): string;
+    public function getCheckoutApiUrl(): string;
+
+    /**
+     * Get checkout page url
+     *
+     * @return string
+     */
+    public function getCheckoutPageUrl(): string;
 
     /**
      * Get Magento version

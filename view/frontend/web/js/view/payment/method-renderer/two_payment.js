@@ -15,6 +15,7 @@ define([
         'mage/translate',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Checkout/js/action/redirect-on-success',
+        'mage/url',
         'Magento_Ui/js/lib/view/utils/async',
         'mage/validation',
         'jquery/jquery-storageapi'
@@ -30,7 +31,8 @@ define([
         uiRegistry,
         additionalValidators,
         $t, fullScreenLoader,
-        redirectOnSuccessAction
+        redirectOnSuccessAction,
+        url
     ) {
         'use strict';
 
@@ -71,8 +73,8 @@ define([
             isPONumberFieldEnabled: config.isPONumberFieldEnabled,
             isTwoLinkEnabled: config.isTwoLinkEnabled,
             supportedCountryCodes: config.supportedCountryCodes,
-            companyName: customerData.get('twoCompanyName'),
-            companyId: customerData.get('twoCompanyId'),
+            companyName: ko.observable(''),
+            companyId: ko.observable(''),
             project: ko.observable(customAttributesObject.project),
             department: ko.observable(customAttributesObject.department),
             orderNote: ko.observable(''),
@@ -83,15 +85,29 @@ define([
             fullTelephoneSelector: 'input#two_telephone_full',
             companyNameSelector: 'input#two_company_name',
             generalErrorMessage: $t('Something went wrong with your request. Please check your data and try again.'),
+            token: {
+                delegation: '',
+                autofill: '',
+            },
+            showErrorMessage: ko.observable(false),
+            showPopupMessage: ko.observable(false),
+            showSoleTrader: ko.observable(false),
+
             initialize: function () {
                 this._super();
                 if (this.showTwoTelephone()) {
                     this.enableInternationalTelephone();
                 }
-                if (this.isCompanyNameAutoCompleteEnabled) {
-                    this.enableCompanyAutoComplete();
-                }
+                this.limitedCompanyMode();
                 this.configureFormValidation();
+                this.addVerifyEvent();
+            },
+            fillCustomerData: function() {
+                const companyName = customerData.get('twoCompanyName')()
+                this.companyName(typeof companyName == 'string' ? companyName : '');
+
+                const companyId = customerData.get('twoCompanyId')()
+                this.companyId(typeof companyId == 'string' ? companyId : '');
             },
             afterPlaceOrder: function () {
                 var url = $.mage.cookies.get(config.redirectUrlCookieCode);
@@ -435,8 +451,112 @@ define([
             },
             clearCompany: function () {
                 jQuery('#two_company_id').val('')
+                jQuery('#two_company_id').prop('disabled', false);
                 jQuery('span.select2').remove();
                 jQuery('#two_company_name').removeClass('select2-hidden-accessible').val('');
+            },
+
+            getTokens() {
+                const URL = url.build('rest/V1/two/get-tokens');
+                const OPTIONS = {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cartId: quote.getQuoteId() }),
+                };
+
+                return fetch(URL, OPTIONS)
+                .then((response) => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error(`Error response from ${URL}.`);
+                    }
+                })
+                .then((json) => {
+                    return json[0];
+                })
+                .catch((e) => {
+                    console.error(e);
+                    throw e;
+                });
+            },
+
+            openIframe() {
+                const URL = config.popup_url + `/soletrader/signup?businessToken=${this.token.delegation}&autofillToken=${this.token.autofill}`;
+                const windowFeatures = 'location=yes,resizable=yes,scrollbars=yes,status=yes, height=805, width=610';
+                window.open(URL, '_blank', windowFeatures);
+            },
+
+            flashErrorMessage () {
+                this.showErrorMessage(true);
+                setTimeout(() => this.showErrorMessage(false), 3000);
+            },
+
+            limitedCompanyMode() {
+                if (this.isCompanyNameAutoCompleteEnabled) {
+                    this.enableCompanyAutoComplete();
+                }
+                this.fillCustomerData();
+                this.showSoleTrader(false);
+            },
+
+            soleTraderMode() {
+                this.clearCompany();
+                this.getTokens()
+                .then((json) => {
+                    console.log(json);
+                    this.token.delegation = json.delegation_token;
+                    this.token.autofill = json.autofill_token;
+                    this.getCurrentBuyer();
+                    this.showSoleTrader(true);
+                })
+                .catch(() => this.flashErrorMessage());
+            },
+
+            getCurrentBuyer() {
+                const URL = config.api_url + '/autofill/v1/buyer/current';
+                const OPTIONS = {
+                    credentials: "include",
+                    headers: {
+                        "two-delegated-authority-token": this.token.autofill,
+                    },
+                };
+
+                fetch(URL, OPTIONS)
+                .then((response) => {
+                    if (response.ok) {
+                        return response.json();
+                    } else if (response.status == 404) {
+                        this.showPopupMessage(true);
+                        return null;
+                    } else {
+                        throw new Error(`Error response from ${URL}.`);
+                    }
+                })
+                .then((json) => {
+                    if (json) {
+                        $('#select2-two_company_name-container').html(json.company_name);
+                        this.companyName(json.company_name);
+                        this.companyId(json.organization_number);
+                        $('#two_company_id').prop('disabled', true);
+                    }
+                })
+                .catch(() => {
+                    this.flashErrorMessage();
+                });
+            },
+
+            addVerifyEvent() {
+                window.addEventListener("message", (event) => {
+                    if (event.data === 'ACCEPTED') {
+                        this.getCurrentBuyer();
+                    } else {
+                        this.flashErrorMessage();
+                    }
+                });
             }
         });
     }
