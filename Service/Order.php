@@ -256,12 +256,7 @@ abstract class Order
      */
     public function getNetAmountItem($item): float
     {
-        $discountAmount = (float)$item->getDiscountAmount();
-        if ($this->taxData->discountTax()) {
-            // May also need to refer to $this->taxData->priceIncludesTax()
-            $discountAmount = $discountAmount - (float)$item->getDiscountTaxCompensationAmount();
-        }
-        return (float)$item->getRowTotal() - $discountAmount;
+        return (float)$item->getRowTotal() - $this->getDiscountAmountItem($item);
     }
 
     /**
@@ -288,7 +283,12 @@ abstract class Order
      */
     public function getDiscountAmountItem($item): float
     {
-        return (float)$item->getDiscountAmount();
+        $discountAmount = (float)$item->getDiscountAmount();
+        if ($this->taxData->discountTax()) {
+            // May also need to refer to $this->taxData->priceIncludesTax()
+            $discountAmount = $discountAmount - (float)$item->getDiscountTaxCompensationAmount();
+        }
+        return $discountAmount;
     }
 
     /**
