@@ -24,7 +24,6 @@ use Magento\Sales\Model\Order\Creditmemo\Item as CreditmemoItem;
 use Magento\Sales\Model\Order\Invoice\Item as InvoiceItem;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use Magento\Store\Model\App\Emulation;
-use Magento\Tax\Helper\Data as TaxData;
 use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 
 /**
@@ -36,10 +35,6 @@ abstract class Order
      * @var ConfigRepository
      */
     public $configRepository;
-    /**
-     * @var TaxData
-     */
-    public $taxData;
     /**
      * @var Url
      */
@@ -66,7 +61,6 @@ abstract class Order
      *
      * @param Image $imageHelper
      * @param ConfigRepository $configRepository
-     * @param TaxData $taxData
      * @param CategoryCollection $categoryCollectionFactory
      * @param OrderItemRepositoryInterface $orderItemRepository
      * @param Emulation $appEmulation
@@ -75,7 +69,6 @@ abstract class Order
     public function __construct(
         Image $imageHelper,
         ConfigRepository $configRepository,
-        TaxData $taxData,
         CategoryCollection $categoryCollectionFactory,
         OrderItemRepositoryInterface $orderItemRepository,
         Emulation $appEmulation,
@@ -83,7 +76,6 @@ abstract class Order
     ) {
         $this->imageHelper = $imageHelper;
         $this->configRepository = $configRepository;
-        $this->taxData = $taxData;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->orderItemRepository = $orderItemRepository;
         $this->appEmulation = $appEmulation;
