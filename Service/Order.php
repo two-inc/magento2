@@ -364,7 +364,7 @@ abstract class Order
      */
     public function getUnitPriceShipping($entity): float
     {
-        return (float)$entity->getShippingInclTax() - $entity->getShippingTaxAmount();
+        return (float)$entity->getShippingAmount();
     }
 
     /**
@@ -373,7 +373,7 @@ abstract class Order
      */
     public function getDiscountAmountShipping($entity): float
     {
-        return (float)$entity->getShippingDiscountAmount();
+        return (float)$entity->getShippingDiscountAmount() - (float)$entity->getShippingDiscountTaxCompensationAmount();
     }
 
     /**
@@ -391,7 +391,7 @@ abstract class Order
      */
     public function getTaxRateShipping($entity): float
     {
-        return round(($entity->getShippingInclTax() / $entity->getShippingAmount()), 6) - 1;
+        return ($entity->getShippingInclTax() / $entity->getShippingAmount()) - 1;
     }
 
     /**
