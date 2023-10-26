@@ -72,10 +72,10 @@ class Adapter
             $this->curlClient->setOption(CURLOPT_SSL_VERIFYHOST, 0);
             $this->curlClient->setOption(CURLOPT_SSL_VERIFYPEER, 0);
             $this->curlClient->setOption(CURLOPT_TIMEOUT, 60);
-            if (isset($payload['two-delegated-authority-token'])) {
+            if (isset($payload['Two-Delegated-Authority-Token'])) {
                 $this->curlClient->addHeader(
-                    "two-delegated-authority-token",
-                    $payload['two-delegated-authority-token']
+                    "Two-Delegated-Authority-Token",
+                    $payload['Two-Delegated-Authority-Token']
                 );
                 $this->curlClient->setOption(CURLOPT_COOKIESESSION, true);
                 $this->curlClient->setOption(CURLOPT_COOKIEFILE, 'cookie.txt');
@@ -98,7 +98,7 @@ class Adapter
                 if ((!$body || $body === '""')) {
                     if (($endpoint == SoleTraderInterface::DELEGATION_TOKEN_ENDPOINT) ||
                         ($endpoint == SoleTraderInterface::AUTOFILL_TOKEN_ENDPOINT)) {
-                        return ['token' => $this->curlClient->getHeaders()['two-delegated-authority-token']];
+                        return ['token' => $this->curlClient->getHeaders()['Two-Delegated-Authority-Token']];
                     }
                     $result = [];
                 } else {

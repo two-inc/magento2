@@ -521,7 +521,7 @@ define([
                 const OPTIONS = {
                     credentials: "include",
                     headers: {
-                        "two-delegated-authority-token": this.token.autofill,
+                        "Two-Delegated-Authority-Token": this.token.autofill,
                     },
                 };
 
