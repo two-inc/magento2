@@ -44,7 +44,7 @@ class Verificationfailed extends Action
     {
         try {
             $order = $this->orderService->getOrderByReference();
-            throw new LocalizedException(__('Verification Failed'));
+            throw new LocalizedException(__('Your order with Two failed verification. The cart will be restored.'));
         } catch (Exception $exception) {
             $this->orderService->restoreQuote();
             if (isset($order)) {
