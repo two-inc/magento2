@@ -95,12 +95,12 @@ class Adapter
             $body = trim($this->curlClient->getBody());
 
             if (in_array($this->curlClient->getStatus(), [200, 201, 202])) {
+                $result = [];
                 if ((!$body || $body === '""')) {
                     if (($endpoint == SoleTraderInterface::DELEGATION_TOKEN_ENDPOINT) ||
                         ($endpoint == SoleTraderInterface::AUTOFILL_TOKEN_ENDPOINT)) {
-                        return ['token' => $this->curlClient->getHeaders()['two-delegated-authority-token']];
+                        $result = $this->curlClient->getHeaders();
                     }
-                    $result = [];
                 } else {
                     $result = json_decode($body, true);
                 }
