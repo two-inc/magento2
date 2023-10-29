@@ -72,16 +72,6 @@ class Adapter
             $this->curlClient->setOption(CURLOPT_SSL_VERIFYHOST, 0);
             $this->curlClient->setOption(CURLOPT_SSL_VERIFYPEER, 0);
             $this->curlClient->setOption(CURLOPT_TIMEOUT, 60);
-            if (isset($payload['two-delegated-authority-token'])) {
-                $this->curlClient->addHeader(
-                    "two-delegated-authority-token",
-                    $payload['two-delegated-authority-token']
-                );
-                $this->curlClient->setOption(CURLOPT_COOKIESESSION, true);
-                $this->curlClient->setOption(CURLOPT_COOKIEFILE, 'cookie.txt');
-                $this->curlClient->setOption(CURLOPT_COOKIEJAR, 'cookie.txt');
-                $payload = [];
-            }
 
             if ($method == "POST" || $method == "PUT") {
                 $params = empty($payload) ? '' : json_encode($payload);

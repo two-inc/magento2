@@ -172,7 +172,7 @@ define([
                 }
             },
             getDeclinedErrorMessage: function (declineReason) {
-                var message = $t('Your order has been declined.'),
+                var message = $t('Your invoice purchase with Two has been declined.'),
                     reason = '';
                 switch (declineReason) {
                     case 'TOO_HIGH_RISK':
@@ -188,7 +188,7 @@ define([
                         reason = $t('Buyer address is invalid.');
                         break;
                     case 'BUYER_INFO_INCONSISTENT':
-                        reason = $t('Buyer info in inconsistent.');
+                        reason = $t('Buyer info is inconsistent.');
                         break;
                     case 'BUYER_AUTHENTICATION_FAILED':
                         reason = $t('Buyer authentication failed.');
@@ -492,7 +492,7 @@ define([
 
             flashErrorMessage () {
                 this.showErrorMessage(true);
-                setTimeout(() => this.showErrorMessage(false), 3000);
+                setTimeout(() => this.showErrorMessage(false), 5000);
             },
 
             limitedCompanyMode() {
