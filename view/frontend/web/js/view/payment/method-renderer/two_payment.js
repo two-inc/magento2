@@ -237,6 +237,9 @@ define([
                     });
                 }
             },
+            getEmail: function () {
+                return quote.guestEmail ? quote.guestEmail : window.checkoutConfig.customerData.email;
+            },
             placeIntentOrder: function () {
                 let totals = quote.getTotals()(),
                     billingAddress = quote.billingAddress(),
@@ -280,7 +283,7 @@ define([
                                 'website': window.BASE_URL
                             },
                             'representative': {
-                                'email': quote.guestEmail ? quote.guestEmail : window.checkoutConfig.customerData.email,
+                                'email': this.getEmail(),
                                 'first_name': billingAddress.firstname,
                                 'last_name': billingAddress.lastname,
                                 'phone_number': this.telephone()
@@ -484,8 +487,34 @@ define([
                 });
             },
 
+            getAutofillData() {
+                const billingAddress = quote.billingAddress();
+                let street = billingAddress?.street
+                if (Array.isArray(street)) {
+                    street = street.filter((s) => s?.trim());
+                    street = street.join(', ');
+                }
+                console.log(billingAddress);
+                const data = {
+                  email: this.getEmail(),
+                  first_name: billingAddress?.firstname,
+                  last_name: billingAddress?.lastname,
+                  company_name: this.companyName(),
+                  phone_number: this.telephone(),
+                  billing_address: {
+                    street: street,
+                    postal_code: billingAddress?.postcode,
+                    city: billingAddress?.city,
+                    region: billingAddress?.region,
+                    country_code: billingAddress?.countryId,
+                  },
+                };
+                return btoa(JSON.stringify(data));
+            },
+
             openIframe() {
-                const URL = config.popup_url + `/soletrader/signup?businessToken=${this.token.delegation}&autofillToken=${this.token.autofill}`;
+                const data = this.getAutofillData();
+                const URL = config.popup_url + `/soletrader/signup?businessToken=${this.token.delegation}&autofillToken=${this.token.autofill}&autofillData=${data}`;
                 const windowFeatures = 'location=yes,resizable=yes,scrollbars=yes,status=yes, height=805, width=610';
                 window.open(URL, '_blank', windowFeatures);
             },
