@@ -83,6 +83,11 @@ define([
                 require([
                     'Two_Gateway/js/select2.min'
                 ], function () {
+                    const clearCompany = () => {
+                        $(self.companySelector).select2('destroy');
+                        $(self.companySelector).attr('type', 'text');
+                        $(this).remove();
+                    };
                     $.async(self.companySelector, function (companyNameField) {
                         var searchLimit = config.companyAutoCompleteConfig.searchLimit;
                         $(companyNameField).select2({
@@ -93,10 +98,10 @@ define([
                                 return markup;
                             },
                             templateResult: function (data) {
-                                return data.id;
+                                return data.html;
                             },
                             templateSelection: function (data) {
-                                return data.id;
+                                return data.name;
                             },
                             ajax: {
                                 dataType: 'json',
@@ -119,12 +124,18 @@ define([
                                         for (var i = 0; i < response.data.items.length; i++) {
                                             var item = response.data.items[i]
                                             items.push({
-                                                id: item.name + ' (' + item.id + ')',
-                                                companyId: item.id,
-                                                companyName: item.name,
+                                                id: item.id,
+                                                name: item.name,
+                                                html: `${item.highlight} [${item.id}]`,
                                                 approved: false
                                             });
                                         }
+                                        items.push({
+                                            id: "",
+                                            name: "",
+                                            html: "<b>I WILL ENTER DETAILS MANUALLY</b>",
+                                            approved: false
+                                        });
                                     }
                                     return {
                                         results: items,
@@ -141,15 +152,20 @@ define([
                             document.querySelector('.select2-search__field').focus();
                         }).on('select2:select', function (e) {
                             var selectedItem = e.params.data;
-                            $('.select2-selection__rendered').html(selectedItem.id);
-                            self.setCompanyData(selectedItem.companyId, selectedItem.companyName);
+                            if (selectedItem.id == '' || selectedItem.name == '') {
+                                self.setCompanyData();
+                                clearCompany();
+                                return
+                            }
+                            $('.select2-selection__rendered').html(selectedItem.name);
+                            self.setCompanyData(selectedItem.id, selectedItem.name);
                             if (self.isAddressAutoCompleteEnabled) {
                                 let countryId = $(self.countrySelector).val();
                                 if (_.indexOf(self.supportedCountryCodes, countryId.toUpperCase()) != -1) {
                                     const addressResponse = $.ajax({
                                         dataType: 'json',
                                         url: config.intentOrderConfig.host + '/v1/' + countryId.toUpperCase()
-                                            + '/company/' + selectedItem.companyId + '/address'
+                                            + '/company/' + selectedItem.id + '/address'
                                     });
                                     addressResponse.done(function (response) {
                                         if (response.address) {
@@ -176,9 +192,7 @@ define([
                         );
                         $('#clear_company_name').on('click', function (e) {
                             e.preventDefault();
-                            $(self.companySelector).select2('destroy');
-                            $(self.companySelector).attr('type', 'text');
-                            $(this).remove();
+                            clearCompany();
                         });
                     });
                 });

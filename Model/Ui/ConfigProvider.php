@@ -57,7 +57,7 @@ class ConfigProvider implements ConfigProviderInterface
         $companyAutoCompleteConfig = [];
         if ($this->configRepository->isCompanyAutocompleteEnabled()) {
             $companyAutoCompleteConfig['searchHosts'] = $this->configRepository->getSearchHostUrls();
-            $companyAutoCompleteConfig['searchLimit'] = 50;
+            $companyAutoCompleteConfig['searchLimit'] = 4;
         }
 
         $intentOrderConfig = [

@@ -330,7 +330,7 @@ define([
                                 return data.html;
                             },
                             templateSelection: function (data) {
-                                return data.text;
+                                return data.name;
                             },
                             ajax: {
                                 dataType: 'json',
@@ -354,13 +354,18 @@ define([
                                         for (var i = 0; i < response.data.items.length; i++) {
                                             var item = response.data.items[i]
                                             items.push({
-                                                id: item.name,
-                                                text: item.name,
-                                                html: item.highlight + ' (' + item.id + ')',
-                                                companyId: item.id,
+                                                id: item.id,
+                                                name: item.name,
+                                                html: `${item.highlight} [${item.id}]`,
                                                 approved: false
                                             });
                                         }
+                                        items.push({
+                                            id: "",
+                                            name: "",
+                                            html: "<b>I WILL ENTER DETAILS MANUALLY</b>",
+                                            approved: false
+                                        });
                                     }
                                     return {
                                         results: items,
@@ -375,10 +380,14 @@ define([
                             }
                         }).on('select2:select', function (e) {
                             var selectedItem = e.params.data;
-                            $('#select2-two_company_name-container').html(selectedItem.text);
-                            self.companyName(selectedItem.text);
-                            self.companyId(selectedItem.companyId);
-                            $('#two_company_id').prop('disabled', true);
+                            $('#select2-two_company_name-container').html(selectedItem.name);
+                            self.companyName(selectedItem.name);
+                            self.companyId(selectedItem.id);
+                            if (selectedItem.id == '' || selectedItem.name == '') {
+                                self.clearCompany();
+                            } else {
+                                $('#two_company_id').prop('disabled', true);
+                            }
                         });
                         $('.select2-selection__rendered').text(self.companyName());
                     });
