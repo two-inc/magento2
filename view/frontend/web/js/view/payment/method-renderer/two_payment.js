@@ -489,24 +489,22 @@ define([
 
             getAutofillData() {
                 const billingAddress = quote.billingAddress();
-                let street = billingAddress?.street
-                if (Array.isArray(street)) {
-                    street = street.filter((s) => s?.trim());
-                    street = street.join(', ');
-                }
-                console.log(billingAddress);
+                const _street = billingAddress.street.filter((s) => s).join(", ").split(" ");
+                const building = _street[0].replace(',', '');
+                const street = _street.slice(1, _street.length).join(" ");
                 const data = {
                   email: this.getEmail(),
-                  first_name: billingAddress?.firstname,
-                  last_name: billingAddress?.lastname,
+                  first_name: billingAddress.firstname,
+                  last_name: billingAddress.lastname,
                   company_name: this.companyName(),
                   phone_number: this.telephone(),
                   billing_address: {
+                    building: building,
                     street: street,
-                    postal_code: billingAddress?.postcode,
-                    city: billingAddress?.city,
-                    region: billingAddress?.region,
-                    country_code: billingAddress?.countryId,
+                    postal_code: billingAddress.postcode,
+                    city: billingAddress.city,
+                    region: billingAddress.region,
+                    country_code: billingAddress.countryId,
                   },
                 };
                 return btoa(JSON.stringify(data));

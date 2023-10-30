@@ -415,7 +415,7 @@ abstract class Order
             'postal_code' => $address->getPostcode(),
             'region' => $address->getRegion() != '' ? $address->getRegion() : '',
             'street_address' => $address->getStreet()[0]
-                . (isset($address->getStreet()[1]) ? $address->getStreet()[1] : ''),
+                . (isset($address->getStreet()[1]) ? ', ' . $address->getStreet()[1] : ''),
         ];
     }
 
