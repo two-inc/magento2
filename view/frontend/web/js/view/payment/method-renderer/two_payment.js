@@ -89,7 +89,7 @@ define([
                 delegation: '',
                 autofill: '',
             },
-            showErrorMessage: ko.observable(false),
+            showSoleTraderErrorMessage: ko.observable(false),
             showPopupMessage: ko.observable(false),
             showSoleTrader: ko.observable(false),
 
@@ -98,7 +98,7 @@ define([
                 if (this.showTwoTelephone()) {
                     this.enableInternationalTelephone();
                 }
-                this.limitedCompanyMode();
+                this.registeredOrganisationMode();
                 this.configureFormValidation();
                 this.addVerifyEvent();
             },
@@ -490,12 +490,12 @@ define([
                 window.open(URL, '_blank', windowFeatures);
             },
 
-            flashErrorMessage () {
-                this.showErrorMessage(true);
-                setTimeout(() => this.showErrorMessage(false), 5000);
+            flashSoleTraderErrorMessage () {
+                this.showSoleTraderErrorMessage(true);
+                setTimeout(() => this.showSoleTraderErrorMessage(false), 5000);
             },
 
-            limitedCompanyMode() {
+            registeredOrganisationMode() {
                 if (this.isCompanyNameAutoCompleteEnabled) {
                     this.enableCompanyAutoComplete();
                 }
@@ -513,7 +513,7 @@ define([
                     this.getCurrentBuyer();
                     this.showSoleTrader(true);
                 })
-                .catch(() => this.flashErrorMessage());
+                .catch(() => this.flashSoleTraderErrorMessage());
             },
 
             getCurrentBuyer() {
@@ -545,7 +545,7 @@ define([
                     }
                 })
                 .catch(() => {
-                    this.flashErrorMessage();
+                    this.flashSoleTraderErrorMessage();
                 });
             },
 
@@ -554,7 +554,7 @@ define([
                     if (event.data === 'ACCEPTED') {
                         this.getCurrentBuyer();
                     } else {
-                        this.flashErrorMessage();
+                        this.flashSoleTraderErrorMessage();
                     }
                 });
             }

@@ -18,7 +18,7 @@
         <!-- ko ifnot: showSoleTrader -->
         <div class="mode_selector" data-element="popup-message">
             <span class="mode_item" data-element="selected-element">
-                <!-- ko i18n: 'Limited Company' --><!-- /ko -->
+                <!-- ko i18n: 'Registered Organisation' --><!-- /ko -->
             </span>
             <span class="mode_item" data-element="click-element" data-bind="event: { click: () => soleTraderMode() }">
                 <!-- ko i18n: 'Sole Trader' --><!-- /ko -->
@@ -28,8 +28,8 @@
 
         <!-- ko if: showSoleTrader -->
         <div class="mode_selector" data-element="popup-message">
-            <span class="mode_item" data-element="click-element" data-bind="event: { click: () => limitedCompanyMode() }">
-                <!-- ko i18n: 'Limited Company' --><!-- /ko -->
+            <span class="mode_item" data-element="click-element" data-bind="event: { click: () => registeredOrganisationMode() }">
+                <!-- ko i18n: 'Registered Organisation' --><!-- /ko -->
             </span>
             <span class="mode_item" data-element="selected-element">
 	        <!-- ko i18n: 'Sole Trader' --><!-- /ko -->
@@ -52,7 +52,7 @@
         <!-- /ko -->
         <!-- /ko -->
 
-        <!-- ko if: showErrorMessage -->
+        <!-- ko if: showSoleTraderErrorMessage -->
         <div class="error message" data-element="error-message">
             <!-- ko i18n: 'Something went wrong with your request to Two. Your sole trader account could not be verified.' --><!-- /ko -->
         </div>
