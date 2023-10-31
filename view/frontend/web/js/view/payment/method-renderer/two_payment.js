@@ -558,16 +558,8 @@ define([
                 fetch(URL, OPTIONS)
                 .then((response) => {
                     if (response.ok) {
-                        const body = response.json();
-                        if (body.email == this.getEmail()) {
-                            // Only return body if email matches
-                            return body;
-                        } else {
-                            this.showPopupMessage(true);
-                            return null;
-                        }
+                        return response.json();
                     } else if (response.status == 404) {
-                        this.showPopupMessage(true);
                         return null;
                     } else {
                         throw new Error(`Error response from ${URL}.`);
@@ -575,10 +567,18 @@ define([
                 })
                 .then((json) => {
                     if (json) {
-                        $('#select2-two_company_name-container').html(json.company_name);
-                        this.companyName(json.company_name);
-                        this.companyId(json.organization_number);
-                        $('#two_company_id').prop('disabled', true);
+                        const email = this.getEmail();
+                        if (json.email == email) {
+                            // Only autofill if email matches
+                            $('#select2-two_company_name-container').html(json.company_name);
+                            this.companyName(json.company_name);
+                            this.companyId(json.organization_number);
+                            $('#two_company_id').prop('disabled', true);
+                        } else {
+                            this.showPopupMessage(true);
+                        }
+                    } else {
+                        this.showPopupMessage(true);
                     }
                 })
                 .catch(() => {
