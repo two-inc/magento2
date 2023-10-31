@@ -558,7 +558,14 @@ define([
                 fetch(URL, OPTIONS)
                 .then((response) => {
                     if (response.ok) {
-                        return response.json();
+                        const body = response.json();
+                        if (body.email == this.getEmail()) {
+                            // Only return body if email matches
+                            return body;
+                        } else {
+                            this.showPopupMessage(true);
+                            return null;
+                        }
                     } else if (response.status == 404) {
                         this.showPopupMessage(true);
                         return null;
