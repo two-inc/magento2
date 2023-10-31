@@ -176,6 +176,7 @@ define([
                         );
                         $('#clear_company_name').on('click', function (e) {
                             e.preventDefault();
+                            self.setCompanyData();
                             $(self.companySelector).select2('destroy');
                             $(self.companySelector).attr('type', 'text');
                             $(this).remove();

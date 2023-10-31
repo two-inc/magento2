@@ -103,8 +103,10 @@ define([
                 this.addVerifyEvent();
             },
             fillCustomerData: function() {
-                const companyName = customerData.get('twoCompanyName')()
-                this.companyName(typeof companyName == 'string' ? companyName : '');
+                const companyName = customerData.get('twoCompanyName')();
+                const billingAddress = quote.billingAddress();
+                const fallbackCompanyName = typeof billingAddress.company == 'string' ? billingAddress.company : '';
+                this.companyName(typeof companyName == 'string' && companyName ? companyName : fallbackCompanyName);
 
                 const companyId = customerData.get('twoCompanyId')()
                 this.companyId(typeof companyId == 'string' ? companyId : '');
@@ -456,7 +458,7 @@ define([
                 jQuery('#two_company_id').val('')
                 jQuery('#two_company_id').prop('disabled', false);
                 jQuery('span.select2').remove();
-                jQuery('#two_company_name').removeClass('select2-hidden-accessible').val('');
+                jQuery('#two_company_name').removeClass('select2-hidden-accessible').val(this.companyName());
             },
 
             getTokens() {
@@ -489,6 +491,7 @@ define([
 
             getAutofillData() {
                 const billingAddress = quote.billingAddress();
+                console.log(billingAddress);
                 const _street = billingAddress.street.filter((s) => s).join(", ").split(" ");
                 const building = _street[0].replace(',', '');
                 const street = _street.slice(1, _street.length).join(" ");
