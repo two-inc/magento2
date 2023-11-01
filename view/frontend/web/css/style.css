@@ -2,7 +2,7 @@
     --color-gray89: #e3e3e3;
     --color-brownie-vanilla: #736963;
     --color-white: #fff;
-    --color-color-blue2: #006bb4;
+    --color-color-blue2: #3043d1;
 }
 
 #two_gateway_form {
@@ -32,13 +32,18 @@ input#two_payment:before {
     border-radius: 8px;
 }
 
-button#clear_company_name {
-    margin-bottom: 20px;
+.enter_details_manually {
+    cursor: pointer;
+    color: var(--color-color-blue2);
+    padding: 5px;
 }
 
-.company-search-additional button#clear_company_name {
-    margin-bottom: 0;
-    margin-top: 20px;
+.search_for_company {
+    text-align: right;
+    cursor: pointer;
+    padding-top: 5px;
+    color: var(--color-color-blue2);
+    right: 4px;
 }
 
 .what_is_two {

@@ -85,6 +85,10 @@ define([
             fullTelephoneSelector: 'input#two_telephone_full',
             companyNameSelector: 'input#two_company_name',
             generalErrorMessage: $t('Something went wrong with your request. Please check your data and try again.'),
+            enterDetailsManuallyText: $t('Enter details manually'),
+            enterDetailsManuallyButton: '#billing_enter_details_manually',
+            searchForCompanyText: $t('Search for company'),
+            searchForCompanyButton: '#billing_search_for_company',
             token: {
                 delegation: '',
                 autofill: '',
@@ -375,6 +379,19 @@ define([
                                     return {}
                                 }
                             }
+                        }).on('select2:open', function () {
+                            if ($(self.enterDetailsManuallyButton).length == 0) {
+                                $('.select2-results').parent().append(
+                                    `<div id="billing_enter_details_manually" class="enter_details_manually" title="${self.enterDetailsManuallyText}">` +
+                                    `<span>${self.enterDetailsManuallyText}</span>` +
+                                    '</div>'
+                                );
+                                $(self.enterDetailsManuallyButton).on('click', function(e) {
+                                    self.clearCompany();
+                                    $(self.searchForCompanyButton).show();
+                                });
+                            }
+                            document.querySelector('.select2-search__field').focus();
                         }).on('select2:select', function (e) {
                             var selectedItem = e.params.data;
                             $('#select2-two_company_name-container').html(selectedItem.text);
@@ -383,6 +400,18 @@ define([
                             $('#two_company_id').prop('disabled', true);
                         });
                         $('.select2-selection__rendered').text(self.companyName());
+                        if ($(self.searchForCompanyButton).length == 0) {
+                            $(self.companyNameSelector).closest('.field').append(
+                                `<div id="billing_search_for_company" class="search_for_company" title="${self.searchForCompanyText}">` +
+                                `<span>${self.searchForCompanyText}</span>` +
+                                '</div>'
+                            );
+                            $(self.searchForCompanyButton).on('click', function(e) {
+                                self.enableCompanyAutoComplete();
+                                $(self.searchForCompanyButton).hide();
+                            });
+                        }
+                        $(self.searchForCompanyButton).hide();
                     });
                 });
             },
@@ -455,10 +484,14 @@ define([
                 });
             },
             clearCompany: function () {
-                jQuery('#two_company_id').val('')
-                jQuery('#two_company_id').prop('disabled', false);
-                jQuery('span.select2').remove();
-                jQuery('#two_company_name').removeClass('select2-hidden-accessible').val(this.companyName());
+                $('#two_company_id').val('')
+                $('#two_company_id').prop('disabled', false);
+                $('#two_company_name').val(this.companyName());
+                const companyNameSelector = $(this.companyNameSelector)
+                if (companyNameSelector.data('select2')) {
+                    companyNameSelector.select2('destroy');
+                    companyNameSelector.attr('type', 'text');
+                }
             },
 
             getTokens() {
@@ -542,6 +575,7 @@ define([
                     this.token.autofill = json.autofill_token;
                     this.getCurrentBuyer();
                     this.showSoleTrader(true);
+                    $(this.searchForCompanyButton).hide()
                 })
                 .catch(() => this.flashSoleTraderErrorMessage());
             },

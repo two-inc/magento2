@@ -93,17 +93,6 @@
                         />
                     </div>
                 </div>
-                <!-- ko if: isCompanyNameAutoCompleteEnabled -->
-                <!-- ko ifnot: showSoleTrader -->
-                <button data-role="clear_company_name"
-                        id="clear_company_name"
-                        data-bind="
-                        attr: {title: $t('I cannot find my company')},
-                        click: clearCompany">
-                    <span data-bind="i18n: 'I cannot find my company'"></span>
-                </button>
-                <!-- /ko -->
-                <!-- /ko -->
                 <div class="field field-text required">
                     <label for="two_company_id" class="label">
                         <span><!-- ko i18n: 'Company ID'--><!-- /ko --></span>
