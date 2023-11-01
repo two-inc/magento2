@@ -275,7 +275,7 @@ abstract class Order
      */
     public function getDiscountAmountItem($item): float
     {
-        return (float)$item->getDiscountAmount() - (float)$item->getDiscountTaxCompensationAmount();
+        return abs((float)$item->getDiscountAmount()) - abs((float)$item->getDiscountTaxCompensationAmount());
     }
 
     /**
