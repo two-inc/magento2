@@ -478,10 +478,10 @@ define([
                  * Note 2! "iti" will be initialized correctly when only 1 telephone is initialized at the web page
                  * Note 3! this logic can't be replaced with "iti.hiddenInput" because it doesn't work as expected
                  */
-                let iti = window.intlTelInputGlobals.instances[0],
-                    countryCode = iti.getSelectedCountryData().dialCode,
-                    telephoneNumber = $(this.telephoneSelector).val();
-                $(this.fullTelephoneSelector).val('+' + countryCode + telephoneNumber);
+                let iti = window.intlTelInputGlobals.instances[0];
+                if (iti) {
+                    $(this.fullTelephoneSelector).val(iti.getNumber(0));
+                }
             },
             configureFormValidation: function () {
                 $.async(this.formSelector, function (form) {
