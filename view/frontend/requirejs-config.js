@@ -1,6 +1,6 @@
 var config = {
     paths: {
-        "intlTelInput": 'Two_Gateway/js/international-telephone/intlTelInput',
+        "intlTelInput": 'Two_Gateway/intl-tel-input-18.2.1/js/intlTelInput.min',
     },
     shim: {
         'intlTelInput': {

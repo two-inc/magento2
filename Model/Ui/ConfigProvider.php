@@ -51,7 +51,7 @@ class ConfigProvider implements ConfigProviderInterface
         $internationalTelephoneConfig = [];
         if ($this->configRepository->isInternationalTelephoneEnabled()) {
             $internationalTelephoneConfig['utilsScript'] =
-                $this->assetRepository->getUrl('Two_Gateway::js/international-telephone/utils.js');
+                $this->assetRepository->getUrl('Two_Gateway::intl-tel-input-18.2.1/js/utils.js');
         }
 
         $companyAutoCompleteConfig = [];

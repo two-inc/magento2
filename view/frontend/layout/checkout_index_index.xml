@@ -10,7 +10,7 @@
     <head>
         <css src="Two_Gateway::css/style.css"/>
         <css src="Two_Gateway::css/select2.min.css"/>
-        <css src="Two_Gateway::css/intlTelInput.css"/>
+	<css src="Two_Gateway::intl-tel-input-18.2.1/css/intlTelInput.min.css"/>
     </head>
     <body>
         <referenceBlock name="checkout.root">
