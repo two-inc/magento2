@@ -25,6 +25,7 @@ define([
             countrySelector: '#shipping-new-address-form select[name="country_id"]',
             companySelector: '#shipping-new-address-form input[name="company"]',
             telephoneSelector: 'input[name="custom_attributes[two_telephone]"]',
+            shippingTelephoneSelector: '#shipping-new-address-form input[name="telephone"]',
             enterDetailsManuallyText: $t('Enter details manually'),
             enterDetailsManuallyButton: '#shipping_enter_details_manually',
             searchForCompanyText: $t('Search for company'),
@@ -50,6 +51,13 @@ define([
                     && configuredCheckoutStep == stepNavigator.getActiveItemIndex()) {
                     this.enableInternationalTelephone();
                 }
+                const setTwoTelephone = (e) => { console.log(e.target.value); customerData.set('twoTelephone', e.target.value); };
+                $.async(self.shippingTelephoneSelector, function (telephoneSelector) {
+		    console.log(telephoneSelector);
+		    console.log($(telephoneSelector));
+                    $(telephoneSelector).on('change', setTwoTelephone);
+                    $(telephoneSelector).on('keyup', setTwoTelephone);
+                });
             },
             toggleCompanyVisibility: function () {
                 let field = $(this.companySelector).closest('.field');

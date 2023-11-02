@@ -107,13 +107,28 @@ define([
                 this.addVerifyEvent();
             },
             fillCustomerData: function() {
-                const companyName = customerData.get('twoCompanyName')();
-                const billingAddress = quote.billingAddress();
-                const fallbackCompanyName = typeof billingAddress.company == 'string' ? billingAddress.company : '';
-                this.companyName(typeof companyName == 'string' && companyName ? companyName : fallbackCompanyName);
-
-                const companyId = customerData.get('twoCompanyId')()
-                this.companyId(typeof companyId == 'string' ? companyId : '');
+                customerData.get('twoCompanyName').subscribe((companyName) => {
+                    const billingAddress = quote.billingAddress(),
+                        fallbackCompanyName = typeof billingAddress.company == 'string' ? billingAddress.company : '';
+		    companyName = typeof companyName == 'string' && companyName ? companyName : fallbackCompanyName;
+                    console.log(companyName);
+                    this.companyName(companyName);
+                });
+                customerData.get('twoCompanyId').subscribe((companyId) => {
+                    companyId = typeof companyId == 'string' ? companyId : ''
+                    console.log(companyId);
+                    this.companyId(companyId);
+                });
+		window.shippingAddress = quote.shippingAddress;
+                customerData.get('twoTelephone').subscribe((telephone) => {
+		    telephone = typeof telephone == 'string' ? telephone : ''
+                    console.log(telephone);
+                    this.telephone(telephone);
+		    if (this.isInternationalTelephoneEnabled) {
+		        $(this.telephoneSelector).val(telephone);
+			this.setFullTelephone();
+                    }
+                });
             },
             afterPlaceOrder: function () {
                 var url = $.mage.cookies.get(config.redirectUrlCookieCode);
