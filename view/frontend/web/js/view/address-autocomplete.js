@@ -161,7 +161,7 @@ define([
                             self.setCompanyData(selectedItem.companyId, selectedItem.companyName);
                             if (self.isAddressAutoCompleteEnabled) {
                                 let countryId = $(self.countrySelector).val();
-                                if (_.indexOf(self.supportedCountryCodes, countryId.toUpperCase()) != -1) {
+                                if (_.indexOf(self.supportedCountryCodes, countryId.toLowerCase()) != -1) {
                                     const addressResponse = $.ajax({
                                         dataType: 'json',
                                         url: config.intentOrderConfig.host + '/v1/' + countryId.toUpperCase()

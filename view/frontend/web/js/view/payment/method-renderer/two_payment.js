@@ -99,7 +99,7 @@ define([
 
             initialize: function () {
                 this._super();
-                if (this.showTwoTelephone()) {
+                if (this.isInternationalTelephoneEnabled) {
                     this.enableInternationalTelephone();
                 }
                 this.registeredOrganisationMode();
@@ -148,7 +148,7 @@ define([
                 let progressBar = uiRegistry.get('index = progressBar'),
                     configuredCheckoutStep = _.findIndex(progressBar.steps(), {code: this.showTelephone}),
                     currentCheckoutStep = stepNavigator.getActiveItemIndex();
-                return (this.isInternationalTelephoneEnabled && configuredCheckoutStep == currentCheckoutStep);
+                return (configuredCheckoutStep == currentCheckoutStep);
             },
             placeOrderBackend: function () {
                 var self = this;
@@ -421,16 +421,14 @@ define([
                     'intlTelInput'
                 ], function () {
                     $.async(self.telephoneSelector, function (telephoneField) {
-                        let preferredCountries = self.supportedCountryCodes,
-                            billingAddress = quote.billingAddress(),
-                            defaultCountry = billingAddress
+                        let billingAddress = quote.billingAddress(),
+                            initialCountry = billingAddress
                                 ? billingAddress.countryId.toLowerCase()
                                 : quote.shippingAddress().countryId.toLowerCase();
-                        preferredCountries.push(defaultCountry);
-                        $(telephoneField).intlTelInput({
-                            preferredCountries: _.uniq(preferredCountries),
+                        window.intlTelInput(telephoneField, {
+                            preferredCountries: _.uniq([initialCountry, ...self.supportedCountryCodes]),
                             utilsScript: config.internationalTelephoneConfig.utilsScript,
-                            initialCountry: defaultCountry,
+                            initialCountry: initialCountry,
                             separateDialCode: true
                         });
                         $(telephoneField).on('keyup', function () {

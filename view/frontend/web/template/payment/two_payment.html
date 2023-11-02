@@ -111,8 +111,8 @@
                         />
                     </div>
                 </div>
-                <!-- ko if: showTwoTelephone() -->
-                <div class="field field-text required">
+                <!-- ko if: isInternationalTelephoneEnabled -->
+                <div class="field field-text required" data-bind="style: {display: showTwoTelephone() ? 'block': 'none'}">
                     <label for="two_telephone" class="label">
                     <span>
                         <!-- ko i18n: 'Phone Number'--><!-- /ko -->
