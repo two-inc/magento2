@@ -84,6 +84,7 @@ define([
             telephoneSelector: 'input#two_telephone',
             fullTelephoneSelector: 'input#two_telephone_full',
             companyNameSelector: 'input#two_company_name',
+            companyIdSelector: 'input#two_company_id',
             generalErrorMessage: $t('Something went wrong with your request. Please check your data and try again.'),
             enterDetailsManuallyText: $t('Enter details manually'),
             enterDetailsManuallyButton: '#billing_enter_details_manually',
@@ -107,28 +108,33 @@ define([
                 this.addVerifyEvent();
             },
             fillCustomerData: function() {
-                customerData.get('twoCompanyName').subscribe((companyName) => {
+                const fillCompanyName = (companyName) => {
                     const billingAddress = quote.billingAddress(),
                         fallbackCompanyName = typeof billingAddress.company == 'string' ? billingAddress.company : '';
-		    companyName = typeof companyName == 'string' && companyName ? companyName : fallbackCompanyName;
-                    console.log(companyName);
+                    companyName = typeof companyName == 'string' && companyName ? companyName : fallbackCompanyName;
                     this.companyName(companyName);
-                });
-                customerData.get('twoCompanyId').subscribe((companyId) => {
+                    $(this.companyNameSelector).val(companyName);
+                }
+                customerData.get('twoCompanyName').subscribe(fillCompanyName);
+                fillCompanyName(customerData.get('twoCompanyName')())
+                const fillCompanyId = (companyId) => {
                     companyId = typeof companyId == 'string' ? companyId : ''
-                    console.log(companyId);
                     this.companyId(companyId);
-                });
-		window.shippingAddress = quote.shippingAddress;
-                customerData.get('twoTelephone').subscribe((telephone) => {
-		    telephone = typeof telephone == 'string' ? telephone : ''
-                    console.log(telephone);
+                    $(this.companyIdSelector).val(companyId);
+                }
+                customerData.get('twoCompanyId').subscribe(fillCompanyId);
+                fillCompanyId(customerData.get('twoCompanyId')());
+
+                const fillTelephone = (telephone) => {
+                    telephone = typeof telephone == 'string' ? telephone : ''
                     this.telephone(telephone);
-		    if (this.isInternationalTelephoneEnabled) {
-		        $(this.telephoneSelector).val(telephone);
-			this.setFullTelephone();
+                    if (this.isInternationalTelephoneEnabled) {
+                        $(this.telephoneSelector).val(telephone);
+                        this.setFullTelephone();
                     }
-                });
+                }
+                customerData.get('twoTelephone').subscribe(fillTelephone);
+                fillTelephone(customerData.get('twoTelephone')());
             },
             afterPlaceOrder: function () {
                 var url = $.mage.cookies.get(config.redirectUrlCookieCode);
@@ -339,6 +345,9 @@ define([
                 require([
                     'Two_Gateway/js/select2.min'
                 ], function () {
+                    $.async(self.companyIdSelector, function (companyIdField) {
+                        $(companyIdField).prop('disabled', true);
+                    })
                     $.async(self.companyNameSelector, function (companyNameField) {
                         var searchLimit = config.companyAutoCompleteConfig.searchLimit;
                         $(companyNameField).select2({
@@ -412,7 +421,7 @@ define([
                             $('#select2-two_company_name-container').html(selectedItem.text);
                             self.companyName(selectedItem.text);
                             self.companyId(selectedItem.companyId);
-                            $('#two_company_id').prop('disabled', true);
+                            $(self.companyIdSelector).prop('disabled', true);
                         });
                         $('.select2-selection__rendered').text(self.companyName());
                         if ($(self.searchForCompanyButton).length == 0) {
@@ -497,10 +506,11 @@ define([
                 });
             },
             clearCompany: function () {
-                $('#two_company_id').val('')
-                $('#two_company_id').prop('disabled', false);
-                $('#two_company_name').val(this.companyName());
+                const companyIdSelector = $(this.companyIdSelector)
+                companyIdSelector.val('')
+                companyIdSelector.prop('disabled', false);
                 const companyNameSelector = $(this.companyNameSelector)
+                companyNameSelector.val(this.companyName());
                 if (companyNameSelector.data('select2')) {
                     companyNameSelector.select2('destroy');
                     companyNameSelector.attr('type', 'text');
@@ -537,7 +547,6 @@ define([
 
             getAutofillData() {
                 const billingAddress = quote.billingAddress();
-                console.log(billingAddress);
                 const _street = billingAddress.street.filter((s) => s).join(", ").split(" ");
                 const building = _street[0].replace(',', '');
                 const street = _street.slice(1, _street.length).join(" ");
@@ -620,7 +629,7 @@ define([
                             $('#select2-two_company_name-container').html(json.company_name);
                             this.companyName(json.company_name);
                             this.companyId(json.organization_number);
-                            $('#two_company_id').prop('disabled', true);
+                            $(this.companyIdSelector).prop('disabled', true);
                         } else {
                             this.showPopupMessage(true);
                         }

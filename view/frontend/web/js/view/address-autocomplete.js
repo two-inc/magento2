@@ -51,12 +51,9 @@ define([
                     && configuredCheckoutStep == stepNavigator.getActiveItemIndex()) {
                     this.enableInternationalTelephone();
                 }
-                const setTwoTelephone = (e) => { console.log(e.target.value); customerData.set('twoTelephone', e.target.value); };
+                const setTwoTelephone = (e) => customerData.set('twoTelephone', e.target.value);
                 $.async(self.shippingTelephoneSelector, function (telephoneSelector) {
-		    console.log(telephoneSelector);
-		    console.log($(telephoneSelector));
-                    $(telephoneSelector).on('change', setTwoTelephone);
-                    $(telephoneSelector).on('keyup', setTwoTelephone);
+                    $(telephoneSelector).on('change keyup', setTwoTelephone);
                 });
             },
             toggleCompanyVisibility: function () {
