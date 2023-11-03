@@ -80,9 +80,9 @@ define([
             orderNote: ko.observable(''),
             poNumber: ko.observable(''),
             telephone: ko.observable(telephone),
+            iti: null,
             formSelector: 'form#two_gateway_form',
             telephoneSelector: 'input#two_telephone',
-            fullTelephoneSelector: 'input#two_telephone_full',
             companyNameSelector: 'input#two_company_name',
             companyIdSelector: 'input#two_company_id',
             generalErrorMessage: $t('Something went wrong with your request. Please check your data and try again.'),
@@ -117,6 +117,7 @@ define([
                 }
                 customerData.get('twoCompanyName').subscribe(fillCompanyName);
                 fillCompanyName(customerData.get('twoCompanyName')())
+
                 const fillCompanyId = (companyId) => {
                     companyId = typeof companyId == 'string' ? companyId : ''
                     this.companyId(companyId);
@@ -127,14 +128,18 @@ define([
 
                 const fillTelephone = (telephone) => {
                     telephone = typeof telephone == 'string' ? telephone : ''
-                    this.telephone(telephone);
-                    if (this.isInternationalTelephoneEnabled) {
-                        $(this.telephoneSelector).val(telephone);
-                        this.setFullTelephone();
-                    }
+                    $(this.telephoneSelector).val(telephone);
+                    $(this.telephoneSelector).trigger('change');
                 }
                 customerData.get('twoTelephone').subscribe(fillTelephone);
                 fillTelephone(customerData.get('twoTelephone')());
+
+                const fillCountryCode = (countryCode) => {
+                    countryCode = typeof countryCode == 'string' ? countryCode : ''
+                    this.countryCode(countryCode);
+                }
+                customerData.get('twoCountryCode').subscribe(fillCountryCode);
+                fillCountryCode(customerData.get('twoCountryCode')());
             },
             afterPlaceOrder: function () {
                 var url = $.mage.cookies.get(config.redirectUrlCookieCode);
@@ -336,7 +341,7 @@ define([
                         department: this.department(),
                         orderNote: this.orderNote(),
                         poNumber: this.poNumber(),
-                        telephone: $(this.fullTelephoneSelector).val() // checkout-data -> shippingAddressFromData -> custom_attributes -> two_telephone_full
+                        telephone: this.telephone() // checkout-data -> shippingAddressFromData -> custom_attributes -> two_telephone_full
                     }
                 };
             },
@@ -449,38 +454,36 @@ define([
                             initialCountry = billingAddress
                                 ? billingAddress.countryId.toLowerCase()
                                 : quote.shippingAddress().countryId.toLowerCase();
-                        window.intlTelInput(telephoneField, {
+                        self.iti = window.intlTelInput(telephoneField, {
                             preferredCountries: _.uniq([initialCountry, ...self.supportedCountryCodes]),
                             utilsScript: config.internationalTelephoneConfig.utilsScript,
                             initialCountry: initialCountry,
                             separateDialCode: true
                         });
-                        $(telephoneField).on('keyup', function () {
-                            self.removeTelephoneLeadingZero();
-                        });
-                        self.removeTelephoneLeadingZero();
                         $(telephoneField).on('change countrychange', function () {
                             self.setFullTelephone();
+                        });
+                        self.countryCode.subscribe((countryCode) => {
+                            self.setFullTelephone(countryCode);
                         });
                         self.setFullTelephone();
                     });
                 });
             },
-            removeTelephoneLeadingZero: function () {
-                let telephone = $(this.telephoneSelector).val();
-                telephone = telephone.replace(/^0+/, '');
-                $(this.telephoneSelector).val(telephone);
-            },
-            setFullTelephone: function () {
+            setFullTelephone: function (countryCode = null) {
                 /**
                  * Note 1! Origin method "getInstance" doesn't work as described in:
                  *         https://github.com/jackocnr/intl-tel-input#static-methods
                  * Note 2! "iti" will be initialized correctly when only 1 telephone is initialized at the web page
                  * Note 3! this logic can't be replaced with "iti.hiddenInput" because it doesn't work as expected
                  */
-                let iti = window.intlTelInputGlobals.instances[0];
-                if (iti) {
-                    $(this.fullTelephoneSelector).val(iti.getNumber(0));
+                if (this.iti) {
+                    if (countryCode) {
+                        this.iti.setCountry(countryCode);
+                    }
+                    // window.intlTelInputUtils.numberFormat.E164
+                    const E164 = 0;
+                    this.telephone(this.iti.getNumber(E164));
                 }
             },
             configureFormValidation: function () {

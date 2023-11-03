@@ -57,8 +57,10 @@ define([
                 });
             },
             toggleCompanyVisibility: function () {
+                const countryCode = $(this.countrySelector).val().toLowerCase();
+                customerData.set('twoCountryCode', countryCode);
                 let field = $(this.companySelector).closest('.field');
-                if ($(this.countrySelector).val().toLowerCase() in config.companyAutoCompleteConfig.searchHosts) {
+                if (countryCode in config.companyAutoCompleteConfig.searchHosts) {
                     field.show();
                 } else {
                     field.hide();
