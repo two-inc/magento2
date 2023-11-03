@@ -44,8 +44,8 @@ class SoleTrader implements SoleTraderInterface
             self::DELEGATION_TOKEN_ENDPOINT,
             ['create_proposal' => true, 'read_current_business' => true]
         );
-        if (isset($delegateResponse['token'])) {
-            return $delegateResponse['token'];
+        if (isset($delegateResponse['two-delegated-authority-token'])) {
+            return $delegateResponse['two-delegated-authority-token'];
         } else {
             return '';
         }
@@ -57,8 +57,8 @@ class SoleTrader implements SoleTraderInterface
             self::AUTOFILL_TOKEN_ENDPOINT,
             ['read_current_buyer' => true, 'write_current_buyer' => true]
         );
-        if (isset($autofillResponse['token'])) {
-            return $autofillResponse['token'];
+        if (isset($autofillResponse['two-delegated-authority-token'])) {
+            return $autofillResponse['two-delegated-authority-token'];
         } else {
             return '';
         }

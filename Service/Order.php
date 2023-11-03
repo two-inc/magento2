@@ -180,7 +180,7 @@ abstract class Order
                 'discount_amount' => $this->roundAmt($this->getDiscountAmountItem($item)),
                 'tax_rate' => $this->roundAmt(($item->getTaxPercent() / 100)),
                 'tax_class_name' => 'VAT ' . $this->roundAmt($item->getTaxPercent()) . '%',
-                'unit_price' => $this->roundAmt($this->getUnitPriceItem($item)),
+                'unit_price' => $this->roundAmt($this->getUnitPriceItem($item), 5),
                 'quantity' => $item->getQtyOrdered(),
                 'qty_to_ship' => $item->getQtyToShip(), //need for partial shipment
                 'quantity_unit' => $this->configRepository->getWeightUnit((int)$order->getStoreId()),
@@ -225,11 +225,12 @@ abstract class Order
      * Format price
      *
      * @param mixed $amt
+     * @param int $dp
      * @return string
      */
-    public function roundAmt($amt): string
+    public function roundAmt($amt, $dp = 2): string
     {
-        return number_format((float)$amt, 2, '.', '');
+        return number_format((float)$amt, $dp, '.', '');
     }
 
     /**
@@ -238,7 +239,7 @@ abstract class Order
      */
     public function getGrossAmountItem($item): float
     {
-        return (float)($this->getNetAmountItem($item) + $this->getTaxAmountItem($item));
+        return (float)$this->getNetAmountItem($item) + (float)$this->getTaxAmountItem($item);
     }
 
     /**
@@ -247,13 +248,7 @@ abstract class Order
      */
     public function getNetAmountItem($item): float
     {
-        $qty = $item instanceof OrderItem
-            ? $item->getQtyOrdered()
-            : $item->getQty();
-
-        return (float)(
-            ($qty * $this->getUnitPriceItem($item)) - $this->getDiscountAmountItem($item)
-        );
+        return (float)$item->getRowTotal() - $this->getDiscountAmountItem($item);
     }
 
     /**
@@ -262,7 +257,7 @@ abstract class Order
      */
     public function getUnitPriceItem($item): float
     {
-        return $item->getPrice();
+        return (float)$item->getRowTotalInclTax() / (1 + $item->getTaxPercent() / 100) / $item->getQtyOrdered();
     }
 
     /**
@@ -280,7 +275,7 @@ abstract class Order
      */
     public function getDiscountAmountItem($item): float
     {
-        return (float)$item->getDiscountAmount();
+        return abs((float)$item->getDiscountAmount()) - abs((float)$item->getDiscountTaxCompensationAmount());
     }
 
     /**
@@ -335,7 +330,7 @@ abstract class Order
             'tax_amount' => $this->roundAmt($this->getTaxAmountShipping($order)),
             'discount_amount' => $this->roundAmt($this->getDiscountAmountShipping($order)),
             'tax_rate' => $this->roundAmt($this->getTaxRateShipping($order)),
-            'unit_price' => $this->roundAmt($this->getUnitPriceShipping($order)),
+            'unit_price' => $this->roundAmt($this->getUnitPriceShipping($order), 5),
             'tax_class_name' => 'VAT ' . $this->roundAmt($this->getTaxRateShipping($order) * 100) . '%',
             'quantity' => 1,
             'qty_to_ship' => 1, //need for partial shipment
@@ -369,7 +364,7 @@ abstract class Order
      */
     public function getUnitPriceShipping($entity): float
     {
-        return (float)$entity->getShippingInclTax() - $entity->getShippingTaxAmount();
+        return (float)$entity->getShippingAmount();
     }
 
     /**
@@ -378,7 +373,7 @@ abstract class Order
      */
     public function getDiscountAmountShipping($entity): float
     {
-        return (float)$entity->getShippingDiscountAmount();
+        return (float)$entity->getShippingDiscountAmount() - (float)$entity->getShippingDiscountTaxCompensationAmount();
     }
 
     /**
@@ -396,7 +391,7 @@ abstract class Order
      */
     public function getTaxRateShipping($entity): float
     {
-        return round(($entity->getShippingInclTax() / $entity->getShippingAmount()), 6) - 1;
+        return ($entity->getShippingInclTax() / $entity->getShippingAmount()) - 1;
     }
 
     /**
@@ -420,7 +415,7 @@ abstract class Order
             'postal_code' => $address->getPostcode(),
             'region' => $address->getRegion() != '' ? $address->getRegion() : '',
             'street_address' => $address->getStreet()[0]
-                . (isset($address->getStreet()[1]) ? $address->getStreet()[1] : ''),
+                . (isset($address->getStreet()[1]) ? ', ' . $address->getStreet()[1] : ''),
         ];
     }
 

@@ -98,10 +98,11 @@ class Confirm extends Action
                 $this->orderService->processOrder($order, $twoOrder['id']);
                 return $this->getResponse()->setRedirect($this->_url->getUrl('checkout/onepage/success'));
             } else {
-                $message = 'Unable to retrieve the order payment information';
+                $message = 'Unable to retrieve payment information for your invoice purchase with Two.';
                 if (!empty($twoOrder['decline_reason'])) {
                     $message = $twoOrder['decline_reason'];
                 }
+                $message .= ' The cart will be restored.';
                 $this->orderService->addOrderComment($order, $message);
                 throw new LocalizedException(__($message));
             }

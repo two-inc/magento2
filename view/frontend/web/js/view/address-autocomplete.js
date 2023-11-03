@@ -25,6 +25,11 @@ define([
             countrySelector: '#shipping-new-address-form select[name="country_id"]',
             companySelector: '#shipping-new-address-form input[name="company"]',
             telephoneSelector: 'input[name="custom_attributes[two_telephone]"]',
+            shippingTelephoneSelector: '#shipping-new-address-form input[name="telephone"]',
+            enterDetailsManuallyText: $t('Enter details manually'),
+            enterDetailsManuallyButton: '#shipping_enter_details_manually',
+            searchForCompanyText: $t('Search for company'),
+            searchForCompanyButton: '#shipping_search_for_company',
             initialize: function () {
                 let self = this;
                 this._super();
@@ -46,10 +51,16 @@ define([
                     && configuredCheckoutStep == stepNavigator.getActiveItemIndex()) {
                     this.enableInternationalTelephone();
                 }
+                const setTwoTelephone = (e) => customerData.set('twoTelephone', e.target.value);
+                $.async(self.shippingTelephoneSelector, function (telephoneSelector) {
+                    $(telephoneSelector).on('change keyup', setTwoTelephone);
+                });
             },
             toggleCompanyVisibility: function () {
+                const countryCode = $(this.countrySelector).val().toLowerCase();
+                customerData.set('twoCountryCode', countryCode);
                 let field = $(this.companySelector).closest('.field');
-                if ($(this.countrySelector).val().toLowerCase() in config.companyAutoCompleteConfig.searchHosts) {
+                if (countryCode in config.companyAutoCompleteConfig.searchHosts) {
                     field.show();
                 } else {
                     field.hide();
@@ -78,8 +89,7 @@ define([
                 });
             },
             enableCompanyAutoComplete: function () {
-                var self = this,
-                    buttonTitle = $t('I cannot find my company');
+                var self = this;
                 require([
                     'Two_Gateway/js/select2.min'
                 ], function () {
@@ -138,6 +148,19 @@ define([
                                 }
                             }
                         }).on('select2:open', function () {
+                            if ($(self.enterDetailsManuallyButton).length == 0) {
+                                $('.select2-results').parent().append(
+                                    `<div id="shipping_enter_details_manually" class="enter_details_manually" title="${self.enterDetailsManuallyText}">` +
+                                    `<span>${self.enterDetailsManuallyText}</span>` +
+                                    '</div>'
+                                );
+                                $(self.enterDetailsManuallyButton).on('click', function(e) {
+                                    self.setCompanyData();
+                                    $(self.companySelector).select2('destroy');
+                                    $(self.companySelector).attr('type', 'text');
+                                    $(self.searchForCompanyButton).show();
+                                });
+                            }
                             document.querySelector('.select2-search__field').focus();
                         }).on('select2:select', function (e) {
                             var selectedItem = e.params.data;
@@ -145,7 +168,7 @@ define([
                             self.setCompanyData(selectedItem.companyId, selectedItem.companyName);
                             if (self.isAddressAutoCompleteEnabled) {
                                 let countryId = $(self.countrySelector).val();
-                                if (_.indexOf(self.supportedCountryCodes, countryId.toUpperCase()) != -1) {
+                                if (_.indexOf(self.supportedCountryCodes, countryId.toLowerCase()) != -1) {
                                     const addressResponse = $.ajax({
                                         dataType: 'json',
                                         url: config.intentOrderConfig.host + '/v1/' + countryId.toUpperCase()
@@ -167,19 +190,18 @@ define([
                             // pre-fill on checkout render
                             $('.select2-selection__rendered').text($(self.companySelector).val());
                         }
-                        $(self.companySelector).closest('.field').append(
-                            '<div class="company-search-additional">' +
-                            '<button id="clear_company_name" title="' + buttonTitle + '">' +
-                            '<span>' + buttonTitle + '</span>' +
-                            '</button>' +
-                            '</div>'
-                        );
-                        $('#clear_company_name').on('click', function (e) {
-                            e.preventDefault();
-                            $(self.companySelector).select2('destroy');
-                            $(self.companySelector).attr('type', 'text');
-                            $(this).remove();
-                        });
+                        if ($(self.searchForCompanyButton).length == 0) {
+                            $(self.companySelector).closest('.field').append(
+                                `<div id="shipping_search_for_company" class="search_for_company" title="${self.searchForCompanyText}">` +
+                                `<span>${self.searchForCompanyText}</span>` +
+                                '</div>'
+                            );
+                            $(self.searchForCompanyButton).on('click', function(e) {
+                                self.enableCompanyAutoComplete();
+                                $(self.searchForCompanyButton).hide();
+                            });
+                        }
+                        $(self.searchForCompanyButton).hide();
                     });
                 });
             },

@@ -38,13 +38,10 @@ class ComposeOrder extends OrderService
             'buyer_project' => $additionalData['project'] ?? '',
             'buyer_purchase_order_number' => $additionalData['poNumber'] ?? '',
             'currency' => $order->getOrderCurrencyCode(),
-            'discount_amount' => $this->roundAmt(abs((float)$order->getDiscountAmount())),
+            'discount_amount' => $this->roundAmt($this->getDiscountAmountItem($order)),
             'gross_amount' => $this->roundAmt($order->getGrandTotal()),
             'net_amount' => $this->roundAmt($order->getGrandTotal() - $order->getTaxAmount()),
             'tax_amount' => $this->roundAmt($order->getTaxAmount()),
-            'tax_rate' => $this->roundAmt(
-                (1.0 * $order->getTaxAmount() / ($order->getGrandTotal() - $order->getTaxAmount()))
-            ),
             'tax_subtotals' => $this->getTaxSubtotals($linesItems),
             'invoice_type' => 'FUNDED_INVOICE',
             'line_items' => $linesItems,

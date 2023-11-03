@@ -47,7 +47,8 @@ class Cancel extends Action
         try {
             $order = $this->orderService->getOrderByReference();
             $this->orderService->cancelTwoOrder($order);
-            throw new LocalizedException(__('Order has been canceled'));
+            $message = 'Your invoice purchase with Two has been cancelled. The cart will be restored.';
+            throw new LocalizedException(__($message));
         } catch (Exception $exception) {
             $this->orderService->restoreQuote();
             if (isset($order)) {

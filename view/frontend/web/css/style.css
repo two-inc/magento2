@@ -2,7 +2,7 @@
     --color-gray89: #e3e3e3;
     --color-brownie-vanilla: #736963;
     --color-white: #fff;
-    --color-color-blue2: #006bb4;
+    --color-color-blue2: #3043d1;
 }
 
 #two_gateway_form {
@@ -32,26 +32,31 @@ input#two_payment:before {
     border-radius: 8px;
 }
 
-button#clear_company_name {
-    margin-bottom: 20px;
+.enter_details_manually {
+    cursor: pointer;
+    color: var(--color-color-blue2);
+    padding: 5px;
 }
 
-.company-search-additional button#clear_company_name {
-    margin-bottom: 0;
-    margin-top: 20px;
+.search_for_company {
+    text-align: right;
+    cursor: pointer;
+    padding-top: 5px;
+    color: var(--color-color-blue2);
+    right: 4px;
 }
 
 .what_is_two {
     float: right;
     width: 80px;
-    padding: 2px 10px 1px 10px;
+    padding: 1px 3px;
     background: #f5f5f5;
     border-radius: 8px;
     height: 20px;
     font-size: 12px;
     line-height: 18px;
     text-align: center;
-    margin-top: -40px;
+    margin-top: 0px;
 }
 
 .what_is_two:hover {
@@ -61,6 +66,70 @@ button#clear_company_name {
 .what_is_two a {
     color: #333333;
     text-decoration: none;
+}
+
+.what_is_two_overlay {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+
+.what_is_two_popup {
+    margin: 70px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    width: 200px;
+    height: 330px;
+    position: relative;
+}
+
+.what_is_two_popup .close {
+    position: absolute;
+    top: 0px;
+    right: 10px;
+    font-size: 30px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #333;
+}
+
+.what_is_two_popup img {
+    content: url("../images/logo.svg");
+    margin: 10px auto 20px auto;
+    display: block;
+    width: 40%;
+}
+
+.what_is_two_popup .close:hover {
+    color: #06D85F;
+}
+
+.what_is_two_popup .content {
+    height: 100%;
+    overflow: none;
+    text-align: center;
+}
+
+.what_is_two_popup .content a {
+    text-decoration: none;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid var(--color-gray89);
+    color: var(--color-color-blue2);
+    background-color: var(--color-white);
+}
+
+.redirect_message {
+    font-size: 12px;
+    text-align: center;
+    margin: 10px 0px;
 }
 
 .two-payment-method {
@@ -82,8 +151,8 @@ button#clear_company_name {
 .mode_selector .mode_item {
     text-decoration: none;
     text-underline-offset: 2px;
-    cursor: pointer;
-    padding: 5px;
+    text-align: center;
+    padding: 5px 10px;
     border-radius: 5px;
     border: 1px solid var(--color-gray89);
 }
@@ -91,6 +160,7 @@ button#clear_company_name {
 .mode_selector [data-element="click-element"] {
     color: var(--color-color-blue2);
     background-color: var(--color-white);
+    cursor: pointer;
 }
 
 .mode_selector [data-element="selected-element"] {

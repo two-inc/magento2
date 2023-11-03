@@ -51,7 +51,7 @@ class ConfigProvider implements ConfigProviderInterface
         $internationalTelephoneConfig = [];
         if ($this->configRepository->isInternationalTelephoneEnabled()) {
             $internationalTelephoneConfig['utilsScript'] =
-                $this->assetRepository->getUrl('Two_Gateway::js/international-telephone/utils.js');
+                $this->assetRepository->getUrl('Two_Gateway::intl-tel-input-18.2.1/js/utils.js');
         }
 
         $companyAutoCompleteConfig = [];
@@ -88,7 +88,7 @@ class ConfigProvider implements ConfigProviderInterface
                     'companyAutoCompleteConfig' => $companyAutoCompleteConfig,
                     'intentOrderConfig' => $intentOrderConfig,
                     'isAddressAutoCompleteEnabled' => $this->configRepository->isAddressAutocompleteEnabled(),
-                    'supportedCountryCodes' => ['NO', 'GB', 'SE']
+                    'supportedCountryCodes' => ['no', 'gb', 'se']
                 ],
             ],
         ];

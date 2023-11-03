@@ -209,8 +209,8 @@ class Two extends AbstractMethod
         }
 
         if ($response['status'] !== static::STATUS_APPROVED) {
-            $this->logRepository->addDebugLog('Order was not accepted', $response);
-            throw new LocalizedException(__('Your order was not accepted'));
+            $this->logRepository->addDebugLog('Order was not accepted by Two', $response);
+            throw new LocalizedException(__('Invoice purchase with Two is not available for this order.'));
         }
 
         $order->setTwoOrderReference($orderReference);
@@ -243,17 +243,38 @@ class Two extends AbstractMethod
      */
     public function getErrorFromResponse(array $response): ?Phrase
     {
-        $generalMessage = __('Something went wrong. Please try again.');
+        $generalMessage = __('Something went wrong with your request to Two. Please try again later.');
         if (!$response || !is_array($response)) {
             return $generalMessage;
         }
 
+        // Custom errors
+        if (isset($response['error_code']) && $response['error_code'] == 'SAME_BUYER_SELLER_ERROR') {
+            return __('Your request to Two failed because the buyer and the seller are the same company.');
+        }
+
+        // Validation errors
+        if (isset($response['error_json']) && is_array($response['error_json'])) {
+            $errs = [];
+            foreach ($response['error_json'] as $err) {
+                if ($err && $err['loc']) {
+                    $err_field = $this->getFieldFromLocStr(json_encode($err['loc']));
+                    if ($err_field) {
+                        array_push($errs, __($err_field));
+                    }
+                }
+            }
+            if (count($errs) > 0) {
+                $message = __('Your request to Two failed due to the following issue(s):');
+                return __($message . ' ' . join(' ', $errs));
+            }
+        }
+
         if (!empty($response['error_code'])) {
             $message = $response['error_message'];
-            if (!empty($response['error_details'])) {
-                $message .= ' - ' . $response['error_details'];
+            if (!empty($response['error_trace_id'])) {
+                $message .= ' [Trace ID: ' . $response['error_trace_id'] . ']';
             }
-
             return __($message);
         }
 
@@ -262,6 +283,29 @@ class Two extends AbstractMethod
         }
 
         return null;
+    }
+
+    /**
+     * Get validation message
+     *
+     * @param $loc_str
+     * @return string|null
+     */
+    public function getFieldFromLocStr($loc_str): ?string
+    {
+        $loc_str = preg_replace('/\s+/', '', $loc_str);
+        $fieldLocStrMapping = [
+            '["buyer","representative","phone_number"]' => 'Phone Number is not valid (requires plus prefix).',
+            '["buyer","company","organization_number"]' => 'Company ID is not valid.',
+            '["buyer","representative","first_name"]' => 'First Name is not valid.',
+            '["buyer","representative","last_name"]' => 'Last Name is not valid.',
+            '["buyer","representative","email"]' => 'Email Address is not valid.',
+            '["billing_address","street_address"]' => 'Street Address is not valid.',
+            '["billing_address","city"]' => 'City is not valid.',
+            '["billing_address","country"]' => 'Country is not valid.',
+            '["billing_address","postal_code"]' => 'Zip/Postal Code is not valid.',
+        ];
+        return $fieldLocStrMapping[$loc_str];
     }
 
     /**

@@ -6,19 +6,34 @@
                data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
         <label data-bind="attr: {'for': getCode()}" class="label">
             <span data-bind="text: getTitle()"></span>
+            <span class="what_is_two" data-bind="visible: isTwoLinkEnabled">
+                 <a data-bind='text: $t("What is two?"), event: { click: () => showWhatIsTwo(true) }'></a>
+            </span>
         </label>
     </div>
-    <div class="what_is_two" data-bind="visible: isTwoLinkEnabled">
-        <a data-bind='attr: {href: $t("https://www.two.inc/what-is-two")}, text: $t("What is two?")' target="_blank"></a>
+
+    <div class="what_is_two_overlay" data-bind="visible: showWhatIsTwo">
+        <div class="what_is_two_popup">
+            <img alt="Two logo">
+            <a class="close" data-bind="event: { click: () => showWhatIsTwo(false) }">×</a>
+            <div class="content">
+                <p><b>Two</b> is a payment solution for B2B purchases online,
+                allowing you to buy from your favourite merchants and suppliers
+                on trade credit. Using Two, you can access flexible trade
+                credit instantly to make purchasing simple.</p>
+                <p>Buy now, pay the invoice within 30 days.</p>
+                <br>
+                <a data-bind='attr: {href: $t("https://www.two.inc/what-is-two")}, text: $t("Find out more")' target="_blank"></a>
+            </div>
+        </div>
     </div>
 
     <div class="payment-method-content">
-        <div class="data" style="color: green; font-size: 80px; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 5rem auto; text-align: center;"></div>
-
+        <div class="redirect_message" data-bind='text: $t("You will be redirected to Two when you place order.")'></div>
         <!-- ko ifnot: showSoleTrader -->
         <div class="mode_selector" data-element="popup-message">
             <span class="mode_item" data-element="selected-element">
-                <!-- ko i18n: 'Limited Company' --><!-- /ko -->
+                <!-- ko i18n: 'Registered Organisation' --><!-- /ko -->
             </span>
             <span class="mode_item" data-element="click-element" data-bind="event: { click: () => soleTraderMode() }">
                 <!-- ko i18n: 'Sole Trader' --><!-- /ko -->
@@ -28,11 +43,11 @@
 
         <!-- ko if: showSoleTrader -->
         <div class="mode_selector" data-element="popup-message">
-            <span class="mode_item" data-element="click-element" data-bind="event: { click: () => limitedCompanyMode() }">
-                <!-- ko i18n: 'Limited Company' --><!-- /ko -->
+            <span class="mode_item" data-element="click-element" data-bind="event: { click: () => registeredOrganisationMode() }">
+                <!-- ko i18n: 'Registered Organisation' --><!-- /ko -->
             </span>
             <span class="mode_item" data-element="selected-element">
-	        <!-- ko i18n: 'Sole Trader' --><!-- /ko -->
+                <!-- ko i18n: 'Sole Trader' --><!-- /ko -->
             </span>
         </div>
 
@@ -52,9 +67,9 @@
         <!-- /ko -->
         <!-- /ko -->
 
-        <!-- ko if: showErrorMessage -->
+        <!-- ko if: showSoleTraderErrorMessage -->
         <div class="error message" data-element="error-message">
-            <!-- ko i18n: 'Something went wrong. You are not verified.' --><!-- /ko -->
+            <!-- ko i18n: 'Something went wrong with your request to Two. Your sole trader account could not be verified.' --><!-- /ko -->
         </div>
         <!-- /ko -->
 
@@ -93,17 +108,6 @@
                         />
                     </div>
                 </div>
-                <!-- ko if: isCompanyNameAutoCompleteEnabled -->
-                <!-- ko ifnot: showSoleTrader -->
-                <button data-role="clear_company_name"
-                        id="clear_company_name"
-                        data-bind="
-                        attr: {title: $t('I cannot find my company')},
-                        click: clearCompany">
-                    <span data-bind="i18n: 'I cannot find my company'"></span>
-                </button>
-                <!-- /ko -->
-                <!-- /ko -->
                 <div class="field field-text required">
                     <label for="two_company_id" class="label">
                         <span><!-- ko i18n: 'Company ID'--><!-- /ko --></span>
@@ -122,8 +126,8 @@
                         />
                     </div>
                 </div>
-                <!-- ko if: showTwoTelephone() -->
-                <div class="field field-text required">
+                <!-- ko if: isInternationalTelephoneEnabled -->
+                <div class="field field-text required" data-bind="style: {display: showTwoTelephone() ? 'block': 'none'}">
                     <label for="two_telephone" class="label">
                     <span>
                         <!-- ko i18n: 'Phone Number'--><!-- /ko -->
