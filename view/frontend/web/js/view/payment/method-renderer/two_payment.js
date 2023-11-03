@@ -80,6 +80,7 @@ define([
             orderNote: ko.observable(''),
             poNumber: ko.observable(''),
             telephone: ko.observable(telephone),
+            countryCode: ko.observable(''),
             iti: null,
             formSelector: 'form#two_gateway_form',
             telephoneSelector: 'input#two_telephone',
@@ -97,6 +98,7 @@ define([
             showSoleTraderErrorMessage: ko.observable(false),
             showPopupMessage: ko.observable(false),
             showSoleTrader: ko.observable(false),
+            showWhatIsTwo: ko.observable(false),
 
             initialize: function () {
                 this._super();
