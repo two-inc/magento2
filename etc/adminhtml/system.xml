@@ -51,7 +51,7 @@
                 </field>
                 <field id="api_key" translate="label" type="obscure" sortOrder="50" showInDefault="1" showInWebsite="1"
                        showInStore="1">
-                    <label>Api key</label>
+                    <label>API key</label>
                     <comment>API keys to the sandbox environment are available through the Two merchant portal, while production keys will be handed over to you by a Two representative</comment>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <validate>required-entry</validate>
@@ -146,7 +146,8 @@
                        showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable international telephone</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Adds a country selector which enables the buyer to select the correct region number</comment>
+		    <comment>Ensure that phone number that is sent to Two is automatically prefixed with E164 international telephone code (recommended).
+                        If the buyer does not specify a country code in the phone number, it is automatically prefixed with country code from the address.</comment>
                     <depends>
                         <field id="active">1</field>
                     </depends>
@@ -155,8 +156,7 @@
                 <field id="show_telephone" translate="label" type="select" sortOrder="75" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Show telephone field</label>
-                    <comment>Optional field which enables the buyer to register the telephone number the purchase
-                        is connected to. The information will be displayed on the invoice</comment>
+                    <comment>Optional field which allows the buyer to view the international telephone number that will be sent to Two.</comment>
                     <source_model>Two\Gateway\Model\Config\Source\ShowTelephone</source_model>
                     <depends>
                         <field id="active">1</field>
@@ -166,8 +166,8 @@
                 <field id="enable_department" translate="label" type="select" sortOrder="80" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Add department field</label>
-                    <comment>Optional field which enables the buyer to register the department the purchase is connected
-                        to. The information will be displayed on the invoice</comment>
+                    <comment>Optional field which enables the buyer to register the department the purchase is connected to.
+                        The information is eventually displayed on the invoice.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>
@@ -177,7 +177,8 @@
                 <field id="enable_order_note" translate="label" type="select" sortOrder="90" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Add order note field</label>
-                    <comment>Optional field which enables the buyer to register a note to the merchant. The information will be displayed on the invoice</comment>
+                    <comment>Optional field which enables the buyer to register a note to the merchant.
+                        The information is eventually displayed on the invoice.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>
@@ -187,7 +188,8 @@
                 <field id="enable_project" translate="label" type="select" sortOrder="100" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Add project field</label>
-                    <comment>Optional field which enables the buyer to register the project the purchase is connected to. The information will be displayed on the invoice</comment>
+                    <comment>Optional field which enables the buyer to register the project the purchase is connected to.
+                        The information is eventually displayed on the invoice.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>
@@ -197,7 +199,7 @@
                 <field id="enable_po_number" translate="label" type="select" sortOrder="100" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Add PO number field</label>
-                    <comment>Optional field which enables the buyer to register their purchase order number</comment>
+                    <comment>Optional field which enables the buyer to register their purchase order number.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>
@@ -207,7 +209,7 @@
                 <field id="enable_two_link" translate="label" type="select" sortOrder="100" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Include "What is Two?" link in the checkout</label>
-                    <comment>Adds a link to a website which describes how Two works from a buyer perspective</comment>
+                    <comment>Display a modal which describes how Two works from a buyer perspective with a URL to find out more.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>

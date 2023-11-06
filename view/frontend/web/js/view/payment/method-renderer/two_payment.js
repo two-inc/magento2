@@ -172,11 +172,8 @@ define([
                     }
                 }
             },
-            showTwoTelephone: function () {
-                let progressBar = uiRegistry.get('index = progressBar'),
-                    configuredCheckoutStep = _.findIndex(progressBar.steps(), {code: this.showTelephone}),
-                    currentCheckoutStep = stepNavigator.getActiveItemIndex();
-                return (configuredCheckoutStep == currentCheckoutStep);
+            ShowTelephoneOnPaymentPage: function () {
+                return this.showTelephone == 'payment';
             },
             placeOrderBackend: function () {
                 var self = this;
