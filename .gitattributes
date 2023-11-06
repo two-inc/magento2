@@ -1,0 +1,2 @@
+.git* export-ignore
+bumpver.toml export-ignore
