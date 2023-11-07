@@ -178,7 +178,7 @@ abstract class Order
                 'net_amount' => $this->roundAmt($this->getNetAmountItem($item)),
                 'tax_amount' => $this->roundAmt($this->getTaxAmountItem($item)),
                 'discount_amount' => $this->roundAmt($this->getDiscountAmountItem($item)),
-                'tax_rate' => $this->roundAmt(($item->getTaxPercent() / 100)),
+                'tax_rate' => $this->roundAmt($this->getTaxRateItem($item)),
                 'tax_class_name' => 'VAT ' . $this->roundAmt($item->getTaxPercent()) . '%',
                 'unit_price' => $this->roundAmt($this->getUnitPriceItem($item), 5),
                 'quantity' => $item->getQtyOrdered(),
@@ -257,7 +257,16 @@ abstract class Order
      */
     public function getUnitPriceItem($item): float
     {
-        return (float)$item->getRowTotalInclTax() / (1 + $item->getTaxPercent() / 100) / $item->getQtyOrdered();
+        return (float)$item->getRowTotalInclTax() / (1 + $this->getTaxRateItem($item)) / $item->getQtyOrdered();
+    }
+
+    /**
+     * @param OrderItem|InvoiceItem|CreditmemoItem $item
+     * @return float
+     */
+    public function getTaxRateItem($item): float
+    {
+        return $item->getTaxPercent() / 100;
     }
 
     /**
@@ -266,7 +275,7 @@ abstract class Order
      */
     public function getTaxAmountItem($item): float
     {
-        return (float)$item->getTaxAmount();
+        return $this->getNetAmountItem($item) * $this->getTaxRateItem($item);
     }
 
     /**
