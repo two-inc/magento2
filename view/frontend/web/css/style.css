@@ -2,7 +2,7 @@
     --color-gray89: #e3e3e3;
     --color-brownie-vanilla: #736963;
     --color-white: #fff;
-    --color-color-blue2: #3043d1;
+    --color-blue2: #3043d1;
 }
 
 #two_gateway_form {
@@ -34,7 +34,7 @@ input#two_payment:before {
 
 .enter_details_manually {
     cursor: pointer;
-    color: var(--color-color-blue2);
+    color: var(--color-blue2);
     padding: 5px;
 }
 
@@ -42,7 +42,7 @@ input#two_payment:before {
     text-align: right;
     cursor: pointer;
     padding-top: 5px;
-    color: var(--color-color-blue2);
+    color: var(--color-blue2);
     right: 4px;
 }
 
@@ -81,7 +81,7 @@ input#two_payment:before {
 .what_is_two_popup {
     margin: 70px auto;
     padding: 20px;
-    background: #fff;
+    background: var(--color-white);
     border-radius: 10px;
     width: 200px;
     height: 330px;
@@ -95,7 +95,12 @@ input#two_payment:before {
     font-size: 30px;
     font-weight: bold;
     text-decoration: none;
-    color: #333;
+    color: var(--color-gray89);
+    cursor: pointer;
+}
+
+.what_is_two_popup .close:hover {
+    color: var(--color-blue2);
 }
 
 .what_is_two_popup img {
@@ -103,10 +108,6 @@ input#two_payment:before {
     margin: 10px auto 20px auto;
     display: block;
     width: 40%;
-}
-
-.what_is_two_popup .close:hover {
-    color: #06D85F;
 }
 
 .what_is_two_popup .content {
@@ -122,7 +123,7 @@ input#two_payment:before {
     padding: 5px 10px;
     border-radius: 5px;
     border: 1px solid var(--color-gray89);
-    color: var(--color-color-blue2);
+    color: var(--color-blue2);
     background-color: var(--color-white);
 }
 
@@ -158,14 +159,14 @@ input#two_payment:before {
 }
 
 .mode_selector [data-element="click-element"] {
-    color: var(--color-color-blue2);
+    color: var(--color-blue2);
     background-color: var(--color-white);
     cursor: pointer;
 }
 
 .mode_selector [data-element="selected-element"] {
     color: var(--color-white);
-    background-color: var(--color-color-blue2);
+    background-color: var(--color-blue2);
 }
 
 /* Sole trader part */
@@ -186,7 +187,7 @@ input#two_payment:before {
 }
 
 .sole_trader_note [data-element="click-element"] {
-    color: var(--color-color-blue2);
+    color: var(--color-blue2);
     text-decoration: underline;
     text-underline-offset: 2px;
     cursor: pointer;
@@ -197,7 +198,7 @@ input#two_payment:before {
 }
 
 .popup_message [data-element="click-element"] {
-    color: var(--color-color-blue2);
+    color: var(--color-blue2);
     text-decoration: underline;
     text-underline-offset: 2px;
     cursor: pointer;
