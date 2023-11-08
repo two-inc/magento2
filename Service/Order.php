@@ -239,7 +239,7 @@ abstract class Order
      */
     public function getGrossAmountItem($item): float
     {
-        return (float)$this->getNetAmountItem($item) + (float)$this->getTaxAmountItem($item);
+        return $this->getNetAmountAfterDiscountItem($item) + $this->getTaxAmountItem($item);
     }
 
     /**
@@ -248,7 +248,25 @@ abstract class Order
      */
     public function getNetAmountItem($item): float
     {
-        return (float)$item->getRowTotal() - $this->getDiscountAmountItem($item);
+        return round($this->getGrossAmountItem($item), 2) - round($this->getTaxAmountItem($item), 2);
+    }
+
+    /**
+     * @param OrderItem|InvoiceItem|CreditmemoItem $item
+     * @return float
+     */
+    public function getNetAmountBeforeDiscountItem($item): float
+    {
+        return (float)$item->getRowTotalInclTax() / (1 + $this->getTaxRateItem($item));
+    }
+
+    /**
+     * @param OrderItem|InvoiceItem|CreditmemoItem $item
+     * @return float
+     */
+    public function getNetAmountAfterDiscountItem($item): float
+    {
+        return $this->getNetAmountBeforeDiscountItem($item) - $this->getDiscountAmountItem($item);
     }
 
     /**
@@ -257,7 +275,7 @@ abstract class Order
      */
     public function getUnitPriceItem($item): float
     {
-        return (float)$item->getRowTotalInclTax() / (1 + $this->getTaxRateItem($item)) / $item->getQtyOrdered();
+        return (float)$item->getPriceInclTax() / (1 + $this->getTaxRateItem($item));
     }
 
     /**
@@ -275,7 +293,7 @@ abstract class Order
      */
     public function getTaxAmountItem($item): float
     {
-        return $this->getNetAmountItem($item) * $this->getTaxRateItem($item);
+        return $this->getNetAmountAfterDiscountItem($item) * $this->getTaxRateItem($item);
     }
 
     /**
@@ -284,7 +302,12 @@ abstract class Order
      */
     public function getDiscountAmountItem($item): float
     {
-        return abs((float)$item->getDiscountAmount()) - abs((float)$item->getDiscountTaxCompensationAmount());
+        $discount = abs((float)$item->getDiscountAmount());
+        $discountTaxCompensation = abs((float)$item->getDiscountTaxCompensationAmount());
+        if ($discountTaxCompensation > 0) {
+            $discountTaxCompensation = $discount * (1 - 1 / (1 + $this->getTaxRateItem($item)));
+        }
+        return $discount - $discountTaxCompensation;
     }
 
     /**
