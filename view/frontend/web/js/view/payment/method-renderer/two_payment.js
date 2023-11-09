@@ -73,6 +73,7 @@ define([
             isPONumberFieldEnabled: config.isPONumberFieldEnabled,
             isTwoLinkEnabled: config.isTwoLinkEnabled,
             supportedCountryCodes: config.supportedCountryCodes,
+            soleTraderCountryCodes: ['gb'],
             companyName: ko.observable(''),
             companyId: ko.observable(''),
             project: ko.observable(customAttributesObject.project),
@@ -99,6 +100,7 @@ define([
             showPopupMessage: ko.observable(false),
             showSoleTrader: ko.observable(false),
             showWhatIsTwo: ko.observable(false),
+            showModeTab: ko.observable(false),
 
             initialize: function () {
                 this._super();
@@ -139,6 +141,14 @@ define([
                 const fillCountryCode = (countryCode) => {
                     countryCode = typeof countryCode == 'string' ? countryCode : ''
                     this.countryCode(countryCode);
+                    if (this.soleTraderCountryCodes.includes(countryCode.toLowerCase())) {
+                        this.showModeTab(true);
+                    } else {
+                        if (this.showSoleTrader()) {
+                            this.registeredOrganisationMode();
+                        }
+                        this.showModeTab(false);
+                    }
                 }
                 customerData.get('twoCountryCode').subscribe(fillCountryCode);
                 fillCountryCode(customerData.get('twoCountryCode')());
@@ -507,10 +517,10 @@ define([
                     });
                 });
             },
-            clearCompany: function () {
+            clearCompany: function (disableCompanyId = false) {
                 const companyIdSelector = $(this.companyIdSelector)
                 companyIdSelector.val('')
-                companyIdSelector.prop('disabled', false);
+                companyIdSelector.prop('disabled', disableCompanyId);
                 const companyNameSelector = $(this.companyNameSelector)
                 companyNameSelector.val(this.companyName());
                 if (companyNameSelector.data('select2')) {
@@ -583,15 +593,15 @@ define([
             },
 
             registeredOrganisationMode() {
+                this.showSoleTrader(false);
                 if (this.isCompanyNameAutoCompleteEnabled) {
                     this.enableCompanyAutoComplete();
                 }
                 this.fillCustomerData();
-                this.showSoleTrader(false);
             },
 
             soleTraderMode() {
-                this.clearCompany();
+                this.clearCompany(true);
                 this.getTokens()
                 .then((json) => {
                     console.log(json);

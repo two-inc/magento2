@@ -30,6 +30,7 @@
 
     <div class="payment-method-content">
         <div class="redirect_message" data-bind='text: $t("You will be redirected to Two when you place order.")'></div>
+        <!-- ko if: showModeTab -->
         <!-- ko ifnot: showSoleTrader -->
         <div class="mode_selector" data-element="popup-message">
             <span class="mode_item" data-element="selected-element">
@@ -71,6 +72,7 @@
         <div class="error message" data-element="error-message">
             <!-- ko i18n: 'Something went wrong with your request to Two. Your sole trader account could not be verified.' --><!-- /ko -->
         </div>
+        <!-- /ko -->
         <!-- /ko -->
 
         <!-- ko foreach: getRegion('messages') -->
