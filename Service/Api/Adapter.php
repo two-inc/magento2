@@ -83,13 +83,16 @@ class Adapter
             }
 
             $body = trim($this->curlClient->getBody());
-
             if (in_array($this->curlClient->getStatus(), [200, 201, 202])) {
                 $result = [];
                 if ((!$body || $body === '""')) {
-                    if (($endpoint == SoleTraderInterface::DELEGATION_TOKEN_ENDPOINT) ||
-                        ($endpoint == SoleTraderInterface::AUTOFILL_TOKEN_ENDPOINT)) {
+                    if (in_array($endpoint, [
+                            SoleTraderInterface::DELEGATION_TOKEN_ENDPOINT,
+                            SoleTraderInterface::AUTOFILL_TOKEN_ENDPOINT])) {
                         $result = $this->curlClient->getHeaders();
+                        foreach ($result as $key => $value) {
+                            $result[strtolower($key)] = $value;
+                        }
                     }
                 } else {
                     $result = json_decode($body, true);
