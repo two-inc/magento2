@@ -130,7 +130,9 @@ input#two_payment:before {
 .redirect_message {
     font-size: 12px;
     text-align: center;
-    margin: 10px 0px;
+    margin-bottom: 20px;
+    padding: 12px 6px;
+    border-bottom: 1px solid var(--color-gray89);
 }
 
 .two-payment-method {
@@ -143,8 +145,6 @@ input#two_payment:before {
     gap: 12px;
     margin-bottom: 20px;
     padding: 12px 6px;
-
-    border-top: 1px solid var(--color-gray89);
     border-bottom: 1px solid var(--color-gray89);
     color: var(--color-brownie-vanilla);
 }
