@@ -81,6 +81,7 @@ define([
             orderNote: ko.observable(''),
             poNumber: ko.observable(''),
             telephone: ko.observable(telephone),
+            fullTelephone: ko.observable(''),
             countryCode: ko.observable(''),
             iti: null,
             formSelector: 'form#two_gateway_form',
@@ -132,8 +133,7 @@ define([
 
                 const fillTelephone = (telephone) => {
                     telephone = typeof telephone == 'string' ? telephone : ''
-                    $(this.telephoneSelector).val(telephone);
-                    $(this.telephoneSelector).trigger('change');
+                    this.telephone(telephone);
                 }
                 customerData.get('twoTelephone').subscribe(fillTelephone);
                 fillTelephone(customerData.get('twoTelephone')());
@@ -327,7 +327,7 @@ define([
                                 'email': this.getEmail(),
                                 'first_name': billingAddress.firstname,
                                 'last_name': billingAddress.lastname,
-                                'phone_number': this.telephone()
+                                'phone_number': this.getTelephone()
                             }
                         },
                         'merchant_short_name': config.intentOrderConfig.merchantShortName
@@ -350,7 +350,7 @@ define([
                         department: this.department(),
                         orderNote: this.orderNote(),
                         poNumber: this.poNumber(),
-                        telephone: this.telephone() // checkout-data -> shippingAddressFromData -> custom_attributes -> two_telephone_full
+                        telephone: this.getTelephone() // checkout-data -> shippingAddressFromData -> custom_attributes -> two_telephone_full
                     }
                 };
             },
@@ -467,33 +467,46 @@ define([
                             preferredCountries: _.uniq([initialCountry, ...self.supportedCountryCodes]),
                             utilsScript: config.internationalTelephoneConfig.utilsScript,
                             initialCountry: initialCountry,
-                            separateDialCode: true
+                            nationalMode: true,
                         });
-                        $(telephoneField).on('change countrychange', function () {
+                        $(self.telephoneSelector).on('change keyup countrychange', function () {
                             self.setFullTelephone();
                         });
+                        self.telephone.subscribe((telephone) => {
+                            self.setFullTelephone({ telephone });
+                        });
                         self.countryCode.subscribe((countryCode) => {
-                            self.setFullTelephone(countryCode);
+                            self.setFullTelephone({ countryCode });
                         });
                         self.setFullTelephone();
                     });
                 });
             },
-            setFullTelephone: function (countryCode = null) {
+            getTelephone: function () {
+                const telephone = this.fullTelephone() || this.telephone();
+                console.log({ telephone });
+                return telephone;
+            },
+            setFullTelephone: function ({ telephone = null, countryCode = null } = {}) {
                 /**
                  * Note 1! Origin method "getInstance" doesn't work as described in:
                  *         https://github.com/jackocnr/intl-tel-input#static-methods
                  * Note 2! "iti" will be initialized correctly when only 1 telephone is initialized at the web page
                  * Note 3! this logic can't be replaced with "iti.hiddenInput" because it doesn't work as expected
                  */
-                if (this.iti) {
+                const iti = this.iti;
+                iti.promise.then(() => {
                     if (countryCode) {
-                        this.iti.setCountry(countryCode);
+                        iti.setCountry(countryCode);
                     }
-                    // window.intlTelInputUtils.numberFormat.E164
-                    const E164 = 0;
-                    this.telephone(this.iti.getNumber(E164));
-                }
+                    if (telephone) {
+                        iti.setNumber(telephone);
+                    }
+                    const fullTelephone = iti.getNumber();
+                    const valid = iti.isValidNumber();
+                    console.log({ fullTelephone, valid, countryCode, telephone });
+                    this.fullTelephone(fullTelephone);
+                });
             },
             configureFormValidation: function () {
                 $.async(this.formSelector, function (form) {
@@ -567,7 +580,7 @@ define([
                   first_name: billingAddress.firstname,
                   last_name: billingAddress.lastname,
                   company_name: this.companyName(),
-                  phone_number: this.telephone(),
+                  phone_number: this.getTelephone(),
                   billing_address: {
                     building: building,
                     street: street,
