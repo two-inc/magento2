@@ -20,7 +20,7 @@ input#two_payment:before {
     content: '';
     display: block;
     border: 1px solid #cccccc;
-    background-image: url("../images/logo.svg");
+    background-image: url('../images/logo.svg');
     background-position: 10px 8px;
     background-size: 44px;
     background-repeat: no-repeat;
@@ -93,7 +93,7 @@ input#two_payment:before {
 }
 
 .what_is_two_popup img {
-    content: url("../images/logo.svg");
+    content: url('../images/logo.svg');
     margin: 10px auto 20px auto;
     display: block;
     width: 40%;
@@ -148,13 +148,13 @@ input#two_payment:before {
     border: 1px solid var(--color-gray89);
 }
 
-.mode_selector [data-element="click-element"] {
+.mode_selector [data-element='click-element'] {
     color: var(--color-blue2);
     background-color: var(--color-white);
     cursor: pointer;
 }
 
-.mode_selector [data-element="selected-element"] {
+.mode_selector [data-element='selected-element'] {
     color: var(--color-white);
     background-color: var(--color-blue2);
 }
@@ -176,18 +176,18 @@ input#two_payment:before {
     height: 20px;
 }
 
-.sole_trader_note [data-element="click-element"] {
+.sole_trader_note [data-element='click-element'] {
     color: var(--color-blue2);
     text-decoration: underline;
     text-underline-offset: 2px;
     cursor: pointer;
 }
 
-[data-element="error-message"] {
+[data-element='error-message'] {
     margin-bottom: 24px !important;
 }
 
-.popup_message [data-element="click-element"] {
+.popup_message [data-element='click-element'] {
     color: var(--color-blue2);
     text-decoration: underline;
     text-underline-offset: 2px;
@@ -210,9 +210,9 @@ input#two_payment:before {
     border-radius: 8px;
     border: 1px solid var(--color-gray89);
     background-color: var(--color-white);
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1), 0 2px 4px -2px rgb(0 0 0 / .1);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 
-    transition: .65s;
+    transition: 0.65s;
 }
 
 .sole_trader_note iframe {
@@ -233,9 +233,9 @@ input#two_payment:before {
 
     opacity: 0;
     visibility: hidden;
-    background-color: rgba(0, 0, 0, .7);
+    background-color: rgba(0, 0, 0, 0.7);
 
-    transition: .65s;
+    transition: 0.65s;
     cursor: pointer;
 }
 
