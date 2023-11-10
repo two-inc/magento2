@@ -54,6 +54,8 @@ define([
                 const setTwoTelephone = (e) => customerData.set('twoTelephone', e.target.value);
                 $.async(self.shippingTelephoneSelector, function (telephoneSelector) {
                     $(telephoneSelector).on('change keyup', setTwoTelephone);
+                    const telephone = $(self.shippingTelephoneSelector).val();
+                    customerData.set('twoTelephone', telephone);
                 });
             },
             toggleCompanyVisibility: function () {
@@ -82,8 +84,7 @@ define([
                         $(telephoneField).intlTelInput({
                             preferredCountries: _.uniq(self.supportedCountryCodes),
                             utilsScript: config.internationalTelephoneConfig.utilsScript,
-                            hiddenInput: "full",
-                            separateDialCode: true
+                            nationalMode: true,
                         });
                     });
                 });
