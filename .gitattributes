@@ -1,2 +1,4 @@
 .git* export-ignore
+.prettierrc export-ignore
+Makefile export-ignore
 bumpver.toml export-ignore
