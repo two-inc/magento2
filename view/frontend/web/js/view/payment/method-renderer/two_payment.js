@@ -372,7 +372,7 @@ define([
         },
         enableCompanyAutoComplete: function () {
             let self = this;
-            require(['Two_Gateway/js/select2.min'], function () {
+            require(['Two_Gateway/select2-4.1.0/js/select2.min'], function () {
                 $.async(self.companyIdSelector, function (companyIdField) {
                     $(companyIdField).prop('disabled', true);
                 });

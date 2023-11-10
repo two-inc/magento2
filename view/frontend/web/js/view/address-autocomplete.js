@@ -92,7 +92,7 @@ define([
         },
         enableCompanyAutoComplete: function () {
             var self = this;
-            require(['Two_Gateway/js/select2.min'], function () {
+            require(['Two_Gateway/select2-4.1.0/js/select2.min'], function () {
                 $.async(self.companySelector, function (companyNameField) {
                     var searchLimit = config.companyAutoCompleteConfig.searchLimit;
                     $(companyNameField)
