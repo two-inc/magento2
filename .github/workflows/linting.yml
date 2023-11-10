@@ -1,5 +1,5 @@
 name: Lint PHP files
-on: [push, pull_request]
+on: push
 
 jobs:
   php-71:
