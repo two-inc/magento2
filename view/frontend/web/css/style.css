@@ -48,43 +48,32 @@ input#two_payment:before {
 
 .what_is_two {
     float: right;
-    width: 80px;
-    padding: 1px 3px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    height: 20px;
-    font-size: 12px;
-    line-height: 18px;
     text-align: center;
-    margin-top: 0px;
+    cursor: pointer;
 }
 
-.what_is_two:hover {
-    background: #fbce49;
-}
-
-.what_is_two a {
-    color: #333333;
-    text-decoration: none;
+.what_is_two svg {
+    color: var(--color-blue2);
+    width: 24px;
+    height: 24px;
 }
 
 .what_is_two_overlay {
     position: fixed;
     top: 0;
+    right: 0;
     bottom: 0;
     left: 0;
-    right: 0;
     background: rgba(0, 0, 0, 0.7);
     z-index: 1000;
 }
 
 .what_is_two_popup {
-    margin: 70px auto;
+    margin: 250px auto;
     padding: 20px;
     background: var(--color-white);
     border-radius: 10px;
-    width: 200px;
-    height: 330px;
+    width: 300px;
     position: relative;
 }
 
@@ -123,13 +112,14 @@ input#two_payment:before {
     padding: 5px 10px;
     border-radius: 5px;
     border: 1px solid var(--color-gray89);
-    color: var(--color-blue2);
-    background-color: var(--color-white);
+    color: var(--color-white);
+    background-color: var(--color-blue2);
 }
 
 .redirect_message {
     font-size: 12px;
     text-align: center;
+    margin-top: 40px;
     margin-bottom: 20px;
     padding: 12px 6px;
     border-bottom: 1px solid var(--color-gray89);
