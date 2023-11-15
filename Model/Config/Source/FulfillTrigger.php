@@ -10,9 +10,9 @@ namespace Two\Gateway\Model\Config\Source;
 use Magento\Framework\Data\OptionSourceInterface;
 
 /**
- * Fulfill Options
+ * Fulfill Trigger Options
  */
-class Fulfill implements OptionSourceInterface
+class FulfillTrigger implements OptionSourceInterface
 {
     /**
      * Options getter
@@ -29,6 +29,10 @@ class Fulfill implements OptionSourceInterface
             [
                 'value' => 'shipment',
                 'label' => __('On Shipment'),
+            ],
+            [
+                'value' => 'complete',
+                'label' => __('On Completion'),
             ],
         ];
     }

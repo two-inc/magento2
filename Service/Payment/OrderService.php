@@ -295,14 +295,15 @@ class OrderService
     public function processOrder(Order $order, string $transactionId)
     {
         $payment = $order->getPayment();
-        if ($this->configRepository->getFulfillOrderType() == 'shipment') {
+        $fulfillTrigger = $this->configRepository->getFulfillTrigger();
+        if ($fulfillTrigger == 'shipment' || $fulfillTrigger == 'complete') {
             $order->setIsInProcess(true);
             $order->setState(Order::STATE_PROCESSING);
             $order->setStatus(Order::STATE_PROCESSING);
             $invoice = $this->invoiceService->prepareInvoice($order);
             $invoice->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE);
             $invoice->register();
-            $this->addOrderComment($order, 'Payment has been verified');
+            $this->addOrderComment($order, 'Two Order payment has been verified');
             $transactionSave = $this->transaction
                 ->addObject(
                     $payment

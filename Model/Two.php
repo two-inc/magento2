@@ -413,7 +413,7 @@ class Two extends AbstractMethod
      */
     public function canCapture()
     {
-        return $this->_canCapture && ($this->configRepository->getFulfillOrderType() == 'invoice');
+        return $this->_canCapture && ($this->configRepository->getFulfillTrigger() == 'invoice');
     }
 
     /**
