@@ -25,7 +25,8 @@ interface RepositoryInterface
     public const XML_PATH_MERCHANT_SHORT_NAME = 'payment/two_payment/merchant_short_name';
     public const XML_PATH_API_KEY = 'payment/two_payment/api_key';
     public const XML_PATH_DAYS_ON_INVOICE = 'payment/two_payment/days_on_invoice';
-    public const XML_PATH_FULFILL_ORDER_ORDER = 'payment/two_payment/fulfill_order';
+    public const XML_PATH_FULFILL_TRIGGER = 'payment/two_payment/fulfill_trigger';
+    public const XML_PATH_FULFILL_ORDER_STATUS = 'payment/two_payment/fulfill_order_status';
     public const XML_PATH_INTERNATIONAL_TELEPHONE_ENABLED = 'payment/two_payment/international_telephone_enabled';
     public const XML_PATH_COMPANY_NAME_AUTOCOMPLETE_ENABLED = 'payment/two_payment/company_autocomplete_enabled';
     public const XML_PATH_ENABLE_DEPARTMENT_NAME = 'payment/two_payment/enable_department';
@@ -97,13 +98,22 @@ interface RepositoryInterface
     public function getDueInDays(?int $storeId = null): int;
 
     /**
-     * Get Fulfill Order Type (invoice or shipment)
+     * Get Fulfill Trigger (invoice or shipment or complete)
      *
      * @param int|null $storeId
      *
      * @return string
      */
-    public function getFulfillOrderType(?int $storeId = null): string;
+    public function getFulfillTrigger(?int $storeId = null): string;
+
+    /**
+     * Get Fulfill Order Status
+     *
+     * @param int|null $storeId
+     *
+     * @return string
+     */
+    public function getFulfillOrderStatus(?int $storeId = null): string;
 
     /**
      * Check if international telephone is enabled

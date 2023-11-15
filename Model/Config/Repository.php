@@ -135,9 +135,17 @@ class Repository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function getFulfillOrderType(?int $storeId = null): string
+    public function getFulfillTrigger(?int $storeId = null): string
     {
-        return (string)$this->getConfig(self::XML_PATH_FULFILL_ORDER_ORDER, $storeId);
+        return (string)$this->getConfig(self::XML_PATH_FULFILL_TRIGGER, $storeId);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFulfillOrderStatus(?int $storeId = null): string
+    {
+        return (string)$this->getConfig(self::XML_PATH_FULFILL_ORDER_STATUS, $storeId);
     }
 
     /**

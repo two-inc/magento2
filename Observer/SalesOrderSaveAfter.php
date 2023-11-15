@@ -13,20 +13,18 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\Data\OrderInterface;
-use Magento\Sales\Api\Data\ShipmentInterface;
 use Magento\Sales\Api\OrderStatusHistoryRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Status\HistoryFactory;
 use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 use Two\Gateway\Model\Two;
 use Two\Gateway\Service\Api\Adapter;
-use Two\Gateway\Service\Order\ComposeShipment;
 
 /**
- * After Order Shipment Save Observer
- * Fulfill Two paymemt after order shipped
+ * After Order Save Observer
+ * Fulfill Two paymemt after order saved
  */
-class SalesOrderShipmentAfter implements ObserverInterface
+class SalesOrderSaveAfter implements ObserverInterface
 {
     /**
      * @var ConfigRepository
@@ -49,31 +47,23 @@ class SalesOrderShipmentAfter implements ObserverInterface
     private $orderStatusHistoryRepository;
 
     /**
-     * @var ComposeShipment
-     */
-    private $composeShipment;
-
-    /**
-     * SalesOrderShipmentAfter constructor.
+     * SalesOrderSaveAfter constructor.
      *
      * @param ConfigRepository $configRepository
      * @param Adapter $apiAdapter
      * @param HistoryFactory $historyFactory
      * @param OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository
-     * @param ComposeShipment $composeShipment
      */
     public function __construct(
         ConfigRepository $configRepository,
         Adapter $apiAdapter,
         HistoryFactory $historyFactory,
-        OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository,
-        ComposeShipment $composeShipment
+        OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository
     ) {
         $this->configRepository = $configRepository;
         $this->apiAdapter = $apiAdapter;
         $this->historyFactory = $historyFactory;
         $this->orderStatusHistoryRepository = $orderStatusHistoryRepository;
-        $this->composeShipment = $composeShipment;
     }
 
     /**
@@ -82,18 +72,17 @@ class SalesOrderShipmentAfter implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        /** @var Order\Shipment $shipment */
-        $shipment = $observer->getEvent()->getShipment();
-        $order = $shipment->getOrder();
+        $order = $observer->getEvent()->getOrder();
         if ($order
             && $order->getPayment()->getMethod() === Two::CODE
             && $order->getTwoOrderId()
         ) {
-            if ($this->configRepository->getFulfillTrigger() == 'shipment') {
+            if (($this->configRepository->getFulfillTrigger() == 'complete')
+                && ($this->configRepository->getFulfillOrderStatus() == $order->getStatus())
+            ) {
                 if (!$this->isWholeOrderShipped($order)) {
-                    $response = $this->partialFulfill($shipment);
-                    $this->parseResponse($response, $order);
-                    return;
+                    $error = __("Two requires whole order to be shipped before it can be fulfilled.");
+                    throw new LocalizedException($error);
                 }
 
                 $langParams = '?lang=en_US';
@@ -105,6 +94,7 @@ class SalesOrderShipmentAfter implements ObserverInterface
                 $response = $this->apiAdapter->execute(
                     "/v1/order/" . $order->getTwoOrderId() . "/fulfilled" . $langParams
                 );
+
                 foreach ($order->getInvoiceCollection() as $invoice) {
                     $invoice->pay();
                     $invoice->setTransactionId($order->getPayment()->getLastTransId());
@@ -112,22 +102,6 @@ class SalesOrderShipmentAfter implements ObserverInterface
                 }
 
                 $this->parseResponse($response, $order);
-            } elseif ($this->configRepository->getFulfillTrigger() == 'complete') {
-                foreach ($order->getInvoiceCollection() as $invoice) {
-                    $invoice->pay();
-                    $invoice->setTransactionId($order->getPayment()->getLastTransId());
-                    $invoice->save();
-                }
-
-                $additionalInformation = $order->getPayment()->getAdditionalInformation();
-                $additionalInformation['marked_completed'] = true;
-
-                $order->getPayment()->setAdditionalInformation($additionalInformation);
-
-                $this->addStatusToOrderHistory(
-                    $order,
-                    'Two Order invoice has not been issued yet.',
-                );
             }
         }
     }
@@ -146,22 +120,6 @@ class SalesOrderShipmentAfter implements ObserverInterface
         }
 
         return true;
-    }
-
-    /**
-     * @param ShipmentInterface $shipment
-     * @return array
-     * @throws NoSuchEntityException
-     * @throws LocalizedException
-     */
-    private function partialFulfill(ShipmentInterface $shipment): array
-    {
-        $order = $shipment->getOrder();
-        $twoOrderId = $order->getTwoOrderId();
-
-        $payload = $this->composeShipment->execute($shipment, $order);
-
-        return $this->apiAdapter->execute('/v1/order/' . $twoOrderId . '/fulfilled', $payload);
     }
 
     /**

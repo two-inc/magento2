@@ -105,15 +105,26 @@
                     </depends>
                     <config_path>payment/two_payment/title</config_path>
                 </field>
-                <field id="fulfill_order" translate="label" type="select" sortOrder="30" showInDefault="1"
+                <field id="fulfill_trigger" translate="label" type="select" sortOrder="30" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Fulfilment trigger</label>
                     <comment>Fulfilment can be trigger by either initializing shipping or creating an invoice in the Magento admin</comment>
-                    <source_model>Two\Gateway\Model\Config\Source\Fulfill</source_model>
+                    <source_model>Two\Gateway\Model\Config\Source\FulfillTrigger</source_model>
                     <depends>
                         <field id="active">1</field>
                     </depends>
-                    <config_path>payment/two_payment/fulfill_order</config_path>
+                    <config_path>payment/two_payment/fulfill_trigger</config_path>
+                </field>
+                <field id="fulfill_order_status" translate="label" type="select" sortOrder="30" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Fulfilment order status</label>
+                    <comment>If fulfilment trigger is On Completion, select the order status which triggers fulfilment.</comment>
+                    <source_model>Two\Gateway\Model\Config\Source\FulfillOrderStatus</source_model>
+                    <depends>
+                        <field id="active">1</field>
+                        <field id="fulfill_trigger">complete</field>
+                    </depends>
+                    <config_path>payment/two_payment/fulfill_order_status</config_path>
                 </field>
                 <field id="sort_order" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1"
                        showInStore="1">

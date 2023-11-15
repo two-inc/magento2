@@ -18,7 +18,8 @@
                 <days_on_invoice>14</days_on_invoice>
                 <finalize_purchase>1</finalize_purchase>
                 <enable_order_intent>1</enable_order_intent>
-                <fulfill_order>invoice</fulfill_order>
+                <fulfill_trigger>shipment</fulfill_trigger>
+		<fulfill_order_status>complete</fulfill_order_status>
                 <international_telephone_enabled>1</international_telephone_enabled>
                 <company_autocomplete_enabled>1</company_autocomplete_enabled>
                 <show_telephone>payment</show_telephone>
