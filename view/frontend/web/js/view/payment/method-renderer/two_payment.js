@@ -44,7 +44,7 @@ define([
         if (quote.shippingAddress().telephone !== undefined) {
             telephone = quote.shippingAddress().telephone.replace(' ', '');
         }
-        if ($.isArray(quote.shippingAddress().customAttributes)) {
+        if (Array.isArray(quote.shippingAddress().customAttributes)) {
             shippingTwoTelephoneAttribute = _.findWhere(quote.shippingAddress().customAttributes, {
                 attribute_code: 'two_telephone'
             });
@@ -90,17 +90,17 @@ define([
         companyNameSelector: 'input#two_company_name',
         companyIdSelector: 'input#two_company_id',
         generalErrorMessage: $t(
-            'Something went wrong with your request. Please check your data and try again.'
+            'Something went wrong with your request to Two. Please try again later.'
+        ),
+        soleTraderErrorMessage: $t(
+            'Something went wrong with your request to Two. Your sole trader account could not be verified.'
         ),
         enterDetailsManuallyText: $t('Enter details manually'),
         enterDetailsManuallyButton: '#billing_enter_details_manually',
         searchForCompanyText: $t('Search for company'),
         searchForCompanyButton: '#billing_search_for_company',
-        token: {
-            delegation: '',
-            autofill: ''
-        },
-        showSoleTraderErrorMessage: ko.observable(false),
+        delegationToken: '',
+        autofillToken: '',
         showPopupMessage: ko.observable(false),
         showSoleTrader: ko.observable(false),
         showWhatIsTwo: ko.observable(false),
@@ -215,14 +215,10 @@ define([
                 if (response.approved) {
                     this.placeOrderBackend();
                 } else {
-                    this.messageContainer.addErrorMessage({
-                        message: this.getDeclinedErrorMessage(response.decline_reason)
-                    });
+                    this.showErrorMessage(this.getDeclinedErrorMessage(response.decline_reason));
                 }
             } else {
-                this.messageContainer.addErrorMessage({
-                    message: this.generalErrorMessage
-                });
+                this.showErrorMessage(this.generalErrorMessage);
             }
         },
         getDeclinedErrorMessage: function (declineReason) {
@@ -286,9 +282,7 @@ define([
                 }
             }
             if (message) {
-                self.messageContainer.addErrorMessage({
-                    message: message
-                });
+                this.showErrorMessage(message);
             }
         },
         getEmail: function () {
@@ -629,15 +623,14 @@ define([
             const data = this.getAutofillData();
             const URL =
                 config.popup_url +
-                `/soletrader/signup?businessToken=${this.token.delegation}&autofillToken=${this.token.autofill}&autofillData=${data}`;
+                `/soletrader/signup?businessToken=${this.delegationToken}&autofillToken=${this.autofillToken}&autofillData=${data}`;
             const windowFeatures =
                 'location=yes,resizable=yes,scrollbars=yes,status=yes, height=805, width=610';
             window.open(URL, '_blank', windowFeatures);
         },
 
-        flashSoleTraderErrorMessage() {
-            this.showSoleTraderErrorMessage(true);
-            setTimeout(() => this.showSoleTraderErrorMessage(false), 5000);
+        showErrorMessage(message) {
+            this.messageContainer.addErrorMessage({ message });
         },
 
         registeredOrganisationMode() {
@@ -649,17 +642,17 @@ define([
         },
 
         soleTraderMode() {
+            this.showSoleTrader(true);
             this.clearCompany(true);
             this.getTokens()
                 .then((json) => {
                     console.log(json);
-                    this.token.delegation = json.delegation_token;
-                    this.token.autofill = json.autofill_token;
+                    this.delegationToken = json.delegation_token;
+                    this.autofillToken = json.autofill_token;
                     this.getCurrentBuyer();
-                    this.showSoleTrader(true);
                     $(this.searchForCompanyButton).hide();
                 })
-                .catch(() => this.flashSoleTraderErrorMessage());
+                .catch(() => this.showErrorMessage(this.soleTraderErrorMessage));
         },
 
         getCurrentBuyer() {
@@ -667,7 +660,7 @@ define([
             const OPTIONS = {
                 credentials: 'include',
                 headers: {
-                    'two-delegated-authority-token': this.token.autofill
+                    'two-delegated-authority-token': this.autofillToken
                 }
             };
 
@@ -697,9 +690,7 @@ define([
                         this.showPopupMessage(true);
                     }
                 })
-                .catch(() => {
-                    this.flashSoleTraderErrorMessage();
-                });
+                .catch(() => this.showErrorMessage(this.soleTraderErrorMessage));
         },
 
         addVerifyEvent() {
@@ -707,7 +698,7 @@ define([
                 if (event.data === 'ACCEPTED') {
                     this.getCurrentBuyer();
                 } else {
-                    this.flashSoleTraderErrorMessage();
+                    this.showErrorMessage(this.soleTraderErrorMessage);
                 }
             });
         }
