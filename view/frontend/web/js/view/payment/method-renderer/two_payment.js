@@ -419,9 +419,8 @@ define([
                                             items.push({
                                                 id: item.name,
                                                 text: item.name,
-                                                html: item.highlight + ' (' + item.id + ')',
-                                                companyId: item.id,
-                                                approved: false
+                                                html: `${item.highlight} (${item.id})`,
+                                                companyId: item.id
                                             });
                                         }
                                     }
@@ -455,12 +454,12 @@ define([
                         })
                         .on('select2:select', function (e) {
                             var selectedItem = e.params.data;
-                            $('#select2-two_company_name-container').html(selectedItem.text);
+                            $('#select2-two_company_name-container').text(selectedItem.text);
                             self.companyName(selectedItem.text);
                             self.companyId(selectedItem.companyId);
                             $(self.companyIdSelector).prop('disabled', true);
                         });
-                    $('.select2-selection__rendered').text(self.companyName());
+                    $('#select2-two_company_name-container').text(self.companyName());
                     if ($(self.searchForCompanyButton).length == 0) {
                         $(self.companyNameSelector)
                             .closest('.field')
