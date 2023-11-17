@@ -44,7 +44,7 @@ define([
         if (quote.shippingAddress().telephone !== undefined) {
             telephone = quote.shippingAddress().telephone.replace(' ', '');
         }
-        if ($.isArray(quote.shippingAddress().customAttributes)) {
+        if (Array.isArray(quote.shippingAddress().customAttributes)) {
             shippingTwoTelephoneAttribute = _.findWhere(quote.shippingAddress().customAttributes, {
                 attribute_code: 'two_telephone'
             });
@@ -90,17 +90,17 @@ define([
         companyNameSelector: 'input#two_company_name',
         companyIdSelector: 'input#two_company_id',
         generalErrorMessage: $t(
-            'Something went wrong with your request. Please check your data and try again.'
+            'Something went wrong with your request to Two. Please try again later.'
+        ),
+        soleTraderErrorMessage: $t(
+            'Something went wrong with your request to Two. Your sole trader account could not be verified.'
         ),
         enterDetailsManuallyText: $t('Enter details manually'),
         enterDetailsManuallyButton: '#billing_enter_details_manually',
         searchForCompanyText: $t('Search for company'),
         searchForCompanyButton: '#billing_search_for_company',
-        token: {
-            delegation: '',
-            autofill: ''
-        },
-        showSoleTraderErrorMessage: ko.observable(false),
+        delegationToken: '',
+        autofillToken: '',
         showPopupMessage: ko.observable(false),
         showSoleTrader: ko.observable(false),
         showWhatIsTwo: ko.observable(false),
@@ -215,14 +215,10 @@ define([
                 if (response.approved) {
                     this.placeOrderBackend();
                 } else {
-                    this.messageContainer.addErrorMessage({
-                        message: this.getDeclinedErrorMessage(response.decline_reason)
-                    });
+                    this.showErrorMessage(this.getDeclinedErrorMessage(response.decline_reason));
                 }
             } else {
-                this.messageContainer.addErrorMessage({
-                    message: this.generalErrorMessage
-                });
+                this.showErrorMessage(this.generalErrorMessage);
             }
         },
         getDeclinedErrorMessage: function (declineReason) {
@@ -286,9 +282,7 @@ define([
                 }
             }
             if (message) {
-                self.messageContainer.addErrorMessage({
-                    message: message
-                });
+                this.showErrorMessage(message);
             }
         },
         getEmail: function () {
@@ -425,9 +419,8 @@ define([
                                             items.push({
                                                 id: item.name,
                                                 text: item.name,
-                                                html: item.highlight + ' (' + item.id + ')',
-                                                companyId: item.id,
-                                                approved: false
+                                                html: `${item.highlight} (${item.id})`,
+                                                companyId: item.id
                                             });
                                         }
                                     }
@@ -461,12 +454,12 @@ define([
                         })
                         .on('select2:select', function (e) {
                             var selectedItem = e.params.data;
-                            $('#select2-two_company_name-container').html(selectedItem.text);
+                            $('#select2-two_company_name-container').text(selectedItem.text);
                             self.companyName(selectedItem.text);
                             self.companyId(selectedItem.companyId);
                             $(self.companyIdSelector).prop('disabled', true);
                         });
-                    $('.select2-selection__rendered').text(self.companyName());
+                    $('#select2-two_company_name-container').text(self.companyName());
                     if ($(self.searchForCompanyButton).length == 0) {
                         $(self.companyNameSelector)
                             .closest('.field')
@@ -629,15 +622,14 @@ define([
             const data = this.getAutofillData();
             const URL =
                 config.popup_url +
-                `/soletrader/signup?businessToken=${this.token.delegation}&autofillToken=${this.token.autofill}&autofillData=${data}`;
+                `/soletrader/signup?businessToken=${this.delegationToken}&autofillToken=${this.autofillToken}&autofillData=${data}`;
             const windowFeatures =
                 'location=yes,resizable=yes,scrollbars=yes,status=yes, height=805, width=610';
             window.open(URL, '_blank', windowFeatures);
         },
 
-        flashSoleTraderErrorMessage() {
-            this.showSoleTraderErrorMessage(true);
-            setTimeout(() => this.showSoleTraderErrorMessage(false), 5000);
+        showErrorMessage(message) {
+            this.messageContainer.addErrorMessage({ message });
         },
 
         registeredOrganisationMode() {
@@ -649,17 +641,17 @@ define([
         },
 
         soleTraderMode() {
+            this.showSoleTrader(true);
             this.clearCompany(true);
             this.getTokens()
                 .then((json) => {
                     console.log(json);
-                    this.token.delegation = json.delegation_token;
-                    this.token.autofill = json.autofill_token;
+                    this.delegationToken = json.delegation_token;
+                    this.autofillToken = json.autofill_token;
                     this.getCurrentBuyer();
-                    this.showSoleTrader(true);
                     $(this.searchForCompanyButton).hide();
                 })
-                .catch(() => this.flashSoleTraderErrorMessage());
+                .catch(() => this.showErrorMessage(this.soleTraderErrorMessage));
         },
 
         getCurrentBuyer() {
@@ -667,7 +659,7 @@ define([
             const OPTIONS = {
                 credentials: 'include',
                 headers: {
-                    'two-delegated-authority-token': this.token.autofill
+                    'two-delegated-authority-token': this.autofillToken
                 }
             };
 
@@ -686,10 +678,10 @@ define([
                         const email = this.getEmail();
                         if (json.email == email) {
                             // Only autofill if email matches
-                            $('#select2-two_company_name-container').html(json.company_name);
+                            $('#select2-two_company_name-container').text(json.company_name);
                             this.companyName(json.company_name);
                             this.companyId(json.organization_number);
-                            $(this.companyIdSelector).prop('disabled', true);
+                            this.showPopupMessage(false);
                         } else {
                             this.showPopupMessage(true);
                         }
@@ -697,9 +689,7 @@ define([
                         this.showPopupMessage(true);
                     }
                 })
-                .catch(() => {
-                    this.flashSoleTraderErrorMessage();
-                });
+                .catch(() => this.showErrorMessage(this.soleTraderErrorMessage));
         },
 
         addVerifyEvent() {
@@ -707,7 +697,7 @@ define([
                 if (event.data === 'ACCEPTED') {
                     this.getCurrentBuyer();
                 } else {
-                    this.flashSoleTraderErrorMessage();
+                    this.showErrorMessage(this.soleTraderErrorMessage);
                 }
             });
         }

@@ -104,10 +104,10 @@ define([
                                 return markup;
                             },
                             templateResult: function (data) {
-                                return data.id;
+                                return data.html;
                             },
                             templateSelection: function (data) {
-                                return data.id;
+                                return data.text;
                             },
                             ajax: {
                                 dataType: 'json',
@@ -136,10 +136,10 @@ define([
                                         for (var i = 0; i < response.data.items.length; i++) {
                                             var item = response.data.items[i];
                                             items.push({
-                                                id: item.name + ' (' + item.id + ')',
-                                                companyId: item.id,
-                                                companyName: item.name,
-                                                approved: false
+                                                id: item.name,
+                                                text: item.name,
+                                                html: `${item.highlight} (${item.id})`,
+                                                companyId: item.id
                                             });
                                         }
                                     }
@@ -175,8 +175,8 @@ define([
                         })
                         .on('select2:select', function (e) {
                             var selectedItem = e.params.data;
-                            $('.select2-selection__rendered').html(selectedItem.id);
-                            self.setCompanyData(selectedItem.companyId, selectedItem.companyName);
+                            $('.select2-selection__rendered').text(selectedItem.id);
+                            self.setCompanyData(selectedItem.companyId, selectedItem.text);
                             if (self.isAddressAutoCompleteEnabled) {
                                 let countryId = $(self.countrySelector).val();
                                 if (
