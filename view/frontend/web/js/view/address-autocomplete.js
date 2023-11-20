@@ -22,8 +22,9 @@ define([
         isInternationalTelephoneEnabled: config.isInternationalTelephoneEnabled,
         showTelephone: config.showTelephone,
         countrySelector: '#shipping-new-address-form select[name="country_id"]',
-        companySelector: '#shipping-new-address-form input[name="company"]',
-        telephoneSelector: 'input[name="custom_attributes[two_telephone]"]',
+        companyNameSelector: '#shipping-new-address-form input[name="company"]',
+        companyIdSelector: '#shipping-new-address-form input[name="custom_attributes[company_id]"]',
+        telephoneSelector: '#shipping-new-address-form input[name="custom_attributes[two_telephone]"]',
         shippingTelephoneSelector: '#shipping-new-address-form input[name="telephone"]',
         enterDetailsManuallyText: $t('Enter details manually'),
         enterDetailsManuallyButton: '#shipping_enter_details_manually',
@@ -64,19 +65,21 @@ define([
         toggleCompanyVisibility: function () {
             const countryCode = $(this.countrySelector).val().toLowerCase();
             customerData.set('twoCountryCode', countryCode);
-            let field = $(this.companySelector).closest('.field');
+            let field = $(this.companyNameSelector).closest('.field');
             if (countryCode in config.companyAutoCompleteConfig.searchHosts) {
                 field.show();
             } else {
                 field.hide();
                 this.setCompanyData();
-                $('.select2-selection__rendered').text('');
-                $(this.companySelector).val('');
             }
         },
         setCompanyData: function (twoCompanyId = '', twoCompanyName = '') {
+            console.log({twoCompanyId, twoCompanyName});
             customerData.set('twoCompanyId', twoCompanyId);
             customerData.set('twoCompanyName', twoCompanyName);
+            $('.select2-selection__rendered').text(twoCompanyName);
+            $(this.companyNameSelector).val(twoCompanyName)
+            $(this.companyIdSelector).val(twoCompanyId)
         },
         enableInternationalTelephone: function () {
             var self = this;
@@ -93,7 +96,7 @@ define([
         enableCompanyAutoComplete: function () {
             var self = this;
             require(['Two_Gateway/select2-4.1.0/js/select2.min'], function () {
-                $.async(self.companySelector, function (companyNameField) {
+                $.async(self.companyNameSelector, function (companyNameField) {
                     var searchLimit = config.companyAutoCompleteConfig.searchLimit;
                     $(companyNameField)
                         .select2({
@@ -166,8 +169,9 @@ define([
                                     );
                                 $(self.enterDetailsManuallyButton).on('click', function (e) {
                                     self.setCompanyData();
-                                    $(self.companySelector).select2('destroy');
-                                    $(self.companySelector).attr('type', 'text');
+                                    $(self.companyNameSelector).select2('destroy');
+                                    $(self.companyNameSelector).attr('type', 'text');
+                                    $(self.companyNameSelector).val('');
                                     $(self.searchForCompanyButton).show();
                                 });
                             }
@@ -212,12 +216,12 @@ define([
                                 }
                             }
                         });
-                    if ($(self.companySelector).val()) {
+                    if ($(self.companyNameSelector).val()) {
                         // pre-fill on checkout render
-                        $('.select2-selection__rendered').text($(self.companySelector).val());
+                        $('.select2-selection__rendered').text($(self.companyNameSelector).val());
                     }
                     if ($(self.searchForCompanyButton).length == 0) {
-                        $(self.companySelector)
+                        $(self.companyNameSelector)
                             .closest('.field')
                             .append(
                                 `<div id="shipping_search_for_company" class="search_for_company" title="${self.searchForCompanyText}">` +

@@ -46,10 +46,10 @@ class CustomerAddress implements DataPatchInterface
         $this->moduleDataSetup->getConnection()->startSetup();
 
         $attributes = [
+            ['key' => 'company_name', 'label' => 'Company Name'],
             ['key' => 'company_id', 'label' => 'Company Id'],
             ['key' => 'department', 'label' => 'Department'],
             ['key' => 'project', 'label' => 'Project'],
-            ['key' => 'company_name', 'label' => 'Company Name']
         ];
 
         $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
