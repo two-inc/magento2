@@ -9,4 +9,7 @@
     <extension_attributes for="Magento\Quote\Api\Data\AddressInterface">
         <attribute code="two_telephone" type="string" />
     </extension_attributes>
+    <extension_attributes for="Magento\Quote\Api\Data\AddressInterface">
+        <attribute code="company_id" type="string" />
+    </extension_attributes>
 </config>
