@@ -36,28 +36,8 @@ define([
 ) {
     'use strict';
 
-    let config = window.checkoutConfig.payment.two_payment,
-        telephone = '',
-        customAttributesObject = {},
-        shippingTwoTelephoneAttribute = {};
-    if (quote.shippingAddress()) {
-        if (quote.shippingAddress().telephone !== undefined) {
-            telephone = quote.shippingAddress().telephone.replace(' ', '');
-        }
-        if (Array.isArray(quote.shippingAddress().customAttributes)) {
-            shippingTwoTelephoneAttribute = _.findWhere(quote.shippingAddress().customAttributes, {
-                attribute_code: 'two_telephone'
-            });
-            telephone = shippingTwoTelephoneAttribute
-                ? shippingTwoTelephoneAttribute.value
-                : telephone;
-        }
-    }
-    if (quote.billingAddress() && $.isArray(quote.billingAddress().customAttributes)) {
-        quote.billingAddress().customAttributes.forEach(function (value) {
-            customAttributesObject[value.attribute_code] = value.value;
-        });
-    }
+    let config = window.checkoutConfig.payment.two_payment;
+    window.quote = quote;
 
     return Component.extend({
         defaults: {
@@ -77,18 +57,18 @@ define([
         soleTraderCountryCodes: ['gb'],
         companyName: ko.observable(''),
         companyId: ko.observable(''),
-        project: ko.observable(customAttributesObject.project),
-        department: ko.observable(customAttributesObject.department),
+        project: ko.observable(''),
+        department: ko.observable(''),
         orderNote: ko.observable(''),
         poNumber: ko.observable(''),
-        telephone: ko.observable(telephone),
+        telephone: ko.observable(''),
         fullTelephone: ko.observable(''),
         countryCode: ko.observable(''),
         iti: null,
         formSelector: 'form#two_gateway_form',
         telephoneSelector: 'input#two_telephone',
-        companyNameSelector: 'input#two_company_name',
-        companyIdSelector: 'input#two_company_id',
+        companyNameSelector: 'input#company_name',
+        companyIdSelector: 'input#company_id',
         generalErrorMessage: $t(
             'Something went wrong with your request to Two. Please try again later.'
         ),
@@ -115,50 +95,99 @@ define([
             this.configureFormValidation();
             this.addVerifyEvent();
         },
-        fillCustomerData: function () {
-            const fillCompanyName = (companyName) => {
-                const billingAddress = quote.billingAddress(),
-                    fallbackCompanyName =
-                        typeof billingAddress.company == 'string' ? billingAddress.company : '';
-                companyName =
-                    typeof companyName == 'string' && companyName
-                        ? companyName
-                        : fallbackCompanyName;
-                this.companyName(companyName);
-                $(this.companyNameSelector).val(companyName);
-            };
-            customerData.get('twoCompanyName').subscribe(fillCompanyName);
-            fillCompanyName(customerData.get('twoCompanyName')());
-
-            const fillCompanyId = (companyId) => {
-                companyId = typeof companyId == 'string' ? companyId : '';
-                this.companyId(companyId);
-                $(this.companyIdSelector).val(companyId);
-            };
-            customerData.get('twoCompanyId').subscribe(fillCompanyId);
-            fillCompanyId(customerData.get('twoCompanyId')());
-
-            const fillTelephone = (telephone) => {
-                telephone = typeof telephone == 'string' ? telephone : '';
-                this.telephone(telephone);
-            };
-            customerData.get('twoTelephone').subscribe(fillTelephone);
-            fillTelephone(customerData.get('twoTelephone')());
-
-            const fillCountryCode = (countryCode) => {
-                countryCode = typeof countryCode == 'string' ? countryCode : '';
-                this.countryCode(countryCode);
-                if (this.soleTraderCountryCodes.includes(countryCode.toLowerCase())) {
-                    this.showModeTab(true);
-                } else {
-                    if (this.showSoleTrader()) {
-                        this.registeredOrganisationMode();
-                    }
-                    this.showModeTab(false);
+        fillCompanyName: function (self, companyName) {
+            const billingAddress = quote.billingAddress();
+            const fallbackCompanyName =
+                    typeof billingAddress.company == 'string' ? billingAddress.company : '';
+            companyName =
+                typeof companyName == 'string' && companyName
+                    ? companyName
+                    : fallbackCompanyName;
+            self.companyName(companyName);
+            $(self.companyNameSelector).val(companyName);
+            $('#select2-company_name-container')?.text(companyName);
+        },
+        fillCompanyId: function (self, companyId) {
+            companyId = typeof companyId == 'string' ? companyId : '';
+            self.companyId(companyId);
+        },
+        fillTelephone: function (self, telephone) {
+            telephone = typeof telephone == 'string' ? telephone : '';
+            self.telephone(telephone);
+        },
+        fillCountryCode: function (self, countryCode) {
+            countryCode = typeof countryCode == 'string' ? countryCode : '';
+            self.countryCode(countryCode);
+            if (self.soleTraderCountryCodes.includes(countryCode.toLowerCase())) {
+                self.showModeTab(true);
+            } else {
+                if (self.showSoleTrader()) {
+                    self.registeredOrganisationMode();
                 }
-            };
-            customerData.get('twoCountryCode').subscribe(fillCountryCode);
-            fillCountryCode(customerData.get('twoCountryCode')());
+                self.showModeTab(false);
+            }
+        },
+        updateAddress: function (self, address) {
+            if (!address) return;
+            let telephone = (address.telephone || '').replace(' ', '');
+            let companyName = address.company;
+            let companyId = '';
+            let department = '';
+            let project = '';
+            address.customAttributes.forEach(function (item) {
+                console.log(item);
+                if (item.attribute_code == 'company_id') {
+                    companyId = item.value;
+                }
+                if (item.attribute_code == 'company_name') {
+                    companyName = item.value;
+                }
+                if (item.attribute_code == 'two_telephone') {
+                    telephone = telephone;
+                }
+                if (item.attribute_code == 'project') {
+                    project = item.value;
+                }
+                if (item.attribute_code == 'department') {
+                    department = item.value;
+                }
+            })
+            if (telephone) self.fillTelephone(self, telephone);
+            if (companyName) {
+                self.fillCompanyName(self, companyName);
+                self.fillCompanyId(self, companyId);
+            }
+            if (project) self.project(project);
+            if (department) self.department(department);
+        },
+        updateShippingAddress: function (self, shippingAddress) {
+            console.log({ shippingAddress });
+            if (shippingAddress.getCacheKey() == quote.billingAddress().getCacheKey()) {
+                self.updateAddress(self, shippingAddress);
+            }
+        },
+        updateBillingAddress: function (self, billingAddress) {
+            console.log({ billingAddress });
+            self.updateAddress(self, billingAddress);
+        },
+        fillCustomerData: function () {
+            quote.shippingAddress.subscribe((address) => this.updateShippingAddress(this, address));
+            this.updateShippingAddress(this, quote.shippingAddress());
+
+            quote.billingAddress.subscribe((address) => this.updateBillingAddress(this, address));
+            this.updateBillingAddress(this, quote.billingAddress());
+
+            customerData.get('twoCompanyName').subscribe((companyName) => this.fillCompanyName(this, companyName));
+            this.fillCompanyName(this, customerData.get('twoCompanyName')());
+
+            customerData.get('twoCompanyId').subscribe((companyId) => this.fillCompanyId(this, companyId));
+            this.fillCompanyId(this, customerData.get('twoCompanyId')());
+
+            customerData.get('twoTelephone').subscribe((telephone) => this.fillTelephone(this, telephone));
+            this.fillTelephone(this, customerData.get('twoTelephone')());
+
+            customerData.get('twoCountryCode').subscribe((countryCode) => this.fillCountryCode(this, countryCode));
+            this.fillCountryCode(this, customerData.get('twoCountryCode')());
         },
         afterPlaceOrder: function () {
             var url = $.mage.cookies.get(config.redirectUrlCookieCode);
@@ -454,12 +483,10 @@ define([
                         })
                         .on('select2:select', function (e) {
                             var selectedItem = e.params.data;
-                            $('#select2-two_company_name-container').text(selectedItem.text);
-                            self.companyName(selectedItem.text);
-                            self.companyId(selectedItem.companyId);
-                            $(self.companyIdSelector).prop('disabled', true);
+                            self.fillCompanyName(self, selectedItem.text);
+                            self.fillCompanyId(self, selectedItem.companyId);
                         });
-                    $('#select2-two_company_name-container').text(self.companyName());
+                    $('#select2-company_name-container').text(self.companyName());
                     if ($(self.searchForCompanyButton).length == 0) {
                         $(self.companyNameSelector)
                             .closest('.field')
@@ -557,7 +584,7 @@ define([
             companyIdSelector.val('');
             companyIdSelector.prop('disabled', disableCompanyId);
             const companyNameSelector = $(this.companyNameSelector);
-            companyNameSelector.val(this.companyName());
+            companyNameSelector.val('');
             if (companyNameSelector.data('select2')) {
                 companyNameSelector.select2('destroy');
                 companyNameSelector.attr('type', 'text');
@@ -678,7 +705,7 @@ define([
                         const email = this.getEmail();
                         if (json.email == email) {
                             // Only autofill if email matches
-                            $('#select2-two_company_name-container').text(json.company_name);
+                            $('#select2-company_name-container').text(json.company_name);
                             this.companyName(json.company_name);
                             this.companyId(json.organization_number);
                             this.showPopupMessage(false);

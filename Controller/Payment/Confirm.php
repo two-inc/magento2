@@ -133,14 +133,14 @@ class Confirm extends Action
         if (isset($twoOrder['buyer']['company']['company_name'])) {
             $address->setData('company_name', $twoOrder['buyer']['company']['company_name']);
         }
+        if (isset($twoOrder['buyer']['representative']['phone_number'])) {
+            $address->setData('two_telephone', $twoOrder['buyer']['representative']['phone_number']);
+        }
         if (isset($twoOrder['buyer_department'])) {
             $address->setData('department', $twoOrder['buyer_department']);
         }
         if (isset($twoOrder['buyer_project'])) {
             $address->setData('project', $twoOrder['buyer_project']);
-        }
-        if (isset($twoOrder['buyer']['representative']['phone_number'])) {
-            $address->setData('two_telephone', $twoOrder['buyer']['representative']['phone_number']);
         }
         $address->save();
     }
