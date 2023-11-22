@@ -1,5 +1,5 @@
 name: phpstan
-on: pull_request
+on: push
 
 jobs:
   build:
@@ -13,7 +13,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Start Docker
         run: docker run --detach --name magento-project-community-edition michielgerritsen/magento-project-community-edition:${{ matrix.PHP_VERSION }}-magento${{ matrix.MAGENTO_VERSION }}
