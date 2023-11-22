@@ -98,11 +98,9 @@ define([
         fillCompanyName: function (self, companyName) {
             const billingAddress = quote.billingAddress();
             const fallbackCompanyName =
-                    typeof billingAddress.company == 'string' ? billingAddress.company : '';
+                typeof billingAddress.company == 'string' ? billingAddress.company : '';
             companyName =
-                typeof companyName == 'string' && companyName
-                    ? companyName
-                    : fallbackCompanyName;
+                typeof companyName == 'string' && companyName ? companyName : fallbackCompanyName;
             self.companyName(companyName);
             $(self.companyNameSelector).val(companyName);
             $('#select2-company_name-container')?.text(companyName);
@@ -152,7 +150,7 @@ define([
                     if (item.attribute_code == 'department') {
                         department = item.value;
                     }
-                })
+                });
             }
             if (telephone) self.fillTelephone(self, telephone);
             if (companyName) {
@@ -179,16 +177,24 @@ define([
             quote.billingAddress.subscribe((address) => this.updateBillingAddress(this, address));
             this.updateBillingAddress(this, quote.billingAddress());
 
-            customerData.get('twoCompanyName').subscribe((companyName) => this.fillCompanyName(this, companyName));
+            customerData
+                .get('twoCompanyName')
+                .subscribe((companyName) => this.fillCompanyName(this, companyName));
             this.fillCompanyName(this, customerData.get('twoCompanyName')());
 
-            customerData.get('twoCompanyId').subscribe((companyId) => this.fillCompanyId(this, companyId));
+            customerData
+                .get('twoCompanyId')
+                .subscribe((companyId) => this.fillCompanyId(this, companyId));
             this.fillCompanyId(this, customerData.get('twoCompanyId')());
 
-            customerData.get('twoTelephone').subscribe((telephone) => this.fillTelephone(this, telephone));
+            customerData
+                .get('twoTelephone')
+                .subscribe((telephone) => this.fillTelephone(this, telephone));
             this.fillTelephone(this, customerData.get('twoTelephone')());
 
-            customerData.get('twoCountryCode').subscribe((countryCode) => this.fillCountryCode(this, countryCode));
+            customerData
+                .get('twoCountryCode')
+                .subscribe((countryCode) => this.fillCountryCode(this, countryCode));
             this.fillCountryCode(this, customerData.get('twoCountryCode')());
         },
         afterPlaceOrder: function () {

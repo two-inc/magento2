@@ -24,7 +24,8 @@ define([
         countrySelector: '#shipping-new-address-form select[name="country_id"]',
         companyNameSelector: '#shipping-new-address-form input[name="company"]',
         companyIdSelector: '#shipping-new-address-form input[name="custom_attributes[company_id]"]',
-        telephoneSelector: '#shipping-new-address-form input[name="custom_attributes[two_telephone]"]',
+        telephoneSelector:
+            '#shipping-new-address-form input[name="custom_attributes[two_telephone]"]',
         shippingTelephoneSelector: '#shipping-new-address-form input[name="telephone"]',
         enterDetailsManuallyText: $t('Enter details manually'),
         enterDetailsManuallyButton: '#shipping_enter_details_manually',
@@ -78,8 +79,8 @@ define([
             customerData.set('twoCompanyId', twoCompanyId);
             customerData.set('twoCompanyName', twoCompanyName);
             $('.select2-selection__rendered').text(twoCompanyName);
-            $(this.companyNameSelector).val(twoCompanyName)
-            $(this.companyIdSelector).val(twoCompanyId)
+            $(this.companyNameSelector).val(twoCompanyName);
+            $(this.companyIdSelector).val(twoCompanyId);
         },
         enableInternationalTelephone: function () {
             var self = this;
