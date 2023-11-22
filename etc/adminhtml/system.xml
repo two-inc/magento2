@@ -115,10 +115,10 @@
                     </depends>
                     <config_path>payment/two_payment/fulfill_trigger</config_path>
                 </field>
-                <field id="fulfill_order_status" translate="label" type="select" sortOrder="30" showInDefault="1"
+                <field id="fulfill_order_status" translate="label" type="multiselect" sortOrder="30" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Fulfilment order status</label>
-                    <comment>If fulfilment trigger is On Completion, select the order status which triggers fulfilment.</comment>
+                    <comment>If fulfilment trigger is On Completion, select one of more order statuses which can trigger fulfilment.</comment>
                     <source_model>Two\Gateway\Model\Config\Source\FulfillOrderStatus</source_model>
                     <depends>
                         <field id="active">1</field>
