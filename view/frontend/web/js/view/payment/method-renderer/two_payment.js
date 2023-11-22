@@ -134,24 +134,26 @@ define([
             let companyId = '';
             let department = '';
             let project = '';
-            address.customAttributes.forEach(function (item) {
-                console.log(item);
-                if (item.attribute_code == 'company_id') {
-                    companyId = item.value;
-                }
-                if (item.attribute_code == 'company_name') {
-                    companyName = item.value;
-                }
-                if (item.attribute_code == 'two_telephone') {
-                    telephone = telephone;
-                }
-                if (item.attribute_code == 'project') {
-                    project = item.value;
-                }
-                if (item.attribute_code == 'department') {
-                    department = item.value;
-                }
-            })
+            if (Array.isArray(address.customAttributes)) {
+                address.customAttributes.forEach(function (item) {
+                    console.log(item);
+                    if (item.attribute_code == 'company_id') {
+                        companyId = item.value;
+                    }
+                    if (item.attribute_code == 'company_name') {
+                        companyName = item.value;
+                    }
+                    if (item.attribute_code == 'two_telephone') {
+                        telephone = telephone;
+                    }
+                    if (item.attribute_code == 'project') {
+                        project = item.value;
+                    }
+                    if (item.attribute_code == 'department') {
+                        department = item.value;
+                    }
+                })
+            }
             if (telephone) self.fillTelephone(self, telephone);
             if (companyName) {
                 self.fillCompanyName(self, companyName);
