@@ -111,9 +111,9 @@ interface RepositoryInterface
      *
      * @param int|null $storeId
      *
-     * @return string
+     * @return array
      */
-    public function getFulfillOrderStatus(?int $storeId = null): string;
+    public function getFulfillOrderStatusList(?int $storeId = null): array;
 
     /**
      * Check if international telephone is enabled

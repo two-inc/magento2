@@ -78,7 +78,7 @@ class SalesOrderSaveAfter implements ObserverInterface
             && $order->getTwoOrderId()
         ) {
             if (($this->configRepository->getFulfillTrigger() == 'complete')
-                && ($this->configRepository->getFulfillOrderStatus() == $order->getStatus())
+                && in_array($order->getStatus(), $this->configRepository->getFulfillOrderStatusList())
             ) {
                 if (!$this->isWholeOrderShipped($order)) {
                     $error = __("Two requires whole order to be shipped before it can be fulfilled.");
