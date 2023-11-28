@@ -153,15 +153,23 @@ class Repository implements RepositoryInterface
      */
     public function isInternationalTelephoneEnabled(?int $storeId = null): bool
     {
-        return $this->isSetFlag(self::XML_PATH_INTERNATIONAL_TELEPHONE_ENABLED, $storeId);
+        return $this->isSetFlag(self::XML_PATH_ENABLE_INTERNATIONAL_TELEPHONE, $storeId);
     }
 
     /**
      * @inheritDoc
      */
-    public function isCompanyAutocompleteEnabled(?int $storeId = null): bool
+    public function isCompanySearchEnabled(?int $storeId = null): bool
     {
-        return $this->isSetFlag(self::XML_PATH_COMPANY_NAME_AUTOCOMPLETE_ENABLED, $storeId);
+        return $this->isSetFlag(self::XML_PATH_ENABLE_COMPANY_SEARCH, $storeId);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isOrderIntentEnabled(?int $storeId = null): bool
+    {
+        return $this->isSetFlag(self::XML_PATH_ENABLE_ORDER_INTENT, $storeId);
     }
 
     /**
@@ -335,9 +343,9 @@ class Repository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function isAddressAutocompleteEnabled(?int $storeId = null): bool
+    public function isAddressSearchEnabled(?int $storeId = null): bool
     {
-        return $this->isSetFlag(self::XML_PATH_COMPANY_NAME_AUTOCOMPLETE_ENABLED, $storeId) &&
-            $this->isSetFlag(self::XML_PATH_ENABLE_ADDRESS_AUTOCOMPLETE, $storeId);
+        return $this->isSetFlag(self::XML_PATH_ENABLE_COMPANY_SEARCH, $storeId) &&
+            $this->isSetFlag(self::XML_PATH_ENABLE_ADDRESS_SEARCH, $storeId);
     }
 }

@@ -44,8 +44,7 @@ define([
             template: 'Two_Gateway/payment/two_payment'
         },
         redirectAfterPlaceOrder: false,
-        isOrderIntentEnabled: false,
-        isCompanyNameAutoCompleteEnabled: config.isCompanyNameAutoCompleteEnabled,
+        isOrderIntentEnabled: config.isOrderIntentEnabled,
         isInternationalTelephoneEnabled: config.isInternationalTelephoneEnabled,
         isDepartmentFieldEnabled: config.isDepartmentFieldEnabled,
         showTelephone: config.showTelephone,
@@ -69,6 +68,10 @@ define([
         telephoneSelector: 'input#two_telephone',
         companyNameSelector: 'input#company_name',
         companyIdSelector: 'input#company_id',
+        orderIntentApprovedMessage: $t(
+            'Your invoice purchase with Two is likely to be accepted subject to additional checks.'
+        ),
+        orderIntentDeclinedMessage: $t('Your invoice purchase with Two has been declined.'),
         generalErrorMessage: $t(
             'Something went wrong with your request to Two. Please try again later.'
         ),
@@ -95,43 +98,59 @@ define([
             this.configureFormValidation();
             this.popupMessageListener();
         },
-        fillCompanyName: function (self, companyName) {
-            const billingAddress = quote.billingAddress();
-            const fallbackCompanyName =
-                typeof billingAddress.company == 'string' ? billingAddress.company : '';
-            companyName =
-                typeof companyName == 'string' && companyName ? companyName : fallbackCompanyName;
-            self.companyName(companyName);
-            $(self.companyNameSelector).val(companyName);
-            $('#select2-company_name-container')?.text(companyName);
-        },
-        fillCompanyId: function (self, companyId) {
+        fillCompanyData: function ({ companyId, companyName }) {
+            console.log({ companyId, companyName });
+            companyName = typeof companyName == 'string' && companyName ? companyName : '';
             companyId = typeof companyId == 'string' ? companyId : '';
-            self.companyId(companyId);
-        },
-        fillTelephone: function (self, telephone) {
-            telephone = typeof telephone == 'string' ? telephone : '';
-            self.telephone(telephone);
-        },
-        fillCountryCode: function (self, countryCode) {
-            countryCode = typeof countryCode == 'string' ? countryCode : '';
-            self.countryCode(countryCode);
-            if (self.soleTraderCountryCodes.includes(countryCode.toLowerCase())) {
-                self.showModeTab(true);
-            } else {
-                if (self.showSoleTrader()) {
-                    self.registeredOrganisationMode();
-                }
-                self.showModeTab(false);
+            if (!companyName || !companyId) return;
+            this.companyName(companyName);
+            $(this.companyNameSelector).val(companyName);
+            $('#select2-company_name-container')?.text(companyName);
+            this.companyId(companyId);
+            $(this.companyIdSelector).val(companyId);
+            if (this.isOrderIntentEnabled) {
+                fullScreenLoader.startLoader();
+                var self = this;
+                this.placeOrderIntent()
+                    .always(function () {
+                        fullScreenLoader.stopLoader();
+                    })
+                    .done(function (response) {
+                        self.processOrderIntentSuccessResponse(response);
+                    })
+                    .fail(function (response) {
+                        self.processOrderIntentErrorResponse(response);
+                    });
             }
         },
-        updateAddress: function (self, address) {
+        fillTelephone: function (telephone) {
+            console.log({ telephone });
+            telephone = typeof telephone == 'string' ? telephone : '';
+            if (!telephone) return;
+            this.telephone(telephone);
+        },
+        fillCountryCode: function (countryCode) {
+            console.log({ countryCode });
+            countryCode = typeof countryCode == 'string' ? countryCode : '';
+            if (!countryCode) return;
+            this.countryCode(countryCode);
+            if (this.soleTraderCountryCodes.includes(countryCode.toLowerCase())) {
+                this.showModeTab(true);
+            } else {
+                if (this.showSoleTrader()) {
+                    this.registeredOrganisationMode();
+                }
+                this.showModeTab(false);
+            }
+        },
+        updateAddress: function (address) {
             if (!address) return;
             let telephone = (address.telephone || '').replace(' ', '');
             let companyName = address.company;
             let companyId = '';
             let department = '';
             let project = '';
+            let countryCode = address.countryId.toLowerCase();
             if (Array.isArray(address.customAttributes)) {
                 address.customAttributes.forEach(function (item) {
                     console.log(item);
@@ -152,50 +171,44 @@ define([
                     }
                 });
             }
-            if (telephone) self.fillTelephone(self, telephone);
-            if (companyName) {
-                self.fillCompanyName(self, companyName);
-                self.fillCompanyId(self, companyId);
-            }
-            if (project) self.project(project);
-            if (department) self.department(department);
+            this.fillCountryCode(countryCode);
+            this.fillTelephone(telephone);
+            this.fillCompanyData({ companyName, companyId });
+            if (project) this.project(project);
+            if (department) this.department(department);
         },
-        updateShippingAddress: function (self, shippingAddress) {
+        updateShippingAddress: function (shippingAddress) {
             console.log({ shippingAddress });
             if (shippingAddress.getCacheKey() == quote.billingAddress().getCacheKey()) {
-                self.updateAddress(self, shippingAddress);
+                this.updateAddress(shippingAddress);
             }
         },
-        updateBillingAddress: function (self, billingAddress) {
+        updateBillingAddress: function (billingAddress) {
             console.log({ billingAddress });
-            self.updateAddress(self, billingAddress);
+            this.updateAddress(billingAddress);
         },
         fillCustomerData: function () {
-            quote.shippingAddress.subscribe((address) => this.updateShippingAddress(this, address));
-            this.updateShippingAddress(this, quote.shippingAddress());
+            var self = this;
+            quote.shippingAddress.subscribe((address) => self.updateShippingAddress(address));
+            this.updateShippingAddress(quote.shippingAddress());
 
-            quote.billingAddress.subscribe((address) => this.updateBillingAddress(this, address));
-            this.updateBillingAddress(this, quote.billingAddress());
-
-            customerData
-                .get('twoCompanyName')
-                .subscribe((companyName) => this.fillCompanyName(this, companyName));
-            this.fillCompanyName(this, customerData.get('twoCompanyName')());
+            quote.billingAddress.subscribe((address) => self.updateBillingAddress(address));
+            this.updateBillingAddress(quote.billingAddress());
 
             customerData
-                .get('twoCompanyId')
-                .subscribe((companyId) => this.fillCompanyId(this, companyId));
-            this.fillCompanyId(this, customerData.get('twoCompanyId')());
+                .get('twoCompanyData')
+                .subscribe((companyData) => self.fillCompanyData(companyData));
+            this.fillCompanyData(customerData.get('twoCompanyData')());
 
             customerData
                 .get('twoTelephone')
-                .subscribe((telephone) => this.fillTelephone(this, telephone));
-            this.fillTelephone(this, customerData.get('twoTelephone')());
+                .subscribe((telephone) => self.fillTelephone(telephone));
+            this.fillTelephone(customerData.get('twoTelephone')());
 
             customerData
                 .get('twoCountryCode')
-                .subscribe((countryCode) => this.fillCountryCode(this, countryCode));
-            this.fillCountryCode(this, customerData.get('twoCountryCode')());
+                .subscribe((countryCode) => self.fillCountryCode(countryCode));
+            this.fillCountryCode(customerData.get('twoCountryCode')());
         },
         afterPlaceOrder: function () {
             var url = $.mage.cookies.get(config.redirectUrlCookieCode);
@@ -204,33 +217,15 @@ define([
             }
         },
         placeOrder: function (data, event) {
-            var self = this;
-            if (event) {
-                event.preventDefault();
-            }
+            if (event) event.preventDefault();
             if (
-                self.validate() &&
+                this.validate() &&
                 additionalValidators.validate() &&
-                self.isPlaceOrderActionAllowed() === true
-            ) {
-                if (this.isOrderIntentEnabled) {
-                    fullScreenLoader.startLoader();
-                    this.placeIntentOrder()
-                        .always(function () {
-                            fullScreenLoader.stopLoader();
-                        })
-                        .done(function (response) {
-                            self.processIntentSuccessResponse(response);
-                        })
-                        .error(function (response) {
-                            self.processIntentErrorResponse(response);
-                        });
-                } else {
-                    self.placeOrderBackend();
-                }
-            }
+                this.isPlaceOrderActionAllowed() === true
+            )
+                this.placeOrderBackend();
         },
-        ShowTelephoneOnPaymentPage: function () {
+        showTelephoneOnPaymentPage: function () {
             return this.showTelephone == 'payment';
         },
         placeOrderBackend: function () {
@@ -247,10 +242,12 @@ define([
                     self.isPlaceOrderActionAllowed(true);
                 });
         },
-        processIntentSuccessResponse: function (response) {
+        processOrderIntentSuccessResponse: function (response) {
             if (response) {
                 if (response.approved) {
-                    this.placeOrderBackend();
+                    this.messageContainer.addSuccessMessage({
+                        message: this.orderIntentApprovedMessage
+                    });
                 } else {
                     this.showErrorMessage(this.getDeclinedErrorMessage(response.decline_reason));
                 }
@@ -259,7 +256,7 @@ define([
             }
         },
         getDeclinedErrorMessage: function (declineReason) {
-            var message = $t('Your invoice purchase with Two has been declined.'),
+            var message = this.orderIntentDeclinedMessage,
                 reason = '';
             switch (declineReason) {
                 case 'TOO_HIGH_RISK':
@@ -286,7 +283,7 @@ define([
             }
             return message;
         },
-        processIntentErrorResponse: function (response) {
+        processOrderIntentErrorResponse: function (response) {
             var message = this.generalErrorMessage,
                 self = this;
             if (response && response.responseJSON) {
@@ -325,7 +322,7 @@ define([
         getEmail: function () {
             return quote.guestEmail ? quote.guestEmail : window.checkoutConfig.customerData.email;
         },
-        placeIntentOrder: function () {
+        placeOrderIntent: function () {
             let totals = quote.getTotals()(),
                 billingAddress = quote.billingAddress(),
                 lineItems = [];
@@ -341,26 +338,26 @@ define([
                     tax_amount: parseFloat(item['tax_amount']).toFixed(2),
                     tax_rate: parseFloat(item['tax_percent']).toFixed(6),
                     tax_class_name: '',
-                    quantity_unit: config.intentOrderConfig.weightUnit,
+                    quantity_unit: config.orderIntentConfig.weightUnit,
                     image_url: item['thumbnail'],
                     type: item['is_virtual'] === '0' ? 'PHYSICAL' : 'DIGITAL'
                 });
             });
             return $.ajax({
                 url:
-                    config.intentOrderConfig.host +
+                    config.checkoutApiUrl +
                     '/v1/order_intent?' +
                     'client=' +
-                    config.intentOrderConfig.extensionPlatformName +
+                    config.orderIntentConfig.extensionPlatformName +
                     '&client_v=' +
-                    config.intentOrderConfig.extensionDBVersion,
+                    config.orderIntentConfig.extensionDBVersion,
                 type: 'POST',
                 global: true,
                 contentType: 'application/json',
                 headers: {},
                 data: JSON.stringify({
                     gross_amount: parseFloat(totals['grand_total']).toFixed(2),
-                    invoice_type: config.intentOrderConfig.invoiceType,
+                    invoice_type: config.orderIntentConfig.invoiceType,
                     currency: totals['base_currency_code'],
                     line_items: lineItems,
                     buyer: {
@@ -377,7 +374,7 @@ define([
                             phone_number: this.getTelephone()
                         }
                     },
-                    merchant_short_name: config.intentOrderConfig.merchantShortName
+                    merchant_short_name: config.orderIntentConfig.merchantShortName
                 })
             });
         },
@@ -401,14 +398,14 @@ define([
                 }
             };
         },
-        enableCompanyAutoComplete: function () {
+        enableCompanySearch: function () {
             let self = this;
             require(['Two_Gateway/select2-4.1.0/js/select2.min'], function () {
                 $.async(self.companyIdSelector, function (companyIdField) {
                     $(companyIdField).prop('disabled', true);
                 });
                 $.async(self.companyNameSelector, function (companyNameField) {
-                    var searchLimit = config.companyAutoCompleteConfig.searchLimit;
+                    var searchLimit = config.companySearchConfig.searchLimit;
                     $(companyNameField)
                         .select2({
                             minimumInputLength: 3,
@@ -426,17 +423,10 @@ define([
                                 dataType: 'json',
                                 delay: 400,
                                 url: function (params) {
-                                    var searchHosts = config.companyAutoCompleteConfig.searchHosts,
+                                    var searchHosts = config.companySearchConfig.searchHosts,
                                         billingAddress = quote.billingAddress(),
-                                        searchHost = searchHosts['default'];
-                                    if (
-                                        billingAddress &&
-                                        billingAddress.countryId &&
-                                        searchHosts[billingAddress.countryId.toLowerCase()]
-                                    ) {
-                                        searchHost =
-                                            searchHosts[billingAddress.countryId.toLowerCase()];
-                                    }
+                                        searchHost = searchHosts[self.countryCode()];
+                                    if (!searchHost) return;
                                     params.page = params.page || 1;
                                     return (
                                         searchHost +
@@ -490,9 +480,10 @@ define([
                             document.querySelector('.select2-search__field').focus();
                         })
                         .on('select2:select', function (e) {
-                            var selectedItem = e.params.data;
-                            self.fillCompanyName(self, selectedItem.text);
-                            self.fillCompanyId(self, selectedItem.companyId);
+                            const selectedItem = e.params.data;
+                            const companyId = selectedItem.companyId;
+                            const companyName = selectedItem.text;
+                            self.fillCompanyData({ companyId, companyName });
                         });
                     $('#select2-company_name-container').text(self.companyName());
                     if ($(self.searchForCompanyButton).length == 0) {
@@ -504,7 +495,7 @@ define([
                                     '</div>'
                             );
                         $(self.searchForCompanyButton).on('click', function (e) {
-                            self.enableCompanyAutoComplete();
+                            self.enableCompanySearch();
                             $(self.searchForCompanyButton).hide();
                         });
                     }
@@ -591,14 +582,16 @@ define([
             const companyIdSelector = $(this.companyIdSelector);
             companyIdSelector.val('');
             companyIdSelector.prop('disabled', disableCompanyId);
+            $(this.companyNameSelector).val('');
+            this.disableCompanySearch();
+        },
+        disableCompanySearch: function () {
             const companyNameSelector = $(this.companyNameSelector);
-            companyNameSelector.val('');
             if (companyNameSelector.data('select2')) {
                 companyNameSelector.select2('destroy');
                 companyNameSelector.attr('type', 'text');
             }
         },
-
         getTokens() {
             const URL = url.build('rest/V1/two/get-tokens');
             const OPTIONS = {
@@ -655,7 +648,7 @@ define([
 
         openIframe() {
             const data = this.getAutofillData();
-            const URL = `${config.popup_url}/soletrader/signup?businessToken=${this.delegationToken}&autofillToken=${this.autofillToken}&autofillData=${data}`;
+            const URL = `${config.checkoutPageUrl}/soletrader/signup?businessToken=${this.delegationToken}&autofillToken=${this.autofillToken}&autofillData=${data}`;
             const windowFeatures =
                 'location=yes,resizable=yes,scrollbars=yes,status=yes, height=805, width=610';
             window.open(URL, '_blank', windowFeatures);
@@ -667,9 +660,7 @@ define([
 
         registeredOrganisationMode() {
             this.showSoleTrader(false);
-            if (this.isCompanyNameAutoCompleteEnabled) {
-                this.enableCompanyAutoComplete();
-            }
+            this.enableCompanySearch();
             this.fillCustomerData();
         },
 
@@ -688,7 +679,7 @@ define([
         },
 
         getCurrentBuyer() {
-            const URL = config.api_url + '/autofill/v1/buyer/current';
+            const URL = config.checkoutApiUrl + '/autofill/v1/buyer/current';
             const OPTIONS = {
                 credentials: 'include',
                 headers: {
@@ -711,9 +702,10 @@ define([
                         const email = this.getEmail();
                         if (json.email == email) {
                             // Only autofill if email matches
-                            $('#select2-company_name-container').text(json.company_name);
-                            this.companyName(json.company_name);
-                            this.companyId(json.organization_number);
+                            this.fillCompanyData({
+                                companyId: json.organization_number,
+                                companyName: json.company_name
+                            });
                             this.showPopupMessage(false);
                         } else {
                             this.showPopupMessage(true);
@@ -727,7 +719,7 @@ define([
 
         popupMessageListener() {
             window.addEventListener('message', (event) => {
-                if (this.showSoleTrader() && event.origin == config.popup_url) {
+                if (this.showSoleTrader() && event.origin == config.checkoutPageUrl) {
                     if (event.data == 'ACCEPTED') {
                         this.getCurrentBuyer();
                     } else {
