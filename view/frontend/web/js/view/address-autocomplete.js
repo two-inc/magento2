@@ -16,8 +16,8 @@ define([
     var config = window.checkoutConfig.payment.two_payment;
 
     return Component.extend({
-        isCompanyNameAutoCompleteEnabled: config.isCompanyNameAutoCompleteEnabled,
-        isAddressAutoCompleteEnabled: config.isAddressAutoCompleteEnabled,
+        isCompanySearchEnabled: config.isCompanySearchEnabled,
+        isAddressSearchEnabled: config.isAddressSearchEnabled,
         supportedCountryCodes: config.supportedCountryCodes,
         isInternationalTelephoneEnabled: config.isInternationalTelephoneEnabled,
         showTelephone: config.showTelephone,
@@ -40,8 +40,8 @@ define([
                     self.toggleCompanyVisibility();
                 });
             });
-            if (this.isCompanyNameAutoCompleteEnabled) {
-                this.enableCompanyAutoComplete();
+            if (this.isCompanySearchEnabled) {
+                this.enableCompanySearch();
             }
             let progressBar = uiRegistry.get('index = progressBar'),
                 configuredCheckoutStep = 0;
@@ -67,20 +67,19 @@ define([
             const countryCode = $(this.countrySelector).val().toLowerCase();
             customerData.set('twoCountryCode', countryCode);
             let field = $(this.companyNameSelector).closest('.field');
-            if (countryCode in config.companyAutoCompleteConfig.searchHosts) {
+            if (countryCode in config.companySearchConfig.searchHosts) {
                 field.show();
             } else {
                 field.hide();
                 this.setCompanyData();
             }
         },
-        setCompanyData: function (twoCompanyId = '', twoCompanyName = '') {
-            console.log({ twoCompanyId, twoCompanyName });
-            customerData.set('twoCompanyId', twoCompanyId);
-            customerData.set('twoCompanyName', twoCompanyName);
-            $('.select2-selection__rendered').text(twoCompanyName);
-            $(this.companyNameSelector).val(twoCompanyName);
-            $(this.companyIdSelector).val(twoCompanyId);
+        setCompanyData: function (companyId = '', companyName = '') {
+            console.log({ companyId, companyName });
+            customerData.set('twoCompanyData', { companyId, companyName });
+            $('.select2-selection__rendered').text(companyName);
+            $(this.companyNameSelector).val(companyName);
+            $(this.companyIdSelector).val(companyId);
         },
         enableInternationalTelephone: function () {
             var self = this;
@@ -94,11 +93,11 @@ define([
                 });
             });
         },
-        enableCompanyAutoComplete: function () {
+        enableCompanySearch: function () {
             var self = this;
             require(['Two_Gateway/select2-4.1.0/js/select2.min'], function () {
                 $.async(self.companyNameSelector, function (companyNameField) {
-                    var searchLimit = config.companyAutoCompleteConfig.searchLimit;
+                    var searchLimit = config.companySearchConfig.searchLimit;
                     $(companyNameField)
                         .select2({
                             minimumInputLength: 3,
@@ -117,7 +116,7 @@ define([
                                 dataType: 'json',
                                 delay: 400,
                                 url: function (params) {
-                                    var searchHosts = config.companyAutoCompleteConfig.searchHosts,
+                                    var searchHosts = config.companySearchConfig.searchHosts,
                                         selectedCountryCode = $(self.countrySelector).val(),
                                         searchHost = '';
                                     if (selectedCountryCode.toLowerCase() in searchHosts) {
@@ -182,7 +181,7 @@ define([
                             var selectedItem = e.params.data;
                             $('.select2-selection__rendered').text(selectedItem.id);
                             self.setCompanyData(selectedItem.companyId, selectedItem.text);
-                            if (self.isAddressAutoCompleteEnabled) {
+                            if (self.isAddressSearchEnabled) {
                                 let countryId = $(self.countrySelector).val();
                                 if (
                                     _.indexOf(
@@ -193,7 +192,7 @@ define([
                                     const addressResponse = $.ajax({
                                         dataType: 'json',
                                         url:
-                                            config.intentOrderConfig.host +
+                                            config.checkoutApiUrl +
                                             '/v1/' +
                                             countryId.toUpperCase() +
                                             '/company/' +
@@ -230,7 +229,7 @@ define([
                                     '</div>'
                             );
                         $(self.searchForCompanyButton).on('click', function (e) {
-                            self.enableCompanyAutoComplete();
+                            self.enableCompanySearch();
                             $(self.searchForCompanyButton).hide();
                         });
                     }

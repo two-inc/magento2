@@ -153,7 +153,7 @@
                     </depends>
                     <config_path>payment/two_payment/specificcountry</config_path>
                 </field>
-                <field id="international_telephone_enabled" translate="label" type="select" sortOrder="70"
+                <field id="enable_international_telephone" translate="label" type="select" sortOrder="70"
                        showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable international telephone</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -162,7 +162,7 @@
                     <depends>
                         <field id="active">1</field>
                     </depends>
-                    <config_path>payment/two_payment/international_telephone_enabled</config_path>
+                    <config_path>payment/two_payment/enable_international_telephone</config_path>
                 </field>
                 <field id="show_telephone" translate="label" type="select" sortOrder="75" showInDefault="1"
                        showInWebsite="1" showInStore="1">
@@ -173,6 +173,16 @@
                         <field id="active">1</field>
                     </depends>
                     <config_path>payment/two_payment/show_telephone</config_path>
+                </field>
+                <field id="enable_order_intent" translate="label" type="select" sortOrder="75" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable order intent</label>
+                    <comment>Perform a check during checkout to inform buyer whether an order would be accepted by Two before they place order (recommended).</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                    <config_path>payment/two_payment/enable_order_intent</config_path>
                 </field>
                 <field id="enable_department" translate="label" type="select" sortOrder="80" showInDefault="1"
                        showInWebsite="1" showInStore="1">
@@ -227,16 +237,6 @@
                     </depends>
                     <config_path>payment/two_payment/enable_two_link</config_path>
                 </field>
-                <field id="company_autocomplete_enabled" translate="label" type="select" sortOrder="110"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Activate company name auto-complete</label>
-                    <comment>Adds a searchable company name input field where the buyer can select their company from a dropdown menu</comment>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
-                    <config_path>payment/two_payment/company_autocomplete_enabled</config_path>
-                </field>
             </group>
         </section>
         <section id="two_search" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1"
@@ -248,15 +248,26 @@
             <group id="search" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                    showInStore="1">
                 <label>Search</label>
-                <field id="enable_address_autocomplete" translate="label" type="select" sortOrder="10" showInDefault="1"
-                       showInWebsite="1" showInStore="1">
-                    <label>Enable address autocomplete</label>
-                    <comment>Based on selected country and company</comment>
+                <field id="enable_company_search" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable company search</label>
+                    <comment>Adds a searchable company name input field on shipping details page where the buyer can select their company from a dropdown menu.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>
                     </depends>
-                    <config_path>payment/two_payment/enable_address_autocomplete</config_path>
+                    <config_path>payment/two_payment/enable_company_search</config_path>
+                </field>
+                <field id="enable_address_search" translate="label" type="select" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable address search</label>
+                    <comment>Autocomplete address based on selected country and company.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="active">1</field>
+                        <field id="enable_company_search">1</field>
+                    </depends>
+                    <config_path>payment/two_payment/enable_address_search</config_path>
                 </field>
             </group>
         </section>

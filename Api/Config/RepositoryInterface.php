@@ -27,8 +27,10 @@ interface RepositoryInterface
     public const XML_PATH_DAYS_ON_INVOICE = 'payment/two_payment/days_on_invoice';
     public const XML_PATH_FULFILL_TRIGGER = 'payment/two_payment/fulfill_trigger';
     public const XML_PATH_FULFILL_ORDER_STATUS = 'payment/two_payment/fulfill_order_status';
-    public const XML_PATH_INTERNATIONAL_TELEPHONE_ENABLED = 'payment/two_payment/international_telephone_enabled';
-    public const XML_PATH_COMPANY_NAME_AUTOCOMPLETE_ENABLED = 'payment/two_payment/company_autocomplete_enabled';
+    public const XML_PATH_ENABLE_INTERNATIONAL_TELEPHONE = 'payment/two_payment/enable_international_telephone';
+    public const XML_PATH_ENABLE_COMPANY_SEARCH = 'payment/two_payment/enable_company_search';
+    public const XML_PATH_ENABLE_ADDRESS_SEARCH = 'payment/two_payment/enable_address_search';
+    public const XML_PATH_ENABLE_ORDER_INTENT = 'payment/two_payment/enable_order_intent';
     public const XML_PATH_ENABLE_DEPARTMENT_NAME = 'payment/two_payment/enable_department';
     public const XML_PATH_ENABLE_PROJECT_NAME = 'payment/two_payment/enable_project';
     public const XML_PATH_ENABLE_ORDER_NOTE = 'payment/two_payment/enable_order_note';
@@ -37,7 +39,6 @@ interface RepositoryInterface
     public const XML_PATH_SHOW_TELEPHONE = 'payment/two_payment/show_telephone';
     public const XML_PATH_VERSION = 'payment/two_payment/version';
     public const XML_PATH_DEBUG = 'payment/two_payment/debug';
-    public const XML_PATH_ENABLE_ADDRESS_AUTOCOMPLETE = 'payment/two_payment/enable_address_autocomplete';
 
     /** Weight unit */
     public const XML_PATH_WEIGHT_UNIT = 'general/locale/weight_unit';
@@ -131,7 +132,16 @@ interface RepositoryInterface
      *
      * @return bool
      */
-    public function isCompanyAutocompleteEnabled(?int $storeId = null): bool;
+    public function isCompanySearchEnabled(?int $storeId = null): bool;
+
+    /**
+     * Check if order intent is enabled
+     *
+     * @param int|null $storeId
+     *
+     * @return bool
+     */
+    public function isOrderIntentEnabled(?int $storeId = null): bool;
 
     /**
      * Check if department is enabled
@@ -262,5 +272,5 @@ interface RepositoryInterface
      *
      * @return bool
      */
-    public function isAddressAutocompleteEnabled(?int $storeId = null): bool;
+    public function isAddressSearchEnabled(?int $storeId = null): bool;
 }

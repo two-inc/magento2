@@ -248,11 +248,6 @@ class Two extends AbstractMethod
             return $generalMessage;
         }
 
-        // Custom errors
-        if (isset($response['error_code']) && $response['error_code'] == 'SAME_BUYER_SELLER_ERROR') {
-            return __('Your request to Two failed because the buyer and the seller are the same company.');
-        }
-
         // Validation errors
         if (isset($response['error_json']) && is_array($response['error_json'])) {
             $errs = [];
@@ -265,15 +260,23 @@ class Two extends AbstractMethod
                 }
             }
             if (count($errs) > 0) {
-                $message = __('Your request to Two failed due to the following issue(s):');
-                return __($message . ' ' . join(' ', $errs));
+                $message = __('Your request to Two failed. Reason(s): ') . join(' ', $errs);
+                if (!empty($response['error_trace_id'])) {
+                    $message .= ' [Trace: ' . $response['error_trace_id'] . ']';
+                }
+                return __($message);
             }
         }
 
-        if (!empty($response['error_code'])) {
-            $message = $response['error_message'];
+        if (isset($response['error_code'])) {
+            // Custom errors
+            if ($response['error_code'] == 'SAME_BUYER_SELLER_ERROR') {
+                $message = __('Your request to Two failed. Reason: The buyer and the seller are the same company.');
+            } else {
+                $message = __('Your request to Two failed. Reason: ') . $response['error_message'];
+            }
             if (!empty($response['error_trace_id'])) {
-                $message .= ' [Trace ID: ' . $response['error_trace_id'] . ']';
+                $message .= ' [Trace: ' . $response['error_trace_id'] . ']';
             }
             return __($message);
         }

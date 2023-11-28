@@ -54,14 +54,13 @@ class ConfigProvider implements ConfigProviderInterface
                 $this->assetRepository->getUrl('Two_Gateway::intl-tel-input-18.2.1/js/utils.js');
         }
 
-        $companyAutoCompleteConfig = [];
-        if ($this->configRepository->isCompanyAutocompleteEnabled()) {
-            $companyAutoCompleteConfig['searchHosts'] = $this->configRepository->getSearchHostUrls();
-            $companyAutoCompleteConfig['searchLimit'] = 50;
+        $companySearchConfig = [];
+        if ($this->configRepository->isCompanySearchEnabled()) {
+            $companySearchConfig['searchHosts'] = $this->configRepository->getSearchHostUrls();
+            $companySearchConfig['searchLimit'] = 50;
         }
 
-        $intentOrderConfig = [
-            'host' => $this->configRepository->getCheckoutApiUrl(),
+        $orderIntentConfig = [
             'extensionPlatformName' => $this->configRepository->getExtensionPlatformName(),
             'extensionDBVersion' => $this->configRepository->getExtensionDBVersion(),
             'invoiceType' => 'FUNDED_INVOICE',
@@ -72,23 +71,23 @@ class ConfigProvider implements ConfigProviderInterface
         return [
             'payment' => [
                 ConfigRepository::CODE => [
-                    'api_url' => $this->configRepository->getCheckoutApiUrl(),
-                    'popup_url' => $this->configRepository->getCheckoutPageUrl(),
+                    'checkoutApiUrl' => $this->configRepository->getCheckoutApiUrl(),
+                    'checkoutPageUrl' => $this->configRepository->getCheckoutPageUrl(),
                     'redirectUrlCookieCode' => UrlCookie::COOKIE_NAME,
-                    'isOrderIntentEnabled' => 1,
-                    'isCompanyNameAutoCompleteEnabled' => $this->configRepository->isCompanyAutocompleteEnabled(),
+                    'isOrderIntentEnabled' => $this->configRepository->isOrderIntentEnabled(),
+                    'orderIntentConfig' => $orderIntentConfig,
+                    'isCompanySearchEnabled' => $this->configRepository->isCompanySearchEnabled(),
+                    'isAddressSearchEnabled' => $this->configRepository->isAddressSearchEnabled(),
+                    'companySearchConfig' => $companySearchConfig,
                     'isInternationalTelephoneEnabled' => $this->configRepository->isInternationalTelephoneEnabled(),
                     'showTelephone' => $this->configRepository->showTelephone(),
+                    'supportedCountryCodes' => ['no', 'gb', 'se'],
+                    'internationalTelephoneConfig' => $internationalTelephoneConfig,
                     'isDepartmentFieldEnabled' => $this->configRepository->isDepartmentEnabled(),
                     'isProjectFieldEnabled' => $this->configRepository->isProjectEnabled(),
                     'isOrderNoteFieldEnabled' => $this->configRepository->isOrderNoteEnabled(),
                     'isPONumberFieldEnabled' => $this->configRepository->isPONumberEnabled(),
                     'isTwoLinkEnabled' => $this->configRepository->isTwoLinkEnabled(),
-                    'internationalTelephoneConfig' => $internationalTelephoneConfig,
-                    'companyAutoCompleteConfig' => $companyAutoCompleteConfig,
-                    'intentOrderConfig' => $intentOrderConfig,
-                    'isAddressAutoCompleteEnabled' => $this->configRepository->isAddressAutocompleteEnabled(),
-                    'supportedCountryCodes' => ['no', 'gb', 'se']
                 ],
             ],
         ];
