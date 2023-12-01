@@ -12,4 +12,13 @@
     <extension_attributes for="Magento\Quote\Api\Data\AddressInterface">
         <attribute code="company_id" type="string" />
     </extension_attributes>
+    <extension_attributes for="Magento\Quote\Api\Data\AddressInterface">
+        <attribute code="company_name" type="string" />
+    </extension_attributes>
+    <extension_attributes for="Magento\Quote\Api\Data\AddressInterface">
+        <attribute code="department" type="string" />
+    </extension_attributes>
+    <extension_attributes for="Magento\Quote\Api\Data\AddressInterface">
+        <attribute code="project" type="string" />
+    </extension_attributes>
 </config>
