@@ -248,6 +248,11 @@ class Two extends AbstractMethod
             return $generalMessage;
         }
 
+        $trace = "";
+        if (!empty($response['error_trace_id'])) {
+            $trace = ' [Error trace ID: ' . $response['error_trace_id'] . ']';
+        }
+
         // Validation errors
         if (isset($response['error_json']) && is_array($response['error_json'])) {
             $errs = [];
@@ -256,15 +261,15 @@ class Two extends AbstractMethod
                     $err_field = $this->getFieldFromLocStr(json_encode($err['loc']));
                     if ($err_field) {
                         array_push($errs, __($err_field));
+                    } else {
+                        // Since err_field is empty, return general error message
+                        return __($generalMessage . $trace);
                     }
                 }
             }
             if (count($errs) > 0) {
                 $message = __('Your request to Two failed. Reason(s): ') . join(' ', $errs);
-                if (!empty($response['error_trace_id'])) {
-                    $message .= ' [Trace: ' . $response['error_trace_id'] . ']';
-                }
-                return __($message);
+                return __($message . $trace);
             }
         }
 
@@ -275,14 +280,11 @@ class Two extends AbstractMethod
             } else {
                 $message = __('Your request to Two failed. Reason: ') . $response['error_message'];
             }
-            if (!empty($response['error_trace_id'])) {
-                $message .= ' [Trace: ' . $response['error_trace_id'] . ']';
-            }
-            return __($message);
+            return __($message . $trace);
         }
 
         if (empty($response['id'])) {
-            return $generalMessage;
+            return __($generalMessage . $trace);
         }
 
         return null;
@@ -308,7 +310,10 @@ class Two extends AbstractMethod
             '["billing_address","country"]' => 'Country is not valid.',
             '["billing_address","postal_code"]' => 'Zip/Postal Code is not valid.',
         ];
-        return $fieldLocStrMapping[$loc_str];
+        if (array_key_exists($loc_str, $fieldLocStrMapping)) {
+            return $fieldLocStrMapping[$loc_str];
+        }
+        return null;
     }
 
     /**
