@@ -180,7 +180,7 @@ abstract class Order
                 'discount_amount' => $this->roundAmt($this->getDiscountAmountItem($item)),
                 'tax_rate' => $this->roundAmt($this->getTaxRateItem($item)),
                 'tax_class_name' => 'VAT ' . $this->roundAmt($item->getTaxPercent()) . '%',
-                'unit_price' => $this->roundAmt($this->getUnitPriceItem($item), 5),
+                'unit_price' => $this->roundAmt($this->getUnitPriceItem($item), 6),
                 'quantity' => $item->getQtyOrdered(),
                 'qty_to_ship' => $item->getQtyToShip(), //need for partial shipment
                 'quantity_unit' => $this->configRepository->getWeightUnit((int)$order->getStoreId()),
@@ -275,7 +275,7 @@ abstract class Order
      */
     public function getUnitPriceItem($item): float
     {
-        return (float)$item->getPriceInclTax() / (1 + $this->getTaxRateItem($item));
+        return $this->getNetAmountBeforeDiscountItem($item) / $item->getQtyOrdered();
     }
 
     /**
@@ -362,7 +362,7 @@ abstract class Order
             'tax_amount' => $this->roundAmt($this->getTaxAmountShipping($order)),
             'discount_amount' => $this->roundAmt($this->getDiscountAmountShipping($order)),
             'tax_rate' => $this->roundAmt($this->getTaxRateShipping($order)),
-            'unit_price' => $this->roundAmt($this->getUnitPriceShipping($order), 5),
+            'unit_price' => $this->roundAmt($this->getUnitPriceShipping($order), 6),
             'tax_class_name' => 'VAT ' . $this->roundAmt($this->getTaxRateShipping($order) * 100) . '%',
             'quantity' => 1,
             'qty_to_ship' => 1, //need for partial shipment
