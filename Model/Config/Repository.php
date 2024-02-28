@@ -175,6 +175,14 @@ class Repository implements RepositoryInterface
     /**
      * @inheritDoc
      */
+    public function isTaxSubtotalsEnabled(?int $storeId = null): bool
+    {
+        return $this->isSetFlag(self::XML_PATH_ENABLE_TAX_SUBTOTALS, $storeId);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function isDepartmentEnabled(?int $storeId = null): bool
     {
         return $this->isSetFlag(self::XML_PATH_ENABLE_DEPARTMENT_NAME, $storeId);

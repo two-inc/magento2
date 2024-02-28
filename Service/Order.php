@@ -481,8 +481,11 @@ abstract class Order
      * @param array $linesItems
      * @return array
      */
-    public function getTaxSubtotals(array $linesItems): array
+    public function getTaxSubtotals(array $linesItems): ?array
     {
+        if (!$this->configRepository->isTaxSubtotalsEnabled()) {
+            return null;
+        }
         $taxSubtotals = [];
         foreach ($linesItems as $linesItem) {
             $taxSubtotals[$linesItem['tax_rate']][] = [
