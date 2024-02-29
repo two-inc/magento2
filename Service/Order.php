@@ -239,7 +239,7 @@ abstract class Order
      */
     public function getGrossAmountItem($item): float
     {
-        return $this->getNetAmountAfterDiscountItem($item) + $this->getTaxAmountItem($item);
+        return $this->getNetAmountItem($item) + $this->roundAmt($this->getTaxAmountItem($item));
     }
 
     /**
@@ -248,7 +248,7 @@ abstract class Order
      */
     public function getNetAmountItem($item): float
     {
-        return round($this->getGrossAmountItem($item), 2) - round($this->getTaxAmountItem($item), 2);
+        return $this->getNetAmountBeforeDiscountItem($item) - $this->getDiscountAmountItem($item);
     }
 
     /**
@@ -258,15 +258,6 @@ abstract class Order
     public function getNetAmountBeforeDiscountItem($item): float
     {
         return (float)$item->getRowTotalInclTax() / (1 + $this->getTaxRateItem($item));
-    }
-
-    /**
-     * @param OrderItem|InvoiceItem|CreditmemoItem $item
-     * @return float
-     */
-    public function getNetAmountAfterDiscountItem($item): float
-    {
-        return $this->getNetAmountBeforeDiscountItem($item) - $this->getDiscountAmountItem($item);
     }
 
     /**
@@ -293,7 +284,7 @@ abstract class Order
      */
     public function getTaxAmountItem($item): float
     {
-        return $this->getNetAmountAfterDiscountItem($item) * $this->getTaxRateItem($item);
+        return $this->getNetAmountItem($item) * $this->getTaxRateItem($item);
     }
 
     /**
