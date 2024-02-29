@@ -30,6 +30,7 @@ interface RepositoryInterface
     public const XML_PATH_ENABLE_INTERNATIONAL_TELEPHONE = 'payment/two_payment/enable_international_telephone';
     public const XML_PATH_ENABLE_COMPANY_SEARCH = 'payment/two_payment/enable_company_search';
     public const XML_PATH_ENABLE_ADDRESS_SEARCH = 'payment/two_payment/enable_address_search';
+    public const XML_PATH_ENABLE_TAX_SUBTOTALS = 'payment/two_payment/enable_tax_subtotals';
     public const XML_PATH_ENABLE_ORDER_INTENT = 'payment/two_payment/enable_order_intent';
     public const XML_PATH_ENABLE_DEPARTMENT_NAME = 'payment/two_payment/enable_department';
     public const XML_PATH_ENABLE_PROJECT_NAME = 'payment/two_payment/enable_project';
@@ -142,6 +143,15 @@ interface RepositoryInterface
      * @return bool
      */
     public function isOrderIntentEnabled(?int $storeId = null): bool;
+
+    /**
+     * Check if tax subtotals is enabled
+     *
+     * @param int|null $storeId
+     *
+     * @return bool
+     */
+    public function isTaxSubtotalsEnabled(?int $storeId = null): bool;
 
     /**
      * Check if department is enabled
