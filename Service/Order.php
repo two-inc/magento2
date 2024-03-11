@@ -480,17 +480,18 @@ abstract class Order
         $taxSubtotals = [];
         foreach ($linesItems as $linesItem) {
             $taxSubtotals[$linesItem['tax_rate']][] = [
-                'tax_amount' => $linesItem['tax_amount'],
                 'taxable_amount' => $linesItem['net_amount'],
             ];
         }
 
         $summary = [];
-        foreach ($taxSubtotals as $rate => $amounts) {
+        foreach ($taxSubtotals as $taxRate => $amounts) {
+            $taxableAmount = $this->getSum($amounts, 'taxable_amount');
+            $taxAmount = $taxableAmount * $taxRate;
             $summary[] = [
-                'tax_amount' => $this->getSum($amounts, 'tax_amount'),
-                'taxable_amount' => $this->getSum($amounts, 'taxable_amount'),
-                'tax_rate' => $this->roundAmt($rate)
+                'taxable_amount' => $this->roundAmt($taxableAmount),
+                'tax_amount' => $this->roundAmt($taxAmount),
+                'tax_rate' => $this->roundAmt($taxRate)
             ];
         }
 
