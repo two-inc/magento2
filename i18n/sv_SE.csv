@@ -54,7 +54,6 @@ Title,Tittel
 "Finalize purchase when order is shipped","Skicka faktura när ordern blir skickad"
 "Pre-approve the buyer during checkout and disable Two if the buyer is declined","Förhandsgodkänna köparen i kassan och avaktivera Hans om köparen inte blir godkänd"
 "Company details","Företagsinformation"
-"Enable international telephone","Aktivera internationellt telefonnummer"
 "Activate company name auto-complete","Aktivera automatisk ifyllning av företagsnamn"
 "Add department field","Lägg till fält för avdelning"
 "Add project field","Lägg till fält för projekt"

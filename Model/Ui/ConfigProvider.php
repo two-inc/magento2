@@ -48,17 +48,10 @@ class ConfigProvider implements ConfigProviderInterface
      */
     public function getConfig(): array
     {
-        $internationalTelephoneConfig = [];
-        if ($this->configRepository->isInternationalTelephoneEnabled()) {
-            $internationalTelephoneConfig['utilsScript'] =
-                $this->assetRepository->getUrl('Two_Gateway::intl-tel-input-18.2.1/js/utils.js');
-        }
-
-        $companySearchConfig = [];
-        if ($this->configRepository->isCompanySearchEnabled()) {
-            $companySearchConfig['searchHosts'] = $this->configRepository->getSearchHostUrls();
-            $companySearchConfig['searchLimit'] = 50;
-        }
+        $companySearchConfig = [
+            'searchHosts' => $this->configRepository->getSearchHostUrls(),
+            'searchLimit' => 50,
+        ];
 
         $orderIntentConfig = [
             'extensionPlatformName' => $this->configRepository->getExtensionPlatformName(),
@@ -79,10 +72,7 @@ class ConfigProvider implements ConfigProviderInterface
                     'isCompanySearchEnabled' => $this->configRepository->isCompanySearchEnabled(),
                     'isAddressSearchEnabled' => $this->configRepository->isAddressSearchEnabled(),
                     'companySearchConfig' => $companySearchConfig,
-                    'isInternationalTelephoneEnabled' => $this->configRepository->isInternationalTelephoneEnabled(),
-                    'showTelephone' => $this->configRepository->showTelephone(),
                     'supportedCountryCodes' => ['no', 'gb', 'se'],
-                    'internationalTelephoneConfig' => $internationalTelephoneConfig,
                     'isDepartmentFieldEnabled' => $this->configRepository->isDepartmentEnabled(),
                     'isProjectFieldEnabled' => $this->configRepository->isProjectEnabled(),
                     'isOrderNoteFieldEnabled' => $this->configRepository->isOrderNoteEnabled(),

@@ -27,7 +27,6 @@ interface RepositoryInterface
     public const XML_PATH_DAYS_ON_INVOICE = 'payment/two_payment/days_on_invoice';
     public const XML_PATH_FULFILL_TRIGGER = 'payment/two_payment/fulfill_trigger';
     public const XML_PATH_FULFILL_ORDER_STATUS = 'payment/two_payment/fulfill_order_status';
-    public const XML_PATH_ENABLE_INTERNATIONAL_TELEPHONE = 'payment/two_payment/enable_international_telephone';
     public const XML_PATH_ENABLE_COMPANY_SEARCH = 'payment/two_payment/enable_company_search';
     public const XML_PATH_ENABLE_ADDRESS_SEARCH = 'payment/two_payment/enable_address_search';
     public const XML_PATH_ENABLE_TAX_SUBTOTALS = 'payment/two_payment/enable_tax_subtotals';
@@ -37,7 +36,6 @@ interface RepositoryInterface
     public const XML_PATH_ENABLE_ORDER_NOTE = 'payment/two_payment/enable_order_note';
     public const XML_PATH_ENABLE_PO_NUMBER = 'payment/two_payment/enable_po_number';
     public const XML_PATH_ENABLE_TWO_LINK = 'payment/two_payment/enable_two_link';
-    public const XML_PATH_SHOW_TELEPHONE = 'payment/two_payment/show_telephone';
     public const XML_PATH_VERSION = 'payment/two_payment/version';
     public const XML_PATH_DEBUG = 'payment/two_payment/debug';
 
@@ -116,15 +114,6 @@ interface RepositoryInterface
      * @return array
      */
     public function getFulfillOrderStatusList(?int $storeId = null): array;
-
-    /**
-     * Check if international telephone is enabled
-     *
-     * @param int|null $storeId
-     *
-     * @return bool
-     */
-    public function isInternationalTelephoneEnabled(?int $storeId = null): bool;
 
     /**
      * Check if company name autocomplete is enabled
@@ -266,14 +255,6 @@ interface RepositoryInterface
      * @return string
      */
     public function addVersionDataInURL(string $url): string;
-
-    /**
-     * Show telephone on billing or shipping page
-     *
-     * @param int|null $storeId = null
-     * @return string
-     */
-    public function showTelephone(?int $storeId = null): string;
 
     /**
      * Check if address autocomplete is enabled

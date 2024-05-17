@@ -18,11 +18,9 @@
                 <days_on_invoice>14</days_on_invoice>
                 <finalize_purchase>1</finalize_purchase>
                 <enable_order_intent>1</enable_order_intent>
-		<enable_tax_subtotals>1</enable_tax_subtotals>
+                <enable_tax_subtotals>1</enable_tax_subtotals>
                 <fulfill_trigger>shipment</fulfill_trigger>
-		<fulfill_order_status>complete</fulfill_order_status>
-                <enable_international_telephone>1</enable_international_telephone>
-                <show_telephone>payment</show_telephone>
+                <fulfill_order_status>complete</fulfill_order_status>
                 <enable_company_search>1</enable_company_search>
                 <enable_address_search>1</enable_address_search>
                 <enable_department>1</enable_department>

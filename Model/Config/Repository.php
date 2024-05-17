@@ -151,14 +151,6 @@ class Repository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function isInternationalTelephoneEnabled(?int $storeId = null): bool
-    {
-        return $this->isSetFlag(self::XML_PATH_ENABLE_INTERNATIONAL_TELEPHONE, $storeId);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function isCompanySearchEnabled(?int $storeId = null): bool
     {
         return $this->isSetFlag(self::XML_PATH_ENABLE_COMPANY_SEARCH, $storeId);
@@ -338,14 +330,6 @@ class Repository implements RepositoryInterface
         }
 
         return $url;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function showTelephone(?int $storeId = null): string
-    {
-        return (string)$this->getConfig(self::XML_PATH_SHOW_TELEPHONE, $storeId);
     }
 
     /**

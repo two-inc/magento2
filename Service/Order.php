@@ -456,7 +456,7 @@ abstract class Order
                 'email' => $billingAddress->getEmail(),
                 'first_name' => $billingAddress->getFirstName(),
                 'last_name' => $billingAddress->getLastName(),
-                'phone_number' => $additionalData['telephone'] ?? $billingAddress->getTelephone(),
+                'phone_number' => $billingAddress->getTelephone(),
             ],
             'company' => [
                 'organization_number' => $additionalData['companyId'] ?? '',

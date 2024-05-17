@@ -188,29 +188,6 @@
                         />
                     </div>
                 </div>
-                <!-- ko if: isInternationalTelephoneEnabled -->
-                <div
-                    class="field field-text required"
-                    data-bind="style: {display: showTelephoneOnPaymentPage() ? 'block': 'none'}"
-                >
-                    <label for="two_telephone" class="label">
-                        <span> <!-- ko i18n: 'Phone Number'--><!-- /ko --> </span>
-                    </label>
-                    <div class="control">
-                        <input type="hidden" id="two_telephone_full" />
-                        <input
-                            type="text"
-                            id="two_telephone"
-                            name="payment[telephone]"
-                            required="true"
-                            data-bind='
-                            attr: {title: $t("Phone Number")},
-                            value: telephone'
-                            class="input-text"
-                        />
-                    </div>
-                </div>
-                <!-- /ko -->
                 <div class="field field-text" data-bind="visible: isProjectFieldEnabled">
                     <label for="two_project" class="label">
                         <span> <!-- ko i18n: 'Project'--><!-- /ko --> </span>
