@@ -1,12 +1,6 @@
 var config = {
-    paths: {
-        "intlTelInput": 'Two_Gateway/intl-tel-input-18.2.1/js/intlTelInput.min',
-    },
-    shim: {
-        'intlTelInput': {
-            'deps': ['jquery']
-        }
-    },
+    paths: {},
+    shim: {},
     config: {
         mixins: {
             'Magento_Checkout/js/action/set-shipping-information': {

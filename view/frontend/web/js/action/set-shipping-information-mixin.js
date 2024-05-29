@@ -19,15 +19,6 @@ define(['jquery', 'mage/utils/wrapper', 'Magento_Checkout/js/model/quote'], func
                 shippingAddress['extension_attributes'] = {};
             }
 
-            if (shippingAddress.customAttributes !== undefined) {
-                var attribute = shippingAddress.customAttributes.find(function (element) {
-                    return element.attribute_code === 'two_telephone';
-                });
-            }
-
-            shippingAddress['extension_attributes']['two_telephone'] =
-                attribute !== undefined ? attribute.value : '';
-
             // pass execution to original action ('Magento_Checkout/js/action/set-shipping-information')
             return originalAction();
         });

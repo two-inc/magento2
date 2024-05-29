@@ -20,12 +20,9 @@ define([
         isAddressSearchEnabled: config.isAddressSearchEnabled,
         supportedCountryCodes: config.supportedCountryCodes,
         isInternationalTelephoneEnabled: config.isInternationalTelephoneEnabled,
-        showTelephone: config.showTelephone,
         countrySelector: '#shipping-new-address-form select[name="country_id"]',
         companyNameSelector: '#shipping-new-address-form input[name="company"]',
         companyIdSelector: '#shipping-new-address-form input[name="custom_attributes[company_id]"]',
-        telephoneSelector:
-            '#shipping-new-address-form input[name="custom_attributes[two_telephone]"]',
         shippingTelephoneSelector: '#shipping-new-address-form input[name="telephone"]',
         enterDetailsManuallyText: $t('Enter details manually'),
         enterDetailsManuallyButton: '#shipping_enter_details_manually',
@@ -43,29 +40,16 @@ define([
             if (this.isCompanySearchEnabled) {
                 this.enableCompanySearch();
             }
-            let progressBar = uiRegistry.get('index = progressBar'),
-                configuredCheckoutStep = 0;
-            if (progressBar !== undefined) {
-                configuredCheckoutStep = _.findIndex(progressBar.steps(), {
-                    code: this.showTelephone
-                });
-            }
-            if (
-                this.isInternationalTelephoneEnabled &&
-                configuredCheckoutStep == stepNavigator.getActiveItemIndex()
-            ) {
-                this.enableInternationalTelephone();
-            }
-            const setTwoTelephone = (e) => customerData.set('twoTelephone', e.target.value);
+            const setTwoTelephone = (e) => customerData.set('shippingTelephone', e.target.value);
             $.async(self.shippingTelephoneSelector, function (telephoneSelector) {
                 $(telephoneSelector).on('change keyup', setTwoTelephone);
                 const telephone = $(self.shippingTelephoneSelector).val();
-                customerData.set('twoTelephone', telephone);
+                customerData.set('shippingTelephone', telephone);
             });
         },
         toggleCompanyVisibility: function () {
             const countryCode = $(this.countrySelector).val().toLowerCase();
-            customerData.set('twoCountryCode', countryCode);
+            customerData.set('countryCode', countryCode);
             let field = $(this.companyNameSelector).closest('.field');
             if (countryCode in config.companySearchConfig.searchHosts) {
                 field.show();
@@ -76,22 +60,10 @@ define([
         },
         setCompanyData: function (companyId = '', companyName = '') {
             console.log({ companyId, companyName });
-            customerData.set('twoCompanyData', { companyId, companyName });
+            customerData.set('companyData', { companyId, companyName });
             $('.select2-selection__rendered').text(companyName);
             $(this.companyNameSelector).val(companyName);
             $(this.companyIdSelector).val(companyId);
-        },
-        enableInternationalTelephone: function () {
-            var self = this;
-            require(['intlTelInput'], function () {
-                $.async(self.telephoneSelector, function (telephoneField) {
-                    $(telephoneField).intlTelInput({
-                        preferredCountries: _.uniq(self.supportedCountryCodes),
-                        utilsScript: config.internationalTelephoneConfig.utilsScript,
-                        nationalMode: true
-                    });
-                });
-            });
         },
         enableCompanySearch: function () {
             var self = this;

@@ -153,27 +153,6 @@
                     </depends>
                     <config_path>payment/two_payment/specificcountry</config_path>
                 </field>
-                <field id="enable_international_telephone" translate="label" type="select" sortOrder="70"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable international telephone</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-		    <comment>Ensure that phone number that is sent to Two is automatically prefixed with E164 international telephone code (recommended).
-                        If the buyer does not specify a country code in the phone number, it is automatically prefixed with country code from the address.</comment>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
-                    <config_path>payment/two_payment/enable_international_telephone</config_path>
-                </field>
-                <field id="show_telephone" translate="label" type="select" sortOrder="75" showInDefault="1"
-                       showInWebsite="1" showInStore="1">
-                    <label>Show telephone field</label>
-                    <comment>Optional field which allows the buyer to view the international telephone number that will be sent to Two.</comment>
-                    <source_model>Two\Gateway\Model\Config\Source\ShowTelephone</source_model>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
-                    <config_path>payment/two_payment/show_telephone</config_path>
-                </field>
                 <field id="enable_order_intent" translate="label" type="select" sortOrder="75" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Enable order intent</label>

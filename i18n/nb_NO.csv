@@ -54,7 +54,6 @@ Title,Tittel
 "Finalize purchase when order is shipped","Send faktura når ordren blir sendt"
 "Pre-approve the buyer during checkout and disable Two if the buyer is declined","Forhåndsgodkjenn kjøper i kassen og deaktiver Two hvis kjøperen ikke blir godkjent"
 "Company details","Selskapsinformasjon"
-"Enable international telephone","Aktiver internasjonalt telefonnummer"
 "Activate company name auto-complete","Aktiver autoutfylling av selskapsnavn"
 "Add department field","Legg til felt for avdeling"
 "Add project field","Legg til felt for prosjekt"

@@ -9,8 +9,6 @@ define([
     'Magento_Checkout/js/view/payment/default',
     'Magento_Checkout/js/model/quote',
     'Magento_Customer/js/customer-data',
-    'Magento_Checkout/js/model/step-navigator',
-    'uiRegistry',
     'Magento_Checkout/js/model/payment/additional-validators',
     'mage/translate',
     'Magento_Checkout/js/model/full-screen-loader',
@@ -26,8 +24,6 @@ define([
     Component,
     quote,
     customerData,
-    stepNavigator,
-    uiRegistry,
     additionalValidators,
     $t,
     fullScreenLoader,
@@ -45,9 +41,7 @@ define([
         },
         redirectAfterPlaceOrder: false,
         isOrderIntentEnabled: config.isOrderIntentEnabled,
-        isInternationalTelephoneEnabled: config.isInternationalTelephoneEnabled,
         isDepartmentFieldEnabled: config.isDepartmentFieldEnabled,
-        showTelephone: config.showTelephone,
         isProjectFieldEnabled: config.isProjectFieldEnabled,
         isOrderNoteFieldEnabled: config.isOrderNoteFieldEnabled,
         isPONumberFieldEnabled: config.isPONumberFieldEnabled,
@@ -61,11 +55,8 @@ define([
         orderNote: ko.observable(''),
         poNumber: ko.observable(''),
         telephone: ko.observable(''),
-        fullTelephone: ko.observable(''),
         countryCode: ko.observable(''),
-        iti: null,
         formSelector: 'form#two_gateway_form',
-        telephoneSelector: 'input#two_telephone',
         companyNameSelector: 'input#company_name',
         companyIdSelector: 'input#company_id',
         orderIntentApprovedMessage: $t(
@@ -91,9 +82,6 @@ define([
 
         initialize: function () {
             this._super();
-            if (this.isInternationalTelephoneEnabled) {
-                this.enableInternationalTelephone();
-            }
             this.registeredOrganisationMode();
             this.configureFormValidation();
             this.popupMessageListener();
@@ -160,9 +148,6 @@ define([
                     if (item.attribute_code == 'company_name') {
                         companyName = item.value;
                     }
-                    if (item.attribute_code == 'two_telephone') {
-                        telephone = telephone;
-                    }
                     if (item.attribute_code == 'project') {
                         project = item.value;
                     }
@@ -196,19 +181,19 @@ define([
             this.updateBillingAddress(quote.billingAddress());
 
             customerData
-                .get('twoCompanyData')
+                .get('companyData')
                 .subscribe((companyData) => self.fillCompanyData(companyData));
-            this.fillCompanyData(customerData.get('twoCompanyData')());
+            this.fillCompanyData(customerData.get('companyData')());
 
             customerData
-                .get('twoTelephone')
+                .get('shippingTelephone')
                 .subscribe((telephone) => self.fillTelephone(telephone));
-            this.fillTelephone(customerData.get('twoTelephone')());
+            this.fillTelephone(customerData.get('shippingTelephone')());
 
             customerData
-                .get('twoCountryCode')
+                .get('countryCode')
                 .subscribe((countryCode) => self.fillCountryCode(countryCode));
-            this.fillCountryCode(customerData.get('twoCountryCode')());
+            this.fillCountryCode(customerData.get('countryCode')());
         },
         afterPlaceOrder: function () {
             var url = $.mage.cookies.get(config.redirectUrlCookieCode);
@@ -224,9 +209,6 @@ define([
                 this.isPlaceOrderActionAllowed() === true
             )
                 this.placeOrderBackend();
-        },
-        showTelephoneOnPaymentPage: function () {
-            return this.showTelephone == 'payment';
         },
         placeOrderBackend: function () {
             var self = this;
@@ -393,8 +375,7 @@ define([
                     project: this.project(),
                     department: this.department(),
                     orderNote: this.orderNote(),
-                    poNumber: this.poNumber(),
-                    telephone: this.getTelephone() // checkout-data -> shippingAddressFromData -> custom_attributes -> two_telephone_full
+                    poNumber: this.poNumber()
                 }
             };
         },
@@ -503,58 +484,10 @@ define([
                 });
             });
         },
-        enableInternationalTelephone: function () {
-            let self = this;
-            require(['intlTelInput'], function () {
-                $.async(self.telephoneSelector, function (telephoneField) {
-                    let billingAddress = quote.billingAddress(),
-                        initialCountry = billingAddress
-                            ? billingAddress.countryId.toLowerCase()
-                            : quote.shippingAddress().countryId.toLowerCase();
-                    self.iti = window.intlTelInput(telephoneField, {
-                        preferredCountries: _.uniq([initialCountry, ...self.supportedCountryCodes]),
-                        utilsScript: config.internationalTelephoneConfig.utilsScript,
-                        initialCountry: initialCountry,
-                        nationalMode: true
-                    });
-                    $(self.telephoneSelector).on('change keyup countrychange', function () {
-                        self.setFullTelephone();
-                    });
-                    self.telephone.subscribe((telephone) => {
-                        self.setFullTelephone({ telephone });
-                    });
-                    self.countryCode.subscribe((countryCode) => {
-                        self.setFullTelephone({ countryCode });
-                    });
-                    self.setFullTelephone();
-                });
-            });
-        },
         getTelephone: function () {
-            const telephone = this.fullTelephone() || this.telephone();
+            const telephone = this.telephone();
             console.log({ telephone });
             return telephone;
-        },
-        setFullTelephone: function ({ telephone = null, countryCode = null } = {}) {
-            /**
-             * Note 1! Origin method "getInstance" doesn't work as described in:
-             *         https://github.com/jackocnr/intl-tel-input#static-methods
-             * Note 2! "iti" will be initialized correctly when only 1 telephone is initialized at the web page
-             * Note 3! this logic can't be replaced with "iti.hiddenInput" because it doesn't work as expected
-             */
-            const iti = this.iti;
-            iti.promise.then(() => {
-                if (countryCode) {
-                    iti.setCountry(countryCode);
-                }
-                if (telephone) {
-                    iti.setNumber(telephone);
-                }
-                const fullTelephone = iti.getNumber();
-                const valid = iti.isValidNumber();
-                console.log({ fullTelephone, valid, countryCode, telephone });
-                this.fullTelephone(fullTelephone);
-            });
         },
         configureFormValidation: function () {
             $.async(this.formSelector, function (form) {

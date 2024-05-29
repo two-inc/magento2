@@ -300,7 +300,7 @@ class Two extends AbstractMethod
     {
         $loc_str = preg_replace('/\s+/', '', $loc_str);
         $fieldLocStrMapping = [
-            '["buyer","representative","phone_number"]' => 'Phone Number is not valid (requires plus prefix).',
+            '["buyer","representative","phone_number"]' => 'Phone Number is not valid.',
             '["buyer","company","organization_number"]' => 'Company ID is not valid.',
             '["buyer","representative","first_name"]' => 'First Name is not valid.',
             '["buyer","representative","last_name"]' => 'Last Name is not valid.',

@@ -62,36 +62,6 @@ class LayoutProcessorPlugin
             'id' => 'company-id',
             'value' => ''
         ];
-        if ($this->repository->showTelephone() == 'shipping') {
-            $jsLayout['components']['checkout']['children']['steps']['children']['shipping-step']['children']
-            ['shippingAddress']['children']['shipping-address-fieldset']['children']['two_telephone'] = [
-                'component' => 'Magento_Ui/js/form/element/abstract',
-                'config' => [
-                    'customScope' => 'shippingAddress.custom_attributes',
-                    'customEntry' => null,
-                    'template' => 'ui/form/field',
-                    'elementTmpl' => 'ui/form/element/input',
-                    'tooltip' => [
-                        'description' => 'International company telephone number',
-                    ],
-                    'options' => [],
-                    'id' => 'two-telephone'
-                ],
-                'dataScope' => 'shippingAddress.custom_attributes.two_telephone',
-                'label' => 'International telephone',
-                'provider' => 'checkoutProvider',
-                'visible' => true,
-                'validation' => [
-                    'required-entry' => false
-                ],
-                'sortOrder' => 200,
-                'options' => [],
-                'filterBy' => null,
-                'customEntry' => null,
-                'id' => 'two-telephone',
-                'value' => ''
-            ];
-        }
         return $jsLayout;
     }
 }
