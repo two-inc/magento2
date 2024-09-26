@@ -36,7 +36,6 @@ class ComposeRefund extends OrderService
         $result = [
             'amount' => min($this->roundAmt($amount) * -1, $grossAmount),
             'currency' => $order->getOrderCurrencyCode(),
-            'initiate_payment_to_buyer' => true,
             'line_items' => $lineItems,
         ];
         $taxSubtotals = $this->getTaxSubtotals($lineItems);
