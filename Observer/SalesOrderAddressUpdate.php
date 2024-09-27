@@ -14,6 +14,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Two\Gateway\Model\Two;
 use Two\Gateway\Service\Api\Adapter;
 use Two\Gateway\Service\Order\ComposeOrder;
+use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 
 /**
  * Order Address Update Observer
@@ -21,6 +22,11 @@ use Two\Gateway\Service\Order\ComposeOrder;
  */
 class SalesOrderAddressUpdate implements ObserverInterface
 {
+    /**
+     * @var ConfigRepository
+     */
+    private $configRepository;
+
     /**
      * @var OrderRepositoryInterface
      */
@@ -44,10 +50,12 @@ class SalesOrderAddressUpdate implements ObserverInterface
      * @param Adapter $apiAdapter
      */
     public function __construct(
+        ConfigRepository $configRepository,
         OrderRepositoryInterface $orderRepository,
         ComposeOrder $compositeOrder,
         Adapter $apiAdapter
     ) {
+        $this->configRepository = $configRepository;
         $this->orderRepository = $orderRepository;
         $this->compositeOrder = $compositeOrder;
         $this->apiAdapter = $apiAdapter;
@@ -93,7 +101,7 @@ class SalesOrderAddressUpdate implements ObserverInterface
                 } else {
                     $order->addStatusToHistory(
                         $order->getStatus(),
-                        __('Order info was updated in two payment')
+                        __('Order edit request was accepted by %1', $this->configRepository->getProvider())
                     );
                 }
             } catch (Exception $e) {

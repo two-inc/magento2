@@ -10,12 +10,18 @@ namespace Two\Gateway\Setup\Patch\Data;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Two\Gateway\Model\Two;
+use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 
 /**
  * OrderStatuses Data Patch
  */
 class OrderStatuses implements DataPatchInterface
 {
+    /**
+     * @var ConfigRepository
+     */
+    private $configRepository;
+
     /**
      * @var ModuleDataSetupInterface
      */
@@ -25,8 +31,10 @@ class OrderStatuses implements DataPatchInterface
      * @param ModuleDataSetupInterface $moduleDataSetup
      */
     public function __construct(
+        ConfigRepository $configRepository,
         ModuleDataSetupInterface $moduleDataSetup
     ) {
+        $this->configRepository = $configRepository;
         $this->moduleDataSetup = $moduleDataSetup;
     }
 
@@ -39,8 +47,8 @@ class OrderStatuses implements DataPatchInterface
 
         $data = [];
         $statuses = [
-            Two::STATUS_NEW => __('Two New Order'),
-            Two::STATUS_FAILED => __('Two Failed'),
+            Two::STATUS_NEW => __('%1 New Order', $this->configRepository->getProvider()),
+            Two::STATUS_FAILED => __('%1 Failed', $this->configRepository->getProvider()),
         ];
 
         foreach ($statuses as $code => $info) {

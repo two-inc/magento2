@@ -1,59 +1,95 @@
-"Order has been canceled","Beställningen har avbrutits"
-"Verification Failed","Verifiseringen feilet"
-"Funded Invoice","Finansierad faktura"
-"Direct Invoice","Faktura"
-"Production","Produktion"
-"Sandbox","Sandbox"
-"Your order was not accepted","Din beställning blev inte accepterad"
-"Could not update status to cancelled, please check with Two admin for id %1. Error - %2","Kunna inte uppdatera status till avbruten"
-"Tillit Order marked as cancelled","Two-beställning markerad som annullerad"
-"Could not initiate refund by Two","Det gick inte att initiera återbetalning via Two"
-"Failed to refund order by Two. Amount is missing","Återbetalning av beställning med Two misslyckades. Belopp saknas"
-"Successfully refunded order Two admin for id %1. Refund id is %2","Lyckad återbetalning för två beställningar med ID% 1. Återbetalnings-ID är % 2"
-"Something went wrong. Please try again.","Något gick fel. Var god försök igen."
-"Order info was updated in tillit payment","Beställningsinformation uppdaterad hos Two"
-"Invalid API response.","Ogiltigt API-svar"
-"Two New Order","Ny order Two"
-"Two Failed","Two misslyckades"
-"Two Details","Detaljer Two"
-"Two Order Id","Ordreid Two"
-"Two Invoice","Faktura Two"
-"Download","Ladda ner"
-"Two Credit Note","Kreditnota Two"
-"Sign up now","Registrera nu"
-"The Two Payment plugin for Magento simplifies B2B shopping, making it easy and safe for merchants to offer invoices as a payment method.<br>The payment method lives next to other payment methods in your existing checkout, and offers a variety of configuration options to suit your businesses needs.<br>If you would like to know more about how to configure the plugin, check out our step by step guide at %1","Two sin Magento-plugin förenklar företagsköp ved att göra det enkelt för säljaren att erbjuda fakturor som betalningsmetod. <br> Betalningsmetoden finns tillgänglig tillsammans med andra betalningsmetoder i kassan och erbjuder ett antal konfigurationselement för att passa dina affärsbehov. <br> Om du vill ha mer information om hur du konfigurerar pluginet kan du se vår guide på % 1."
-"Developed by Magmodules.","Utvecklad av Magmodules."
-"Company Name","Selskapsnavn"
-"Company ID","Organisationsnummer"
-"Phone Number","Telefonnummer"
-"Project","Projekt"
-"Department","Avdelning"
-"Place Order","Beställa"
-"Something went wrong with your request. Please check your data and try again.","Något gick fel med din begäran. Granska dina uppgifter och försök igen."
-"Your order has been declined.","Din beställning blev avvisad"
-"Risk too high.","För hög risk."
+"%1 Credit Note","%1 Kreditnota"
+"%1 Decline reason: %2","%1 Orsak till avslag: %2"
+"%1 Details","%1 Detaljer"
+"%1 Failed","%1 Misslyckades"
+"%1 Invoice","%1 Faktura"
+"%1 New Order","%1 Ny beställning"
+"%1 Order ID","%1 Beställnings-ID"
+"%1 [Trace ID: %2]","%1 [Spår-ID: %2]"
+"%1 order has been marked as cancelled","%1 beställning har markerats som avbruten"
+"%1 order invoice has not been issued yet.","%1 orderfaktura har inte utfärdats ännu."
+"%1 order marked as completed with invoice number %2","%1 order markerad som slutförd med fakturanummer %2"
+"%1 requires whole order to be shipped before it can be fulfilled.","%1 kräver att hela beställningen skickas innan den kan uppfyllas."
+"* Required Fields","* Obligatoriska fält"
+"API key",API-nyckel
+"Add PO number field","Lägg till PO-nummerfält"
+"Add department field","Lägg till fält för avdelning"
+"Add order note field","Lägg till orderanteckningsfält"
+"Add project field","Lägg till fält för projekt"
+"Allow to applicable countries","Tillåt till tillämpliga länder"
+"Allow to specific countries","Tillåt till specifika länder"
+Branding,Branding
+"Buyer address is invalid.","Köparens adress är ogiltig"
+"Buyer authentication failed.","Köparens autentisering misslyckades."
+"Buyer info is inconsistent.","Köparinformation är inkonsekvent."
 "Buyer limit exceeded.","Inköpsgränsen har uppnåtts."
 "Buyer not found.","Köparen hittades inte."
-"Buyer address is invalid.","Köparens adress är ogiltig"
-"Buyer info in inconsistent.","Köparinformation är inkonsekvent."
-"Buyer authentication failed.","Köparens autentisering misslyckades."
-"Reason","Anledningen"
-"Two payments","Two payments"
-Branding,Branding
-General,Generellt
-Version,Version
-"Enable Two payments","Aktivera Two payments"
-Credentials,Inloggningsinformation
+"Check last 100 debug log records","Kontrollera de senaste 100 felsökningsloggposterna"
+"Check last 100 error log records","Kontrollera de senaste 100 felloggposterna"
+"Click here to log in or sign up as a Sole Trader.","Klicka här för att logga in eller registrera dig som enskild näringsidkare."
+"Company ID",Organisationsnummer
+"Company Name",Selskapsnavn
+"Could not initiate capture with %1","Kunde inte initiera infångning med %1"
+"Could not initiate refund with %1","Kunde inte initiera återbetalning med %1"
+"Could not update %1 order status to cancelled. Please contact support with order ID %2. Error: %3","Kunde inte uppdatera %1 orderstatus till annullerad. Kontakta supporten med beställnings-ID %2. Fel: %3"
+"Debug mode",Felsökningsläge
+Department,Avdelning
+"Developed by Magmodules.","Utvecklad av Magmodules."
+"Display info link","Visa infolänk"
+Download,"Ladda ner"
+"Download as .txt file","Ladda ner som .txt-fil"
+"Enable address search","Aktivera adresssökning"
+"Enable company search","Aktivera företagssökning"
+"Enable order intent","Aktivera orderavsikt"
+"Enable payment method","Aktivera betalningsmetod"
+"Enable tax subtotals","Aktivera delsummor för skatt"
+"Enter details manually","Ange detaljer manuellt"
 Environment,Miljö
-"Two username","Användarnamn Two"
-"Api key","API-nyckel"
-"Payment method","Betalningsmetod"
+"Failed to refund order with %1. Reason: %2","Det gick inte att återbetala beställningen med %1. Orsak: %2"
+"Find out more","Ta reda på mer"
+"Fulfilment order status","Uppfyllande orderstatus"
+"Fulfilment trigger","Uppfyllelse trigger"
+General,Generellt
+"Invalid API response from %1.","Ogiltigt API-svar från %1."
+"Invoice purchase with %1 is not available for this order.","Fakturaköp med %1 är inte tillgängligt för den här beställningen."
+"Last 100 debug log lines","Senaste 100 felsökningsloggraderna"
+"Last 100 error log records","Senaste 100 felloggposter"
+"Log is empty","Loggen är tom"
+OK,OK
+"On Completion","Vid färdigställande"
+"On Invoice","På faktura"
+"On Shipment","Vid leverans"
+"Order Note",Beställningsanmärkning
+"Order edit request was accepted by %1","Begäran om beställningsredigering accepterades av %1"
+"Order was not accepted by %1","Beställningen accepterades inte av %1"
+"PO Number",PO-nummer
+Payment,Betalning
+"Payment method",Betalningsmetod
+"Place Order",Beställa
+Production,Produktion
+Project,Projekt
+Reason,Anledningen
+"Registered Organisation","Registrerad organisation"
+"Risk too high.","För hög risk."
+Sandbox,Sandbox
+Search,Söka
+"Search for company","Sök efter företag"
+"Sign up now","Registrera nu"
+"Sole Trader","Enskild näringsidkare"
+"Something went wrong with your request to %1. Please try again later.","Något gick fel med din begäran till %1. Försök igen senare."
+"Sort order",Sorteringsordning
+"Successfully refunded order with %1 for order ID: %2. Refund reference: %3","Återbetalad beställning med %1 för beställnings-ID: %2. Återbetalningsreferens: %3"
+TWO,TWO
+"The %1 payment plugin for Magento simplifies B2B shopping, making it easy and safe for merchants to offer invoices as a payment method.<br>The payment method lives next to other payment methods in your existing checkout, and offers a variety of configuration options to suit your businesses needs.<br>If you would like to know more about how to configure the plugin, check out our <a href=""%2"" target=""_blank"">step by step guide</a>.","Betalningspluginet %1 för Magento förenklar B2B-shopping, vilket gör det enkelt och säkert för handlare att erbjuda fakturor som betalningsmetod. <br> Betalningsmetoden finns bredvid andra betalningsmetoder i din befintliga kassa, och erbjuder en mängd olika konfigurationsalternativ för att passa ditt företags behov. <br> Om du vill veta mer om hur du konfigurerar plugin-programmet, kolla in vår <a href=""%2"" target=""_blank""> steg-för-steg-guide </a> ."
+"The buyer and the seller are the same company.","Köparen och säljaren är samma företag."
+"The capture action is not available.","Infångningsåtgärden är inte tillgänglig."
 Title,Tittel
-"Payment settings","Betalingsinställningar"
-"Choose your product","Välj din produkt"
-"Finalize purchase when order is shipped","Skicka faktura när ordern blir skickad"
-"Pre-approve the buyer during checkout and disable Two if the buyer is declined","Förhandsgodkänna köparen i kassan och avaktivera Hans om köparen inte blir godkänd"
-"Company details","Företagsinformation"
-"Activate company name auto-complete","Aktivera automatisk ifyllning av företagsnamn"
-"Add department field","Lägg till fält för avdelning"
-"Add project field","Lägg till fält för projekt"
+"Unable to find the requested %1 order","Det gick inte att hitta den begärda beställningen %1"
+"Unable to retrieve payment information for your invoice purchase with %1. The cart will be restored.","Det gick inte att hämta betalningsinformation för ditt fakturaköp med %1. Vagnen kommer att återställas."
+Username,Användarnamn
+Version,Version
+"You will be redirected to %1 when you place order.","Du kommer att omdirigeras till %1 när du beställer."
+"Your invoice purchase with %1 failed verification. The cart will be restored.","Ditt fakturaköp med %1 misslyckades med verifiering. Vagnen kommer att återställas."
+"Your invoice purchase with %1 has been cancelled. The cart will be restored.","Ditt fakturaköp med %1 har annullerats. Vagnen kommer att återställas."
+"Your request to %1 failed. Reason: %2","Din begäran till %1 misslyckades. Orsak: %2"
+https://www.two.inc/what-is-two,https://www.two.inc/what-is-two

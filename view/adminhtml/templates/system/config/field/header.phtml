@@ -8,22 +8,23 @@
 ?>
 <div class="two-header">
     <div class="two-header-actions">
-        <button id="two-button_test" title="<?= $block->escapeUrl(__('Sign up now')); ?>"
+        <button id="two-button_test" title="<?= /* @noEscape */ __('Sign up now'); ?>"
                 type="button" class="action-default scalable"
                 onclick='window.open("<?= $block->escapeUrl($block->getSignUpUrl()); ?>", "_blank")'>
-            <span><?= $block->escapeUrl(__('Sign up now')); ?></span>
+            <span><?= /* @noEscape */ __('Sign up now'); ?></span>
         </button>
     </div>
     <div class="two-header-text">
         <p>
             <?=$block->escapeHtml(__(
-                'The Two Payment plugin for Magento simplifies B2B shopping, making it easy and safe for ' .
-                'merchants to offer invoices as a payment method.<br>The payment method lives next to other payment ' .
-                'methods in your existing checkout, and offers a variety of configuration options to suit your ' .
-                'businesses needs.<br>If you would like to know more about how to configure the plugin, check out ' .
-                'our step by step guide at %1',
-                '<a href="https://docs.two.inc/developer-portal/plugins/magento" target="_blank">' .
-                'https://docs.two.inc/developer-portal/plugins/magento</a>'
+                'The %1 payment plugin for Magento simplifies B2B shopping, ' .
+                'making it easy and safe for merchants to offer invoices as a payment method.<br>' .
+                'The payment method lives next to other payment methods in your existing checkout, ' .
+                'and offers a variety of configuration options to suit your businesses needs.<br>' .
+                'If you would like to know more about how to configure the plugin, ' .
+                'check out our <a href="%2" target="_blank">step by step guide</a>.',
+                $block->configRepository->getProvider(),
+                $block->escapeUrl($block->getDocumentationUrl())
             ), ['br', 'a']); ?>
         </p>
         <span class="development">

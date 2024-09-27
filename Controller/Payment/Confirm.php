@@ -15,6 +15,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 use Two\Gateway\Service\Payment\OrderService;
 
 /**
@@ -24,6 +25,11 @@ class Confirm extends Action
 {
     public const STATE_CONFIRMED = 'CONFIRMED';
     public const STATE_VERIFIED = 'VERIFIED';
+
+    /**
+     * @var ConfigRepository
+     */
+    private $configRepository;
 
     /**
      * @var AddressFactory
@@ -44,11 +50,13 @@ class Confirm extends Action
         Context $context,
         AddressFactory $customerAddress,
         OrderService $orderService,
-        OrderSender $orderSender
+        OrderSender $orderSender,
+        ConfigRepository $configRepository
     ) {
         $this->customerAddress = $customerAddress;
         $this->orderService = $orderService;
         $this->orderSender = $orderSender;
+        $this->configRepository = $configRepository;
         parent::__construct($context);
     }
 
@@ -98,13 +106,16 @@ class Confirm extends Action
                 $this->orderService->processOrder($order, $twoOrder['id']);
                 return $this->getResponse()->setRedirect($this->_url->getUrl('checkout/onepage/success'));
             } else {
-                $message = 'Unable to retrieve payment information for your invoice purchase with Two.';
+                $message = __(
+                    'Unable to retrieve payment information for your invoice purchase with %1. ' .
+                    'The cart will be restored.',
+                    $this->configRepository->getProvider()
+                );
                 if (!empty($twoOrder['decline_reason'])) {
-                    $message = $twoOrder['decline_reason'];
+                    $message = __('%1 Decline reason: %2', $message, $twoOrder['decline_reason']);
                 }
-                $message .= ' The cart will be restored.';
                 $this->orderService->addOrderComment($order, $message);
-                throw new LocalizedException(__($message));
+                throw new LocalizedException($message);
             }
         } catch (Exception $exception) {
             $this->orderService->restoreQuote();

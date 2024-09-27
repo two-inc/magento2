@@ -33,7 +33,7 @@
                 <field id="mode" translate="label" type="select" sortOrder="35" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                     <label>Environment</label>
-                    <comment>Select between the Two sandbox and production environment. The sandbox environment does not involve real money.</comment>
+                    <comment>Select between sandbox and production environment. The sandbox environment is for testing purpose and does not involve real money.</comment>
                     <source_model>Two\Gateway\Model\Config\Source\Mode</source_model>
                     <depends>
                         <field id="active">1</field>
@@ -42,8 +42,8 @@
                 </field>
                 <field id="merchant_short_name" translate="label" type="text" sortOrder="40" showInDefault="1"
                        showInWebsite="1" showInStore="1">
-                    <label>Two username</label>
-                    <comment>Username provided by Two</comment>
+                    <label>Username</label>
+                    <comment>Username for your merchant account</comment>
                     <depends>
                         <field id="active">1</field>
                     </depends>
@@ -52,7 +52,7 @@
                 <field id="api_key" translate="label" type="obscure" sortOrder="50" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                     <label>API key</label>
-                    <comment>API keys to the sandbox environment are available through the Two merchant portal, while production keys will be handed over to you by a Two representative</comment>
+                    <comment>API key for sandbox environment is available on your merchant portal (however please reach out to integration@two.inc for access to production keys).</comment>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <validate>required-entry</validate>
                     <depends>
@@ -62,7 +62,7 @@
                 </field>
                 <field id="debug" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1"
                        showInStore="1">
-                    <label>Debug Mode</label>
+                    <label>Debug mode</label>
                     <comment>The debug mode enables writing to the error logs below. Debug mode should only be enabled when the sandbox enviroment is active</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <config_path>payment/two_payment/debug</config_path>
@@ -90,15 +90,15 @@
                 <label>Payment method</label>
                 <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1"
                        showInStore="1">
-                    <label>Enable Two payments</label>
-                    <comment>Activates Two as a payment option in the checkout</comment>
+                    <label>Enable payment method</label>
+                    <comment>Activates this plugin as a payment option in the checkout flow</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <config_path>payment/two_payment/active</config_path>
                 </field>
                 <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                     <label>Title</label>
-                    <comment>Descriptive title which gives the buyer a better understanding of Two payments e.g. Business invoice 30 days</comment>
+                    <comment>Descriptive title which gives the buyer a better understanding of this payment method e.g. Business invoice 30 days</comment>
                     <validate>required-entry</validate>
                     <depends>
                         <field id="active">1</field>
@@ -135,7 +135,7 @@
                     <config_path>payment/two_payment/sort_order</config_path>
                 </field>
                 <field id="sallowspecific" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
-                    <label>Allow to Applicable Countries</label>
+                    <label>Allow to applicable countries</label>
                     <frontend_class>shipping-applicable-country</frontend_class>
                     <source_model>Magento\Shipping\Model\Config\Source\Allspecificcountries</source_model>
                     <depends>
@@ -144,8 +144,8 @@
                     <config_path>payment/two_payment/allowspecific</config_path>
                 </field>
                 <field id="specificcountry" translate="label" type="multiselect" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Allow to Specific Countries</label>
-                    <comment>Select the countries where Two should be an available payment option</comment>
+                    <label>Allow to specific countries</label>
+                    <comment>Select the countries where this payment method should be an available payment option</comment>
                     <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
                     <can_be_empty>1</can_be_empty>
                     <depends>
@@ -156,7 +156,7 @@
                 <field id="enable_order_intent" translate="label" type="select" sortOrder="75" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Enable order intent</label>
-                    <comment>Perform a check during checkout to inform buyer whether an order would be accepted by Two before they place order (recommended).</comment>
+                    <comment>Perform a check during checkout to inform buyer whether an order would be accepted before they place order (recommended).</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>
@@ -218,8 +218,8 @@
                 </field>
                 <field id="enable_two_link" translate="label" type="select" sortOrder="100" showInDefault="1"
                        showInWebsite="1" showInStore="1">
-                    <label>Include "What is Two?" link in the checkout</label>
-                    <comment>Display a modal which describes how Two works from a buyer perspective with a URL to find out more.</comment>
+                    <label>Display info link</label>
+                    <comment>Display a modal which describes how this payment method works from a buyer perspective with a URL to find out more.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>

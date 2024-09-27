@@ -13,12 +13,18 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Two\Gateway\Service\Payment\OrderService;
+use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 
 /**
  * Cancel Payment Controller
  */
 class Cancel extends Action
 {
+    /**
+     * @var ConfigRepository
+     */
+    private $configRepository;
+
     /**
      * @var OrderService
      */
@@ -31,9 +37,11 @@ class Cancel extends Action
      * @param Context $context
      */
     public function __construct(
+        ConfigRepository $configRepository,
         OrderService $orderService,
         Context $context
     ) {
+        $this->configRepository = $configRepository;
         $this->orderService = $orderService;
         parent::__construct($context);
     }
@@ -47,8 +55,11 @@ class Cancel extends Action
         try {
             $order = $this->orderService->getOrderByReference();
             $this->orderService->cancelTwoOrder($order);
-            $message = 'Your invoice purchase with Two has been cancelled. The cart will be restored.';
-            throw new LocalizedException(__($message));
+            $message = __(
+                'Your invoice purchase with %1 has been cancelled. The cart will be restored.',
+                $this->configRepository->getProvider()
+            );
+            throw new LocalizedException($message);
         } catch (Exception $exception) {
             $this->orderService->restoreQuote();
             if (isset($order)) {

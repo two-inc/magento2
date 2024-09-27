@@ -6,23 +6,26 @@
 ?>
 <?php /* @var \Two\Gateway\Block\Adminhtml\Order\View $block */ ?>
 <?php if ($block->getMethod() == \Two\Gateway\Model\Two::CODE): ?>
+    <?php $provider = $block->configRepository->getProvider(); ?>
     <section class="admin__page-section order-view-account-information">
         <div class="admin__page-section-title">
-            <span class="title"><?= $block->escapeHtml(__('Two Details')) ?></span>
+            <span class="title"><?= $block->escapeHtml(__('%1 Details', $provider)) ?></span>
         </div>
         <div class="admin__page-section-content">
-            <?php $data = $block->getAdditionalData(); ?>
             <div>
+                <?php $data = $block->getAdditionalData(); ?>
                 <table>
                     <?php if ($block->getTwoOrderId($data) != ''): ?>
                         <tr>
-                            <td><?= $block->escapeHtml(__('Two Order Id')); ?>:
+                            <td>
+                                <?= $block->escapeHtml(__('%1 Order ID', $provider)); ?>:
                                 <strong><?= $block->escapeHtml($block->getTwoOrderId($data)); ?></strong></td>
                         </tr>
                     <?php endif; ?>
                     <?php if ($block->getTwoInvoiceUrl($data) != ''): ?>
                         <tr>
-                            <td><?= $block->escapeHtml(__('Two Invoice')); ?>:
+                            <td>
+                                <?= $block->escapeHtml(__('%1 Invoice', $provider)); ?>:
                                 <a href="<?= $block->escapeHtml($block->getTwoInvoiceUrl($data)); ?>"
                                    target="_blank">
                                     <?= $block->escapeHtml(__('Download')); ?>
@@ -31,7 +34,8 @@
                     <?php endif; ?>
                     <?php if ($block->getTwoCreditNoteUrl($data) != ''): ?>
                         <tr>
-                            <td><?= $block->escapeHtml(__('Two Credit Note')); ?>:
+                            <td>
+                                <?= $block->escapeHtml(__('%1 Credit Note', $provider)); ?>:
                                 <a href="<?= $block->escapeHtml($block->getTwoCreditNoteUrl($data)); ?>"
                                    target="_blank">
                                     <?= $block->escapeHtml(__('Download')); ?>

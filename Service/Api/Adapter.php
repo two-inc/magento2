@@ -62,7 +62,7 @@ class Adapter
     public function execute(string $endpoint, array $payload = [], string $method = 'POST'): array
     {
         try {
-            $this->logRepository->addDebugLog(sprintf('Api call: %s %s', $method, $endpoint), $payload);
+            $this->logRepository->addDebugLog(sprintf('API call: %s %s', $method, $endpoint), $payload);
             $url = $this->configRepository->addVersionDataInURL(
                 sprintf('%s%s', $this->configRepository->getCheckoutApiUrl(), $endpoint)
             );
@@ -98,7 +98,7 @@ class Adapter
                     $result = json_decode($body, true);
                 }
                 $this->logRepository->addDebugLog(
-                    sprintf('API %s %s (status: %s)', $method, $endpoint, $this->curlClient->getStatus()),
+                    sprintf('API response %s %s (status: %s)', $method, $endpoint, $this->curlClient->getStatus()),
                     $result
                 );
                 return $result;
@@ -106,16 +106,18 @@ class Adapter
                 if ($body) {
                     $result = json_decode($body, true) ?: [];
                     $this->logRepository->addDebugLog(
-                        sprintf('API %s %s (status: %s)', $method, $endpoint, $this->curlClient->getStatus()),
+                        sprintf('API response %s %s (status: %s)', $method, $endpoint, $this->curlClient->getStatus()),
                         $result
                     );
                     return $result;
                 } else {
                     $this->logRepository->addDebugLog(
-                        sprintf('API %s %s (status: %s)', $method, $endpoint, $this->curlClient->getStatus()),
+                        sprintf('API response %s %s (status: %s)', $method, $endpoint, $this->curlClient->getStatus()),
                         'Invalid API response.'
                     );
-                    throw new LocalizedException(__('Invalid API response.'));
+                    throw new LocalizedException(
+                        __('Invalid API response from %1.', $this->configRepository->getProvider())
+                    );
                 }
             }
         } catch (Throwable $exception) {

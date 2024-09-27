@@ -60,14 +60,20 @@ define([
         companyNameSelector: 'input#company_name',
         companyIdSelector: 'input#company_id',
         orderIntentApprovedMessage: $t(
-            'Your invoice purchase with Two is likely to be accepted subject to additional checks.'
+            'Your invoice purchase with %1 is likely to be accepted subject to additional checks.',
+            config.provider
         ),
-        orderIntentDeclinedMessage: $t('Your invoice purchase with Two has been declined.'),
+        orderIntentDeclinedMessage: $t(
+            'Your invoice purchase with %1 has been declined.',
+            config.provider
+        ),
         generalErrorMessage: $t(
-            'Something went wrong with your request to Two. Please try again later.'
+            'Something went wrong with your request to %1. Please try again later.',
+            config.provider
         ),
         soleTraderErrorMessage: $t(
-            'Something went wrong with your request to Two. Your sole trader account could not be verified.'
+            'Something went wrong with your request to %1. Your sole trader account could not be verified.',
+            config.provider
         ),
         enterDetailsManuallyText: $t('Enter details manually'),
         enterDetailsManuallyButton: '#billing_enter_details_manually',
