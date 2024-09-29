@@ -24,6 +24,7 @@ use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Payment\Model\Method\Logger;
 use Magento\Quote\Api\Data\CartInterface;
 use Magento\Sales\Api\OrderStatusHistoryRepositoryInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Status\HistoryFactory;
 use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
@@ -108,6 +109,10 @@ class Two extends AbstractMethod
      */
     private $orderStatusHistoryRepository;
     /**
+     * @var OrderRepositoryInterface
+     */
+    private $orderRepository;
+    /**
      * @var LogRepository
      */
     private $logRepository;
@@ -152,6 +157,7 @@ class Two extends AbstractMethod
         ComposeCapture $composeCapture,
         HistoryFactory $historyFactory,
         OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository,
+        OrderRepositoryInterface $orderRepository,
         Adapter $apiAdapter,
         LogRepository $logRepository,
         AbstractResource $resource = null,
@@ -179,6 +185,7 @@ class Two extends AbstractMethod
         $this->apiAdapter = $apiAdapter;
         $this->historyFactory = $historyFactory;
         $this->orderStatusHistoryRepository = $orderStatusHistoryRepository;
+        $this->orderRepository = $orderRepository;
         $this->logRepository = $logRepository;
     }
 
@@ -388,7 +395,7 @@ class Two extends AbstractMethod
                 );
             }
 
-            $order->save();
+            $this->orderRepository->save($order);
         } catch (LocalizedException $e) {
             $order->addStatusToHistory($order->getStatus(), $e->getMessage());
         }

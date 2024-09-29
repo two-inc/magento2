@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace Two\Gateway\Controller\Payment;
 
 use Exception;
-use Magento\Customer\Model\Address;
-use Magento\Customer\Model\AddressFactory;
+use Magento\Customer\Api\AddressRepositoryInterface;
+use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
@@ -32,9 +32,14 @@ class Confirm extends Action
     private $configRepository;
 
     /**
-     * @var AddressFactory
+    * @var AddressRepositoryInterface
      */
-    private $customerAddress;
+    private $addressRepository;
+
+    /**
+     * @var SearchCriteriaInterface
+     */
+    private $searchCriteria;
 
     /**
      * @var OrderService
@@ -48,12 +53,14 @@ class Confirm extends Action
 
     public function __construct(
         Context $context,
-        AddressFactory $customerAddress,
+        AddressRepositoryInterface $addressRepository,
+        SearchCriteriaInterface $searchCriteria,
         OrderService $orderService,
         OrderSender $orderSender,
         ConfigRepository $configRepository
     ) {
-        $this->customerAddress = $customerAddress;
+        $this->addressRepository = $addressRepository;
+        $this->searchCriteria = $searchCriteria;
         $this->orderService = $orderService;
         $this->orderSender = $orderSender;
         $this->configRepository = $configRepository;
@@ -76,16 +83,18 @@ class Confirm extends Action
                 $this->orderSender->send($order);
                 if ($order->getCustomerId()) {
                     if ($order->getBillingAddress()->getCustomerAddressId()) {
-                        $customerAddress = $this->customerAddress->create()->load(
+                        $customerAddress = $this->addressRepository->getById(
                             $order->getBillingAddress()->getCustomerAddressId()
                         );
                     } else {
-                        $customerAddressCollection = $this->customerAddress->create()->getCollection();
-                        $customerAddressCollection->addFieldToFilter(
-                            'parent_id',
-                            ['eq' => $order->getCustomerId()]
-                        );
-                        $customerAddress = $customerAddressCollection->getFirstItem();
+                        $this->searchCriteria
+                            ->setField('parent_id')
+                            ->setValue($order->getCustomerId())
+                            ->setConditionType('eq');
+                        $customerAddressCollection = $this->addressRepository
+                            ->getList($this->searchCriteria)
+                            ->getItems();
+                        $customerAddress = $customerAddressCollection[0] ?? null;
                     }
                     if ($customerAddress && $customerAddress->getId()) {
                         $this->saveAddressMetadata(

@@ -268,7 +268,7 @@ class OrderService
         $order->setState(Order::STATE_CANCELED);
         $this->addOrderComment($order, $reason);
         $order->getPayment()->save();
-        $order->save();
+        $this->orderRepository->save($order);
         return $this;
     }
 
