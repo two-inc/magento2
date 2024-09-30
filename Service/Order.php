@@ -469,25 +469,27 @@ abstract class Order
     }
 
     /**
-     * @param array $linesItems
+     * @param array $lineItems
      * @return array
      */
-    public function getTaxSubtotals(array $linesItems): ?array
+    public function getTaxSubtotals(array $lineItems): ?array
     {
         if (!$this->configRepository->isTaxSubtotalsEnabled()) {
             return null;
         }
         $taxSubtotals = [];
-        foreach ($linesItems as $linesItem) {
-            $taxSubtotals[$linesItem['tax_rate']][] = [
-                'taxable_amount' => $linesItem['net_amount'],
+        foreach ($lineItems as $lineItem) {
+            $taxSubtotals[$lineItem['tax_rate']][] = [
+                'taxable_amount' => $lineItem['net_amount'],
+                'tax_amount' => $lineItem['tax_amount'],
+
             ];
         }
 
         $summary = [];
         foreach ($taxSubtotals as $taxRate => $amounts) {
             $taxableAmount = $this->getSum($amounts, 'taxable_amount');
-            $taxAmount = $taxableAmount * $taxRate;
+            $taxAmount = $this->getSum($amounts, 'tax_amount');
             $summary[] = [
                 'taxable_amount' => $this->roundAmt($taxableAmount),
                 'tax_amount' => $this->roundAmt($taxAmount),

@@ -28,7 +28,7 @@ class ComposeOrder extends OrderService
      */
     public function execute(Order $order, string $orderReference, array $additionalData): array
     {
-        $linesItems = $this->getLineItemsOrder($order);
+        $lineItems = $this->getLineItemsOrder($order);
 
         return [
             'billing_address' => $this->getAddress($order, $additionalData, 'billing'),
@@ -42,9 +42,9 @@ class ComposeOrder extends OrderService
             'gross_amount' => $this->roundAmt($order->getGrandTotal()),
             'net_amount' => $this->roundAmt($order->getGrandTotal() - $order->getTaxAmount()),
             'tax_amount' => $this->roundAmt($order->getTaxAmount()),
-            'tax_subtotals' => $this->getTaxSubtotals($linesItems),
+            'tax_subtotals' => $this->getTaxSubtotals($lineItems),
             'invoice_type' => 'FUNDED_INVOICE',
-            'line_items' => $linesItems,
+            'line_items' => $lineItems,
             'merchant_order_id' => (string)($order->getIncrementId()),
             'merchant_urls' => [
                 'merchant_confirmation_url' => $this->url->getUrl(
