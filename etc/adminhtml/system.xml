@@ -33,7 +33,7 @@
                 <field id="mode" translate="label" type="select" sortOrder="35" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                     <label>Environment</label>
-                    <comment>Select between sandbox and production environment. The sandbox environment is for testing purpose and does not involve real money.</comment>
+                    <comment>Select between sandbox and production environment. The sandbox environment is for testing purposes and does not involve real money.</comment>
                     <source_model>Two\Gateway\Model\Config\Source\Mode</source_model>
                     <depends>
                         <field id="active">1</field>
@@ -91,7 +91,7 @@
                 <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                     <label>Enable payment method</label>
-                    <comment>Activates this plugin as a payment option in the checkout flow</comment>
+                    <comment>Activates this plugin as a payment option in the checkout page</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <config_path>payment/two_payment/active</config_path>
                 </field>
@@ -156,7 +156,7 @@
                 <field id="enable_order_intent" translate="label" type="select" sortOrder="75" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Enable order intent</label>
-                    <comment>Perform a check during checkout to inform buyer whether an order would be accepted before they place order (recommended).</comment>
+                    <comment>Perform a check during checkout to inform the buyer whether an order is likely to be accepted before being placed (recommended).</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>
@@ -219,7 +219,7 @@
                 <field id="enable_two_link" translate="label" type="select" sortOrder="100" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Display info link</label>
-                    <comment>Display a modal which describes how this payment method works from a buyer perspective with a URL to find out more.</comment>
+                    <comment>Display a modal next to the payment option in the checkout page which describes how this payment method works from a buyer perspective with a URL to find out more.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="active">1</field>

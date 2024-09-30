@@ -67,10 +67,7 @@
     </div>
 
     <div class="payment-method-content">
-        <div
-            class="redirect_message"
-            data-bind='text: $t("You will be redirected to %1 when you place order.", config.provider)'
-        ></div>
+        <div class="redirect_message" data-bind="text: redirectMessage"></div>
         <!-- ko if: showModeTab -->
         <!-- ko ifnot: showSoleTrader -->
         <div class="mode_selector" data-element="popup-message">
