@@ -4,31 +4,6 @@
  */
 
 
-// create tax subtotals for order intent for additional logging
-const calculateTaxSubtotals = (lineItems) => {
-    const taxSubtotals = {};
-
-    lineItems.forEach((item) => {
-        const taxRate = parseFloat(item.tax_rate);
-        const taxAmount = parseFloat(item.tax_amount);
-        const taxableAmount = parseFloat(item.net_amount);
-    
-
-        if (!taxSubtotals[taxRate]){
-            taxSubtotals[taxRate] = {
-                tax_amount: 0,
-                taxable_amount: 0,
-                tax_rate: taxRate
-            }
-        }
-        taxSubtotals[taxRate].tax_amount += taxAmount;
-        taxSubtotals[taxRate].taxable_amount += taxableAmount;
-
-        })
-
-        return Object.values(taxSubtotals);
-}
-
 
 define([
     'ko',
@@ -332,6 +307,27 @@ define([
         getEmail: function () {
             return quote.guestEmail ? quote.guestEmail : window.checkoutConfig.customerData.email;
         },
+        calculateTaxSubtotals: function (lineItems) {
+            const taxSubtotals = {};
+        
+            lineItems.forEach((item) => {
+                const taxRate = parseFloat(item.tax_rate);
+                const taxAmount = parseFloat(item.tax_amount);
+                const taxableAmount = parseFloat(item.net_amount);
+            
+                if (!taxSubtotals[taxRate]) {
+                    taxSubtotals[taxRate] = {
+                        tax_amount: 0,
+                        taxable_amount: 0,
+                        tax_rate: taxRate
+                    };
+                }
+                taxSubtotals[taxRate].tax_amount += taxAmount;
+                taxSubtotals[taxRate].taxable_amount += taxableAmount;
+            });
+        
+            return Object.values(taxSubtotals);
+        },
         placeOrderIntent: function () {
             let totals = quote.getTotals()(),
                 billingAddress = quote.billingAddress(),
@@ -360,7 +356,7 @@ define([
                 invoice_type: config.orderIntentConfig.invoiceType,
                 currency: totals['base_currency_code'],
                 line_items: lineItems,
-                tax_subtotals : calculateTaxSubtotals(lineItems),
+                tax_subtotals : this.calculateTaxSubtotals(lineItems),
                 buyer: {
                     company: {
                         organization_number: this.companyId(),
@@ -378,9 +374,8 @@ define([
                 merchant_short_name: config.orderIntentConfig.merchantShortName
             }
 
-            console.log({lineItems : orderIntentRequestBody.line_items})
-            console.log({taxSubTotals : orderIntentRequestBody.tax_subtotals})
-
+            console.debug({lineItems : orderIntentRequestBody.line_items, 
+                         taxSubTotals : orderIntentRequestBody.tax_subtotals})
             return $.ajax({
                 url:
                     config.checkoutApiUrl +
