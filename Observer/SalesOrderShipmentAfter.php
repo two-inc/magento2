@@ -126,7 +126,7 @@ class SalesOrderShipmentAfter implements ObserverInterface
 
                 $this->addStatusToOrderHistory(
                     $order,
-                    'Two Order invoice has not been issued yet.',
+                    __('%1 order invoice has not been issued yet.', $this->configRepository->getProvider()),
                 );
             }
         }
@@ -192,8 +192,9 @@ class SalesOrderShipmentAfter implements ObserverInterface
 
         $this->addStatusToOrderHistory(
             $order,
-            sprintf(
-                'Two Order marked as completed with invoice number %s',
+            __(
+                '%1 order marked as completed with invoice number %2',
+                $this->configRepository->getProvider(),
                 $response['invoice_details']['invoice_number']
             )
         );

@@ -48,6 +48,33 @@ define([
         isTwoLinkEnabled: config.isTwoLinkEnabled,
         supportedCountryCodes: config.supportedCountryCodes,
         soleTraderCountryCodes: ['gb'],
+        formSelector: 'form#two_gateway_form',
+        companyNameSelector: 'input#company_name',
+        companyIdSelector: 'input#company_id',
+        redirectMessage: $t('You will be redirected to %1 when you place order.').replace(
+            '%1',
+            config.provider
+        ),
+        orderIntentApprovedMessage: $t(
+            'Your invoice purchase with %1 is likely to be accepted subject to additional checks.'
+        ).replace('%1', config.provider),
+        orderIntentDeclinedMessage: $t('Your invoice purchase with %1 has been declined.').replace(
+            '%1',
+            config.provider
+        ),
+        generalErrorMessage: $t(
+            'Something went wrong with your request to %1. Please try again later.'
+        ).replace('%1', config.provider),
+        soleTraderErrorMessage: $t(
+            'Something went wrong with your request to %1. Your sole trader account could not be verified.',
+            config.provider
+        ).replace('%1', config.provider),
+        enterDetailsManuallyText: $t('Enter details manually'),
+        enterDetailsManuallyButton: '#billing_enter_details_manually',
+        searchForCompanyText: $t('Search for company'),
+        searchForCompanyButton: '#billing_search_for_company',
+        delegationToken: '',
+        autofillToken: '',
         companyName: ko.observable(''),
         companyId: ko.observable(''),
         project: ko.observable(''),
@@ -56,25 +83,6 @@ define([
         poNumber: ko.observable(''),
         telephone: ko.observable(''),
         countryCode: ko.observable(''),
-        formSelector: 'form#two_gateway_form',
-        companyNameSelector: 'input#company_name',
-        companyIdSelector: 'input#company_id',
-        orderIntentApprovedMessage: $t(
-            'Your invoice purchase with Two is likely to be accepted subject to additional checks.'
-        ),
-        orderIntentDeclinedMessage: $t('Your invoice purchase with Two has been declined.'),
-        generalErrorMessage: $t(
-            'Something went wrong with your request to Two. Please try again later.'
-        ),
-        soleTraderErrorMessage: $t(
-            'Something went wrong with your request to Two. Your sole trader account could not be verified.'
-        ),
-        enterDetailsManuallyText: $t('Enter details manually'),
-        enterDetailsManuallyButton: '#billing_enter_details_manually',
-        searchForCompanyText: $t('Search for company'),
-        searchForCompanyButton: '#billing_search_for_company',
-        delegationToken: '',
-        autofillToken: '',
         showPopupMessage: ko.observable(false),
         showSoleTrader: ko.observable(false),
         showWhatIsTwo: ko.observable(false),

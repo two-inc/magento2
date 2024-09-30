@@ -36,8 +36,8 @@ class Version extends Field
      * @param array $data
      */
     public function __construct(
-        Context $context,
         ConfigRepository $configRepository,
+        Context $context,
         array $data = []
     ) {
         $this->configRepository = $configRepository;

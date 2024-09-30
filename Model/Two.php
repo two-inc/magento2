@@ -24,6 +24,7 @@ use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Payment\Model\Method\Logger;
 use Magento\Quote\Api\Data\CartInterface;
 use Magento\Sales\Api\OrderStatusHistoryRepositoryInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Status\HistoryFactory;
 use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
@@ -108,6 +109,10 @@ class Two extends AbstractMethod
      */
     private $orderStatusHistoryRepository;
     /**
+     * @var OrderRepositoryInterface
+     */
+    private $orderRepository;
+    /**
      * @var LogRepository
      */
     private $logRepository;
@@ -152,6 +157,7 @@ class Two extends AbstractMethod
         ComposeCapture $composeCapture,
         HistoryFactory $historyFactory,
         OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository,
+        OrderRepositoryInterface $orderRepository,
         Adapter $apiAdapter,
         LogRepository $logRepository,
         AbstractResource $resource = null,
@@ -179,6 +185,7 @@ class Two extends AbstractMethod
         $this->apiAdapter = $apiAdapter;
         $this->historyFactory = $historyFactory;
         $this->orderStatusHistoryRepository = $orderStatusHistoryRepository;
+        $this->orderRepository = $orderRepository;
         $this->logRepository = $logRepository;
     }
 
@@ -187,7 +194,9 @@ class Two extends AbstractMethod
      *
      * @param InfoInterface $payment
      * @param float $amount
+     *
      * @return $this|Two
+     *
      * @throws LocalizedException
      */
     public function authorize(InfoInterface $payment, $amount)
@@ -209,8 +218,13 @@ class Two extends AbstractMethod
         }
 
         if ($response['status'] !== static::STATUS_APPROVED) {
-            $this->logRepository->addDebugLog('Order was not accepted by Two', $response);
-            throw new LocalizedException(__('Invoice purchase with Two is not available for this order.'));
+            $this->logRepository->addDebugLog(
+                __('Order was not accepted by %1', $this->configRepository->getProvider()),
+                $response
+            );
+            throw new LocalizedException(
+                __('Invoice purchase with %1 is not available for this order.', $this->configRepository->getProvider())
+            );
         }
 
         $order->setTwoOrderReference($orderReference);
@@ -236,21 +250,41 @@ class Two extends AbstractMethod
     }
 
     /**
+     *
+     *
+     * @param Phrase $message
+     * @param $traceID|null
+     *
+     * @return Phrase
+     */
+    private function _getMessageWithTrace($message, $traceID): Phrase
+    {
+        if ($traceID == null) {
+            return $message;
+        }
+        return __('%1 [Trace ID: %2]', $message, $traceID);
+    }
+
+    /**
      * Get error from response
      *
      * @param $response
+     *
      * @return Phrase|null
      */
     public function getErrorFromResponse(array $response): ?Phrase
     {
-        $generalMessage = __('Something went wrong with your request to Two. Please try again later.');
+        $generalError = __(
+            'Something went wrong with your request to %1. Please try again later.',
+            $this->configRepository->getProvider()
+        );
         if (!$response || !is_array($response)) {
-            return $generalMessage;
+            return $generalError;
         }
 
-        $trace = "";
-        if (!empty($response['error_trace_id'])) {
-            $trace = ' [Error trace ID: ' . $response['error_trace_id'] . ']';
+        $traceID = null;
+        if (array_key_exists('error_trace_id', $response)) {
+            $traceID = $response['error_trace_id'];
         }
 
         // Validation errors
@@ -263,28 +297,36 @@ class Two extends AbstractMethod
                         array_push($errs, __($err_field));
                     } else {
                         // Since err_field is empty, return general error message
-                        return __($generalMessage . $trace);
+                        return $this->_getMessageWithTrace($generalError, $traceID);
                     }
                 }
             }
             if (count($errs) > 0) {
-                $message = __('Your request to Two failed. Reason(s): ') . join(' ', $errs);
-                return __($message . $trace);
+                $message = __(
+                    'Your request to %1 failed. Reason: %2',
+                    $this->configRepository->getProvider(),
+                    join(' ', $errs)
+                );
+                return $this->_getMessageWithTrace($message, $traceID);
             }
         }
 
         if (isset($response['error_code'])) {
             // Custom errors
+            $reason = $response['error_message'];
             if ($response['error_code'] == 'SAME_BUYER_SELLER_ERROR') {
-                $message = __('Your request to Two failed. Reason: The buyer and the seller are the same company.');
-            } else {
-                $message = __('Your request to Two failed. Reason: ') . $response['error_message'];
+                $reason = __('The buyer and the seller are the same company.');
             }
-            return __($message . $trace);
+            $message = __(
+                'Your request to %1 failed. Reason: %2',
+                $this->configRepository->getProvider(),
+                $reason
+            );
+            return $this->_getMessageWithTrace($message, $traceID);
         }
 
         if (empty($response['id'])) {
-            return __($generalMessage . $trace);
+            return $this->_getMessageWithTrace($generalError, $traceID);
         }
 
         return null;
@@ -339,16 +381,21 @@ class Two extends AbstractMethod
                 $order->addStatusToHistory(
                     $order->getStatus(),
                     __(
-                        'Could not update status to cancelled, please check with Two admin for id %1. Error - %2',
+                        'Could not update %1 order status to cancelled. ' .
+                        'Please contact support with order ID %2. Error: %3',
+                        $this->configRepository->getProvider(),
                         $twoOrderId,
                         $error
                     )
                 );
             } else {
-                $order->addStatusToHistory($order->getStatus(), __('Two Order marked as cancelled'));
+                $order->addStatusToHistory(
+                    $order->getStatus(),
+                    __('%1 order has been marked as cancelled', $this->configRepository->getProvider())
+                );
             }
 
-            $order->save();
+            $this->orderRepository->save($order);
         } catch (LocalizedException $e) {
             $order->addStatusToHistory($order->getStatus(), $e->getMessage());
         }
@@ -367,7 +414,7 @@ class Two extends AbstractMethod
             $twoOrderId = $order->getTwoOrderId();
             if (!$twoOrderId) {
                 throw new LocalizedException(
-                    __('Could not initiate capture by Two')
+                    __('Could not initiate capture with %1', $this->configRepository->getProvider())
                 );
             }
             $orderItems = $order->getAllVisibleItems();
@@ -473,9 +520,10 @@ class Two extends AbstractMethod
 
         $this->addStatusToOrderHistory(
             $order,
-            sprintf(
-                'Two Order marked as completed with invoice number %s',
-                $response['invoice_details']['invoice_number']
+            __(
+                '%1 order marked as completed with invoice number %2',
+                $this->configRepository->getProvider(),
+                $response['invoice_details']['invoice_number'],
             )
         );
     }
@@ -506,7 +554,7 @@ class Two extends AbstractMethod
         $twoOrderId = $order->getTwoOrderId();
         if (!$twoOrderId) {
             throw new LocalizedException(
-                __('Could not initiate refund by Two')
+                __('Could not initiate refund with %1', $this->configRepository->getProvider()),
             );
         }
 
@@ -534,7 +582,11 @@ class Two extends AbstractMethod
         }
 
         if (!$response['amount']) {
-            $message = __('Failed to refund order by Two. Amount is missing');
+            $message = __(
+                'Failed to refund order with %1. Reason: %2',
+                $this->configRepository->getProvider(),
+                __('Amount is missing')
+            );
             $this->addOrderComment($order, $message);
             throw new  LocalizedException(
                 $message
@@ -548,7 +600,8 @@ class Two extends AbstractMethod
         $order->addStatusToHistory(
             $order->getStatus(),
             __(
-                'Successfully refunded order Two admin for id %1. Refund id is %2',
+                'Successfully refunded order with %1 for order ID: %2. Refund reference: %3',
+                $this->configRepository->getProvider(),
                 $twoOrderId,
                 $response['refund_no']
             )

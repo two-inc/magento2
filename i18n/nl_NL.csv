@@ -1,0 +1,95 @@
+"%1 Credit Note","%1 Creditnota"
+"%1 Decline reason: %2","%1 Reden voor afwijzing: %2"
+"%1 Details","%1 Gegevens"
+"%1 Failed","%1 Mislukt"
+"%1 Invoice","%1 Factuur"
+"%1 New Order","%1 Nieuwe bestelling"
+"%1 Order ID","%1 Bestel-ID"
+"%1 [Trace ID: %2]","%1 [Spoor-ID: %2]"
+"%1 order has been marked as cancelled","%1 bestelling is gemarkeerd als geannuleerd"
+"%1 order invoice has not been issued yet.","%1 orderfactuur is nog niet verzonden."
+"%1 order marked as completed with invoice number %2","%1 order gemarkeerd als voltooid met factuurnummer %2"
+"%1 requires whole order to be shipped before it can be fulfilled.","%1 vereist dat de gehele bestelling wordt verzonden voordat deze kan worden uitgevoerd."
+"* Required Fields","* Verplichte velden"
+"API key",API-sleutel
+"Add PO number field","PO-nummerveld toevoegen"
+"Add department field","Afdelingsveld toevoegen"
+"Add order note field","Bestelnotitieveld toevoegen"
+"Add project field","Projectveld toevoegen"
+"Allow to applicable countries","Toestaan voor toepasselijke landen"
+"Allow to specific countries","Toestaan voor specifieke landen"
+Branding,Merknaam
+"Buyer address is invalid.","Het adres van de koper is ongeldig."
+"Buyer authentication failed.","Authenticatie van koper mislukt."
+"Buyer info is inconsistent.","De informatie over de koper is inconsistent."
+"Buyer limit exceeded.","Koperslimiet overschreden."
+"Buyer not found.","Koper niet gevonden."
+"Check last 100 debug log records","Controleer de laatste 100 debug-logboekrecords"
+"Check last 100 error log records","Controleer de laatste 100 foutlogboekrecords"
+"Click here to log in or sign up as a Sole Trader.","Klik hier om in te loggen of u aan te melden als zelfstandig ondernemer."
+"Company ID",Bedrijfs-ID
+"Company Name",Bedrijfsnaam
+"Could not initiate capture with %1","Kon geen opname starten met %1"
+"Could not initiate refund with %1","Kon geen restitutie starten met %1"
+"Could not update %1 order status to cancelled. Please contact support with order ID %2. Error: %3","Kon %1 orderstatus niet updaten naar geannuleerd. Neem contact op met support met order-ID %2. Fout: %3"
+"Debug mode",Debug-modus
+Department,Afdeling
+"Developed by Magmodules.","Ontwikkeld door Magmodules."
+"Display info link","Infolink weergeven"
+Download,Download
+"Download as .txt file","Downloaden als .txt-bestand"
+"Enable address search","Adres zoeken inschakelen"
+"Enable company search","Bedrijf zoeken inschakelen"
+"Enable order intent","Orderintentie inschakelen"
+"Enable payment method","Betaalmethode inschakelen"
+"Enable tax subtotals","Belastingsubtotalen inschakelen"
+"Enter details manually","Gegevens handmatig invoeren"
+Environment,Omgeving
+"Failed to refund order with %1. Reason: %2","Het is niet gelukt om de bestelling met %1 terug te betalen. Reden: %2"
+"Find out more","Meer informatie"
+"Fulfilment order status","Status van de orderuitvoering"
+"Fulfilment trigger","Trigger voor uitvoering"
+General,Algemeen
+"Invalid API response from %1.","Ongeldige API-respons van %1."
+"Invoice purchase with %1 is not available for this order.","Factuuraankoop met %1 is niet beschikbaar voor deze bestelling."
+"Last 100 debug log lines","Laatste 100 debug-logregels"
+"Last 100 error log records","Laatste 100 foutenlogboekrecords"
+"Log is empty","Logboek is leeg"
+OK,OK
+"On Completion","Bij voltooiing"
+"On Invoice","Op factuur"
+"On Shipment","Op verzending"
+"Order Note",Bestelnotitie
+"Order edit request was accepted by %1","Bestellingswijzigingsverzoek is geaccepteerd door %1"
+"Order was not accepted by %1","Bestelling is niet geaccepteerd door %1"
+"PO Number",PO-nummer
+Payment,Betaling
+"Payment method",Betaalmethode
+"Place Order","Bestelling plaatsen"
+Production,Productie
+Project,Project
+Reason,Reden
+"Registered Organisation","Geregistreerde organisatie"
+"Risk too high.","Risico te hoog."
+Sandbox,Zandbak
+Search,Zoekopdracht
+"Search for company","Zoek naar bedrijf"
+"Sign up now","Meld je nu aan"
+"Sole Trader",Eenmanszaak
+"Something went wrong with your request to %1. Please try again later.","Er is iets misgegaan met uw verzoek aan %1. Probeer het later opnieuw."
+"Sort order",Sorteervolgorde
+"Successfully refunded order with %1 for order ID: %2. Refund reference: %3","Succesvol terugbetaalde bestelling met %1 voor order-ID: %2. Terugbetalingsreferentie: %3"
+TWO,TWEE
+"The %1 payment plugin for Magento simplifies B2B shopping, making it easy and safe for merchants to offer invoices as a payment method.<br>The payment method lives next to other payment methods in your existing checkout, and offers a variety of configuration options to suit your businesses needs.<br>If you would like to know more about how to configure the plugin, check out our <a href=""%2"" target=""_blank"">step by step guide</a>.","De %1-betaalplug-in voor Magento vereenvoudigt B2B-shoppen en maakt het voor handelaren eenvoudig en veilig om facturen als betaalmethode aan te bieden. <br> De betaalmethode staat naast andere betaalmethoden in uw bestaande kassa en biedt een verscheidenheid aan configuratieopties die aansluiten op de behoeften van uw bedrijf. <br> Als u meer wilt weten over het configureren van de plug-in, bekijk dan onze <a href=""%2"" target=""_blank""> stapsgewijze handleiding </a> ."
+"The buyer and the seller are the same company.","De koper en de verkoper zijn hetzelfde bedrijf."
+"The capture action is not available.","De vastlegactie is niet beschikbaar."
+Title,Titel
+"Unable to find the requested %1 order","Kan de gevraagde %1 bestelling niet vinden"
+"Unable to retrieve payment information for your invoice purchase with %1. The cart will be restored.","Betalingsgegevens voor uw factuuraankoop met %1 kunnen niet worden opgehaald. De winkelwagen wordt hersteld."
+Username,Gebruikersnaam
+Version,Versie
+"You will be redirected to %1 when you place order.","U wordt doorgestuurd naar %1 wanneer u een bestelling plaatst."
+"Your invoice purchase with %1 failed verification. The cart will be restored.","Uw factuuraankoop met %1 is niet geverifieerd. De winkelwagen wordt hersteld."
+"Your invoice purchase with %1 has been cancelled. The cart will be restored.","Uw factuuraankoop met %1 is geannuleerd. De winkelwagen wordt hersteld."
+"Your request to %1 failed. Reason: %2","Uw verzoek aan %1 is mislukt. Reden: %2"
+https://www.two.inc/what-is-two,https://www.two.inc/what-is-two

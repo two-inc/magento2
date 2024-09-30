@@ -8,8 +8,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run codesniffer
-        run:
-          docker run
+        run: docker run
           --volume $(pwd)/:/app/workdir
           michielgerritsen/magento-coding-standard:latest
           --severity=6

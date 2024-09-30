@@ -67,10 +67,7 @@
     </div>
 
     <div class="payment-method-content">
-        <div
-            class="redirect_message"
-            data-bind='text: $t("You will be redirected to Two when you place order.")'
-        ></div>
+        <div class="redirect_message" data-bind="text: redirectMessage"></div>
         <!-- ko if: showModeTab -->
         <!-- ko ifnot: showSoleTrader -->
         <div class="mode_selector" data-element="popup-message">
@@ -118,9 +115,8 @@
             </svg>
             <div class="popup_message" data-element="popup-message">
                 <span data-element="click-element" data-bind="event: { click: () => openIframe() }">
-                    <!-- ko i18n: 'Click here' --><!-- /ko -->
+                    <!-- ko i18n: 'Click here to log in or sign up as a Sole Trader.' --><!-- /ko -->
                 </span>
-                <!-- ko i18n: 'to log in or sign up as a Sole Trader.' --><!-- /ko -->
             </div>
             <span class="overlay" data-bind="event: { click: () => { hideIframe() } } "></span>
         </div>

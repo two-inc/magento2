@@ -12,12 +12,18 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Two\Gateway\Service\Payment\OrderService;
+use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 
 /**
  * Verification failed controller
  */
 class Verificationfailed extends Action
 {
+    /**
+     * @var ConfigRepository
+     */
+    private $configRepository;
+
     /**
      * @var OrderService
      */
@@ -30,9 +36,11 @@ class Verificationfailed extends Action
      * @param Context $context
      */
     public function __construct(
+        ConfigRepository $configRepository,
         OrderService $orderService,
         Context $context
     ) {
+        $this->configRepository = $configRepository;
         $this->orderService = $orderService;
         parent::__construct($context);
     }
@@ -44,8 +52,11 @@ class Verificationfailed extends Action
     {
         try {
             $order = $this->orderService->getOrderByReference();
-            $message = 'Your invoice purchase with Two failed verification. The cart will be restored.';
-            throw new LocalizedException(__($message));
+            $message = __(
+                'Your invoice purchase with %1 failed verification. The cart will be restored.',
+                $this->configRepository->getProvider()
+            );
+            throw new LocalizedException($message);
         } catch (Exception $exception) {
             $this->orderService->restoreQuote();
             if (isset($order)) {

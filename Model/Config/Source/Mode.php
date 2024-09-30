@@ -40,6 +40,10 @@ class Mode implements OptionSourceInterface
             "production" => 1,
             "sandbox" => 1,
         ];
+        $translations = [
+            "production" => __("Production"),
+            "sandbox" => __("Sandbox"),
+        ];
         $mode = $this->configRepository->getMode();
         if ($mode) {
             $modes[$mode] = 1;
@@ -48,7 +52,7 @@ class Mode implements OptionSourceInterface
         foreach ($modes as $mode => $value) {
             $options[] = [
                 'value' => $mode,
-                'label' => __(ucfirst($mode)),
+                'label' => $translations[$mode],
             ];
         }
         return $options;

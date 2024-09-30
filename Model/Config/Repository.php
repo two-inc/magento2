@@ -135,6 +135,14 @@ class Repository implements RepositoryInterface
     /**
      * @inheritDoc
      */
+    public function getProvider(?int $storeId = null): string
+    {
+        return (string)$this->getConfig(self::XML_PATH_PROVIDER, $storeId);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getFulfillTrigger(?int $storeId = null): string
     {
         return (string)$this->getConfig(self::XML_PATH_FULFILL_TRIGGER, $storeId);

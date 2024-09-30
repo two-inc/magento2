@@ -156,10 +156,10 @@ class OrderService
      */
     public function getOrderByReference()
     {
+        $generalErrorMessage = __('Unable to find the requested %1 order', $this->configRepository->getProvider());
         $this->urlCookie->delete();
-        $generalErrorMessage = 'Unable to find the requested order';
         if (!$this->getOrderReference()) {
-            throw new LocalizedException(__($generalErrorMessage));
+            throw new LocalizedException($generalErrorMessage);
         }
 
         $order = $this->orderFactory->create();
@@ -170,7 +170,7 @@ class OrderService
         );
 
         if (!$order->getId() || $order->getPayment()->getMethod() !== Two::CODE || !$order->getTwoOrderId()) {
-            throw new LocalizedException(__($generalErrorMessage));
+            throw new LocalizedException($generalErrorMessage);
         }
 
         return $order;
@@ -268,7 +268,7 @@ class OrderService
         $order->setState(Order::STATE_CANCELED);
         $this->addOrderComment($order, $reason);
         $order->getPayment()->save();
-        $order->save();
+        $this->orderRepository->save($order);
         return $this;
     }
 
@@ -303,7 +303,13 @@ class OrderService
             $invoice = $this->invoiceService->prepareInvoice($order);
             $invoice->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE);
             $invoice->register();
-            $this->addOrderComment($order, 'Two Order payment has been verified');
+            $this->addOrderComment(
+                $order,
+                sprintf(
+                    '%s order payment has been verified',
+                    $this->configRepository->getProvider()
+                )
+            );
             $transactionSave = $this->transaction
                 ->addObject(
                     $payment

@@ -8,13 +8,14 @@ declare(strict_types=1);
 namespace Two\Gateway\Controller\Payment;
 
 use Exception;
-use Magento\Customer\Model\Address;
-use Magento\Customer\Model\AddressFactory;
+use Magento\Customer\Api\AddressRepositoryInterface;
+use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
 use Two\Gateway\Service\Payment\OrderService;
 
 /**
@@ -26,9 +27,19 @@ class Confirm extends Action
     public const STATE_VERIFIED = 'VERIFIED';
 
     /**
-     * @var AddressFactory
+     * @var ConfigRepository
      */
-    private $customerAddress;
+    private $configRepository;
+
+    /**
+    * @var AddressRepositoryInterface
+     */
+    private $addressRepository;
+
+    /**
+     * @var SearchCriteriaInterface
+     */
+    private $searchCriteria;
 
     /**
      * @var OrderService
@@ -42,13 +53,17 @@ class Confirm extends Action
 
     public function __construct(
         Context $context,
-        AddressFactory $customerAddress,
+        AddressRepositoryInterface $addressRepository,
+        SearchCriteriaInterface $searchCriteria,
         OrderService $orderService,
-        OrderSender $orderSender
+        OrderSender $orderSender,
+        ConfigRepository $configRepository
     ) {
-        $this->customerAddress = $customerAddress;
+        $this->addressRepository = $addressRepository;
+        $this->searchCriteria = $searchCriteria;
         $this->orderService = $orderService;
         $this->orderSender = $orderSender;
+        $this->configRepository = $configRepository;
         parent::__construct($context);
     }
 
@@ -68,16 +83,18 @@ class Confirm extends Action
                 $this->orderSender->send($order);
                 if ($order->getCustomerId()) {
                     if ($order->getBillingAddress()->getCustomerAddressId()) {
-                        $customerAddress = $this->customerAddress->create()->load(
+                        $customerAddress = $this->addressRepository->getById(
                             $order->getBillingAddress()->getCustomerAddressId()
                         );
                     } else {
-                        $customerAddressCollection = $this->customerAddress->create()->getCollection();
-                        $customerAddressCollection->addFieldToFilter(
-                            'parent_id',
-                            ['eq' => $order->getCustomerId()]
-                        );
-                        $customerAddress = $customerAddressCollection->getFirstItem();
+                        $this->searchCriteria
+                            ->setField('parent_id')
+                            ->setValue($order->getCustomerId())
+                            ->setConditionType('eq');
+                        $customerAddressCollection = $this->addressRepository
+                            ->getList($this->searchCriteria)
+                            ->getItems();
+                        $customerAddress = $customerAddressCollection[0] ?? null;
                     }
                     if ($customerAddress && $customerAddress->getId()) {
                         $this->saveAddressMetadata(
@@ -98,13 +115,16 @@ class Confirm extends Action
                 $this->orderService->processOrder($order, $twoOrder['id']);
                 return $this->getResponse()->setRedirect($this->_url->getUrl('checkout/onepage/success'));
             } else {
-                $message = 'Unable to retrieve payment information for your invoice purchase with Two.';
+                $message = __(
+                    'Unable to retrieve payment information for your invoice purchase with %1. ' .
+                    'The cart will be restored.',
+                    $this->configRepository->getProvider()
+                );
                 if (!empty($twoOrder['decline_reason'])) {
-                    $message = $twoOrder['decline_reason'];
+                    $message = __('%1 Decline reason: %2', $message, $twoOrder['decline_reason']);
                 }
-                $message .= ' The cart will be restored.';
                 $this->orderService->addOrderComment($order, $message);
-                throw new LocalizedException(__($message));
+                throw new LocalizedException($message);
             }
         } catch (Exception $exception) {
             $this->orderService->restoreQuote();

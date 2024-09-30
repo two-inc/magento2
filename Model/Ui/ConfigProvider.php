@@ -64,6 +64,7 @@ class ConfigProvider implements ConfigProviderInterface
         return [
             'payment' => [
                 ConfigRepository::CODE => [
+                    'provider' => $this->configRepository->getProvider(),
                     'checkoutApiUrl' => $this->configRepository->getCheckoutApiUrl(),
                     'checkoutPageUrl' => $this->configRepository->getCheckoutPageUrl(),
                     'redirectUrlCookieCode' => UrlCookie::COOKIE_NAME,

@@ -1,10 +1,4 @@
-require([
-    'jquery',
-    'Magento_Ui/js/modal/modal',
-    'prototype',
-    'loader'
-], function ($, modal) {
-
+require(['jquery', 'Magento_Ui/js/modal/modal', 'prototype', 'loader'], function ($, modal) {
     /**
      * @param{String} modalSelector - modal css selector.
      * @param{Object} options - modal options.
@@ -15,7 +9,7 @@ require([
         if (!$resultModal.length) return;
 
         var popup = modal(options, $resultModal);
-        $resultModal.loader({texts: ''});
+        $resultModal.loader({ texts: '' });
     }
 
     var successHandlers = {
@@ -24,16 +18,24 @@ require([
          * @param{Object} $container - jQuery container element.
          */
         debug: function (result, $container) {
-
             if (Array.isArray(result)) {
+                var lisHtml = result
+                    .map(function (err) {
+                        return (
+                            '<li class="two-result_debug-item"><strong>' +
+                            err.date +
+                            '</strong><p>' +
+                            err.msg +
+                            '</p></li>'
+                        );
+                    })
+                    .join('');
 
-                var lisHtml = result.map(function (err) {
-                    return '<li class="two-result_debug-item"><strong>' + err.date + '</strong><p>' + err.msg + '</p></li>';
-                }).join('');
-
-                $container.find('.result').empty().append('<ul>' + lisHtml + '</ul>');
+                $container
+                    .find('.result')
+                    .empty()
+                    .append('<ul>' + lisHtml + '</ul>');
             } else {
-
                 $container.find('.result').empty().append(result);
             }
         },
@@ -43,20 +45,28 @@ require([
          * @param{Object} $container - jQuery container element.
          */
         error: function (result, $container) {
-
             if (Array.isArray(result)) {
+                var lisHtml = result
+                    .map(function (err) {
+                        return (
+                            '<li class="two-result_error-item"><strong>' +
+                            err.date +
+                            '</strong><p>' +
+                            err.msg +
+                            '</p></li>'
+                        );
+                    })
+                    .join('');
 
-                var lisHtml = result.map(function (err) {
-                    return '<li class="two-result_error-item"><strong>' + err.date + '</strong><p>' + err.msg + '</p></li>';
-                }).join('');
-
-                $container.find('.result').empty().append('<ul>' + lisHtml + '</ul>');
+                $container
+                    .find('.result')
+                    .empty()
+                    .append('<ul>' + lisHtml + '</ul>');
             } else {
-
                 $container.find('.result').empty().append(result);
             }
-        },
-    }
+        }
+    };
 
     // init debug modal
     $(() => {
@@ -64,27 +74,29 @@ require([
             type: 'popup',
             responsive: true,
             innerScroll: true,
-            title: $.mage.__('last 100 debug log lines'),
+            title: $.mage.__('Last 100 debug log lines'),
             buttons: [
                 {
-                    text: $.mage.__('download as .txt file'),
+                    text: $.mage.__('Download as .txt file'),
                     class: 'two-button__download two-icon__download-alt',
                     click: function () {
-
                         var elText = document.getElementById('two-result_debug').innerText || '';
                         var link = document.createElement('a');
 
                         link.setAttribute('download', 'debug-log.txt');
-                        link.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(elText));
+                        link.setAttribute(
+                            'href',
+                            'data:text/plain;charset=utf-8,' + encodeURIComponent(elText)
+                        );
                         link.click();
-                    },
+                    }
                 },
                 {
-                    text: $.mage.__('ok'),
+                    text: $.mage.__('OK'),
                     class: '',
                     click: function () {
                         this.closeModal();
-                    },
+                    }
                 }
             ]
         });
@@ -94,27 +106,29 @@ require([
             type: 'popup',
             responsive: true,
             innerScroll: true,
-            title: $.mage.__('last 100 error log records'),
+            title: $.mage.__('Last 100 error log records'),
             buttons: [
                 {
-                    text: $.mage.__('download as .txt file'),
+                    text: $.mage.__('Download as .txt file'),
                     class: 'two-button__download two-icon__download-alt',
                     click: function () {
-
                         var elText = document.getElementById('two-result_error').innerText || '';
                         var link = document.createElement('a');
 
                         link.setAttribute('download', 'error-log.txt');
-                        link.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(elText));
+                        link.setAttribute(
+                            'href',
+                            'data:text/plain;charset=utf-8,' + encodeURIComponent(elText)
+                        );
                         link.click();
-                    },
+                    }
                 },
                 {
-                    text: $.mage.__('ok'),
+                    text: $.mage.__('OK'),
                     class: '',
                     click: function () {
                         this.closeModal();
-                    },
+                    }
                 }
             ]
         });
@@ -136,11 +150,13 @@ require([
             loaderArea: false,
             asynchronous: true,
             onSuccess: function (response) {
-
                 if (response.status > 200) {
                     var result = response.statusText;
                 } else {
-                    successHandlers[actionName](response.responseJSON.result || response.responseJSON, $result);
+                    successHandlers[actionName](
+                        response.responseJSON.result || response.responseJSON,
+                        $result
+                    );
 
                     $result.fadeIn();
                     $modal.loader('hide');
