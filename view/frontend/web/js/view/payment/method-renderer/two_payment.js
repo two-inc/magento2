@@ -3,8 +3,6 @@
  * See COPYING.txt for license details.
  */
 
-
-
 define([
     'ko',
     'jquery',
@@ -85,7 +83,7 @@ define([
             this.popupMessageListener();
         },
         fillCompanyData: function ({ companyId, companyName }) {
-            console.log({ companyId, companyName });
+            console.debug({ logger: 'twoPayment.fillCompanyData', companyId, companyName });
             companyName = typeof companyName == 'string' && companyName ? companyName : '';
             companyId = typeof companyId == 'string' ? companyId : '';
             if (!companyName || !companyId) return;
@@ -110,13 +108,13 @@ define([
             }
         },
         fillTelephone: function (telephone) {
-            console.log({ telephone });
+            console.debug({ logger: 'twoPayment.fillTelephone', telephone });
             telephone = typeof telephone == 'string' ? telephone : '';
             if (!telephone) return;
             this.telephone(telephone);
         },
         fillCountryCode: function (countryCode) {
-            console.log({ countryCode });
+            console.debug({ logger: 'twoPayment.fillCountryCode', countryCode });
             countryCode = typeof countryCode == 'string' ? countryCode : '';
             if (!countryCode) return;
             this.countryCode(countryCode);
@@ -139,7 +137,7 @@ define([
             let countryCode = address.countryId.toLowerCase();
             if (Array.isArray(address.customAttributes)) {
                 address.customAttributes.forEach(function (item) {
-                    console.log(item);
+                    console.debug({ logger: 'twoPayment.updateAddress', item });
                     if (item.attribute_code == 'company_id') {
                         companyId = item.value;
                     }
@@ -161,13 +159,13 @@ define([
             if (department) this.department(department);
         },
         updateShippingAddress: function (shippingAddress) {
-            console.log({ shippingAddress });
+            console.debug({ logger: 'twoPayment.updateShippingAddress', shippingAddress });
             if (shippingAddress.getCacheKey() == quote.billingAddress().getCacheKey()) {
                 this.updateAddress(shippingAddress);
             }
         },
         updateBillingAddress: function (billingAddress) {
-            console.log({ billingAddress });
+            console.debug({ logger: 'twoPayment.updateBillingAddress', billingAddress });
             this.updateAddress(billingAddress);
         },
         fillCustomerData: function () {
@@ -304,12 +302,12 @@ define([
         },
         calculateTaxSubtotals: function (lineItems) {
             const taxSubtotals = {};
-        
+
             lineItems.forEach((item) => {
                 const taxRate = parseFloat(item.tax_rate);
                 const taxAmount = parseFloat(item.tax_amount);
                 const taxableAmount = parseFloat(item.net_amount);
-            
+
                 if (!taxSubtotals[taxRate]) {
                     taxSubtotals[taxRate] = {
                         tax_amount: 0,
@@ -320,7 +318,7 @@ define([
                 taxSubtotals[taxRate].tax_amount += taxAmount;
                 taxSubtotals[taxRate].taxable_amount += taxableAmount;
             });
-        
+
             return Object.values(taxSubtotals);
         },
         placeOrderIntent: function () {
@@ -337,7 +335,7 @@ define([
                     quantity: item['qty'],
                     unit_price: parseFloat(item['price']).toFixed(2),
                     tax_amount: parseFloat(item['tax_amount']).toFixed(2),
-                    tax_rate: (parseFloat(item['tax_percent']) / 100 ).toFixed(6),
+                    tax_rate: (parseFloat(item['tax_percent']) / 100).toFixed(6),
                     tax_class_name: '',
                     quantity_unit: config.orderIntentConfig.weightUnit,
                     image_url: item['thumbnail'],
@@ -345,13 +343,12 @@ define([
                 });
             });
 
-
             const orderIntentRequestBody = {
                 gross_amount: parseFloat(totals['grand_total']).toFixed(2),
                 invoice_type: config.orderIntentConfig.invoiceType,
                 currency: totals['base_currency_code'],
                 line_items: lineItems,
-                tax_subtotals : this.calculateTaxSubtotals(lineItems),
+                tax_subtotals: this.calculateTaxSubtotals(lineItems),
                 buyer: {
                     company: {
                         organization_number: this.companyId(),
@@ -367,10 +364,10 @@ define([
                     }
                 },
                 merchant_short_name: config.orderIntentConfig.merchantShortName
-            }
+            };
 
-            console.debug({lineItems : orderIntentRequestBody.line_items, 
-                         taxSubTotals : orderIntentRequestBody.tax_subtotals})
+            console.debug({ logger: 'twoPayment.placeOrderIntent', orderIntentRequestBody });
+
             return $.ajax({
                 url:
                     config.checkoutApiUrl +
@@ -512,7 +509,7 @@ define([
         },
         getTelephone: function () {
             const telephone = this.telephone();
-            console.log({ telephone });
+            console.debug({ logger: 'twoPayment.getTelephone', telephone });
             return telephone;
         },
         configureFormValidation: function () {
@@ -573,9 +570,9 @@ define([
                 .then((json) => {
                     return json[0];
                 })
-                .catch((e) => {
-                    console.error(e);
-                    throw e;
+                .catch((error) => {
+                    console.error({ logger: 'twoPayment.getTokens', error });
+                    throw error;
                 });
         },
 
@@ -628,7 +625,7 @@ define([
             this.clearCompany(true);
             this.getTokens()
                 .then((json) => {
-                    console.log(json);
+                    console.debug({ logger: 'twoPayment.soleTraderMode', json });
                     this.delegationToken = json.delegation_token;
                     this.autofillToken = json.autofill_token;
                     this.getCurrentBuyer();

@@ -59,7 +59,7 @@ define([
             }
         },
         setCompanyData: function (companyId = '', companyName = '') {
-            console.log({ companyId, companyName });
+            console.debug({ logger: 'addressAutocomplete.setCompanyData', companyId, companyName });
             customerData.set('companyData', { companyId, companyName });
             $('.select2-selection__rendered').text(companyName);
             $(this.companyNameSelector).val(companyName);
