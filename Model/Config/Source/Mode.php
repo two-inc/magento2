@@ -52,7 +52,7 @@ class Mode implements OptionSourceInterface
         foreach ($modes as $mode => $value) {
             $options[] = [
                 'value' => $mode,
-                'label' => $translations[$mode],
+                'label' => $translations[$mode] ?? ucfirst($mode),
             ];
         }
         return $options;
