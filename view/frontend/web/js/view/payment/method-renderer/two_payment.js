@@ -2,6 +2,9 @@
  * Copyright © Two.inc All rights reserved.
  * See COPYING.txt for license details.
  */
+
+
+
 define([
     'ko',
     'jquery',
@@ -299,6 +302,27 @@ define([
         getEmail: function () {
             return quote.guestEmail ? quote.guestEmail : window.checkoutConfig.customerData.email;
         },
+        calculateTaxSubtotals: function (lineItems) {
+            const taxSubtotals = {};
+        
+            lineItems.forEach((item) => {
+                const taxRate = parseFloat(item.tax_rate);
+                const taxAmount = parseFloat(item.tax_amount);
+                const taxableAmount = parseFloat(item.net_amount);
+            
+                if (!taxSubtotals[taxRate]) {
+                    taxSubtotals[taxRate] = {
+                        tax_amount: 0,
+                        taxable_amount: 0,
+                        tax_rate: taxRate
+                    };
+                }
+                taxSubtotals[taxRate].tax_amount += taxAmount;
+                taxSubtotals[taxRate].taxable_amount += taxableAmount;
+            });
+        
+            return Object.values(taxSubtotals);
+        },
         placeOrderIntent: function () {
             let totals = quote.getTotals()(),
                 billingAddress = quote.billingAddress(),
@@ -313,13 +337,40 @@ define([
                     quantity: item['qty'],
                     unit_price: parseFloat(item['price']).toFixed(2),
                     tax_amount: parseFloat(item['tax_amount']).toFixed(2),
-                    tax_rate: parseFloat(item['tax_percent']).toFixed(6),
+                    tax_rate: (parseFloat(item['tax_percent']) / 100 ).toFixed(6),
                     tax_class_name: '',
                     quantity_unit: config.orderIntentConfig.weightUnit,
                     image_url: item['thumbnail'],
                     type: item['is_virtual'] === '0' ? 'PHYSICAL' : 'DIGITAL'
                 });
             });
+
+
+            const orderIntentRequestBody = {
+                gross_amount: parseFloat(totals['grand_total']).toFixed(2),
+                invoice_type: config.orderIntentConfig.invoiceType,
+                currency: totals['base_currency_code'],
+                line_items: lineItems,
+                tax_subtotals : this.calculateTaxSubtotals(lineItems),
+                buyer: {
+                    company: {
+                        organization_number: this.companyId(),
+                        country_prefix: billingAddress.countryId,
+                        company_name: this.companyName(),
+                        website: window.BASE_URL
+                    },
+                    representative: {
+                        email: this.getEmail(),
+                        first_name: billingAddress.firstname,
+                        last_name: billingAddress.lastname,
+                        phone_number: this.getTelephone()
+                    }
+                },
+                merchant_short_name: config.orderIntentConfig.merchantShortName
+            }
+
+            console.debug({lineItems : orderIntentRequestBody.line_items, 
+                         taxSubTotals : orderIntentRequestBody.tax_subtotals})
             return $.ajax({
                 url:
                     config.checkoutApiUrl +
@@ -332,27 +383,7 @@ define([
                 global: true,
                 contentType: 'application/json',
                 headers: {},
-                data: JSON.stringify({
-                    gross_amount: parseFloat(totals['grand_total']).toFixed(2),
-                    invoice_type: config.orderIntentConfig.invoiceType,
-                    currency: totals['base_currency_code'],
-                    line_items: lineItems,
-                    buyer: {
-                        company: {
-                            organization_number: this.companyId(),
-                            country_prefix: billingAddress.countryId,
-                            company_name: this.companyName(),
-                            website: window.BASE_URL
-                        },
-                        representative: {
-                            email: this.getEmail(),
-                            first_name: billingAddress.firstname,
-                            last_name: billingAddress.lastname,
-                            phone_number: this.getTelephone()
-                        }
-                    },
-                    merchant_short_name: config.orderIntentConfig.merchantShortName
-                })
+                data: JSON.stringify(orderIntentRequestBody)
             });
         },
         validate: function () {
