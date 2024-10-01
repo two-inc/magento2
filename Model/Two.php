@@ -274,9 +274,11 @@ class Two extends AbstractMethod
      */
     public function getErrorFromResponse(array $response): ?Phrase
     {
+        $tryAgainLater = __('Please try again later.');
         $generalError = __(
-            'Something went wrong with your request to %1. Please try again later.',
-            $this->configRepository->getProvider()
+            'Something went wrong with your request to %1. %2',
+            $this->configRepository->getProvider(),
+            $tryAgainLater
         );
         if (!$response || !is_array($response)) {
             return $generalError;
@@ -582,10 +584,11 @@ class Two extends AbstractMethod
         }
 
         if (!$response['amount']) {
+            $reason = __('Amount is missing');
             $message = __(
                 'Failed to refund order with %1. Reason: %2',
                 $this->configRepository->getProvider(),
-                __('Amount is missing')
+                $reason
             );
             $this->addOrderComment($order, $message);
             throw new  LocalizedException(

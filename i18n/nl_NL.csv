@@ -18,6 +18,7 @@
 "Add project field","Projectveld toevoegen"
 "Allow to applicable countries","Toestaan voor toepasselijke landen"
 "Allow to specific countries","Toestaan voor specifieke landen"
+"Amount is missing","Bedrag ontbreekt"
 Branding,Merknaam
 "Buyer address is invalid.","Het adres van de koper is ongeldig."
 "Buyer authentication failed.","Authenticatie van koper mislukt."
@@ -66,6 +67,7 @@ OK,OK
 Payment,Betaling
 "Payment method",Betaalmethode
 "Place Order","Bestelling plaatsen"
+"Please try again later.","Probeer het later opnieuw."
 Production,Productie
 Project,Project
 Reason,Reden
@@ -76,7 +78,7 @@ Search,Zoekopdracht
 "Search for company","Zoek naar bedrijf"
 "Sign up now","Meld je nu aan"
 "Sole Trader",Eenmanszaak
-"Something went wrong with your request to %1. Please try again later.","Er is iets misgegaan met uw verzoek aan %1. Probeer het later opnieuw."
+"Something went wrong with your request to %1. %2","Er is iets misgegaan met uw verzoek aan %1. %2"
 "Sort order",Sorteervolgorde
 "Successfully refunded order with %1 for order ID: %2. Refund reference: %3","Succesvol terugbetaalde bestelling met %1 voor order-ID: %2. Terugbetalingsreferentie: %3"
 TWO,TWEE
@@ -91,5 +93,8 @@ Version,Versie
 "You will be redirected to %1 when you place order.","U wordt doorgestuurd naar %1 wanneer u een bestelling plaatst."
 "Your invoice purchase with %1 failed verification. The cart will be restored.","Uw factuuraankoop met %1 is niet geverifieerd. De winkelwagen wordt hersteld."
 "Your invoice purchase with %1 has been cancelled. The cart will be restored.","Uw factuuraankoop met %1 is geannuleerd. De winkelwagen wordt hersteld."
+"Your invoice purchase with %1 has been declined.","Uw factuuraankoop met %1 is geweigerd."
+"Your invoice purchase with %1 is likely to be accepted subject to additional checks.","Uw factuuraankoop met %1 wordt waarschijnlijk geaccepteerd, mits er aanvullende controles worden uitgevoerd."
 "Your request to %1 failed. Reason: %2","Uw verzoek aan %1 is mislukt. Reden: %2"
+"Your sole trader account could not be verified.","Uw eenmanszaakaccount kon niet worden geverifieerd."
 https://www.two.inc/what-is-two,https://www.two.inc/what-is-two

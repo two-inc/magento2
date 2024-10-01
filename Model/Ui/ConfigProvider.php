@@ -61,10 +61,12 @@ class ConfigProvider implements ConfigProviderInterface
             'weightUnit' => $this->configRepository->getWeightUnit(),
         ];
 
+        $provider = $this->configRepository->getProvider();
+        $tryAgainLater = __('Please try again later.');
+        $soleTraderaccountCouldNotBeVerified = __('Your sole trader account could not be verified.');
         return [
             'payment' => [
                 ConfigRepository::CODE => [
-                    'provider' => $this->configRepository->getProvider(),
                     'checkoutApiUrl' => $this->configRepository->getCheckoutApiUrl(),
                     'checkoutPageUrl' => $this->configRepository->getCheckoutPageUrl(),
                     'redirectUrlCookieCode' => UrlCookie::COOKIE_NAME,
@@ -79,6 +81,25 @@ class ConfigProvider implements ConfigProviderInterface
                     'isOrderNoteFieldEnabled' => $this->configRepository->isOrderNoteEnabled(),
                     'isPONumberFieldEnabled' => $this->configRepository->isPONumberEnabled(),
                     'isTwoLinkEnabled' => $this->configRepository->isTwoLinkEnabled(),
+                    'redirectMessage' => __(
+                        'You will be redirected to %1 when you place order.',
+                        $provider
+                    ),
+                    'orderIntentApprovedMessage' => __(
+                        'Your invoice purchase with %1 is likely to be accepted subject to additional checks.',
+                        $provider
+                    ),
+                    'orderIntentDeclinedMessage' => __('Your invoice purchase with %1 has been declined.', $provider),
+                    'generalErrorMessage' => __(
+                        'Something went wrong with your request to %1. %2',
+                        $provider,
+                        $tryAgainLater
+                    ),
+                    'soleTraderErrorMessage' => __(
+                        'Something went wrong with your request to %1. %2',
+                        $provider,
+                        $soleTraderaccountCouldNotBeVerified
+                    )
                 ],
             ],
         ];

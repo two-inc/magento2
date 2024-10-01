@@ -18,7 +18,8 @@
 "Add project field","Legg til felt for prosjekt"
 "Allow to applicable countries","Tillat til gjeldende land"
 "Allow to specific countries","Tillat til bestemte land"
-Branding,Branding
+"Amount is missing","Beløp mangler"
+Branding,Merkevarebygging
 "Buyer address is invalid.","Kjøperens adresse er ugyldig"
 "Buyer authentication failed.","Kjøperautentisering feilet."
 "Buyer info is inconsistent.","Kjøperinformasjon er inkonsekvent."
@@ -66,6 +67,7 @@ OK,OK
 Payment,Betaling
 "Payment method",Betalingsmetode
 "Place Order","Plasser ordre"
+"Please try again later.","Vennligst prøv igjen senere."
 Production,Produksjon
 Project,Prosjekt
 Reason,Bakgrunn
@@ -76,7 +78,7 @@ Search,Søk
 "Search for company","Søk etter selskap"
 "Sign up now","Registrer deg nå"
 "Sole Trader",Eneforhandler
-"Something went wrong with your request to %1. Please try again later.","Noe gikk galt med forespørselen din til %1. Vennligst prøv igjen senere."
+"Something went wrong with your request to %1. %2","Noe gikk galt med forespørselen din til %1. %2"
 "Sort order",Sorteringsrekkefølge
 "Successfully refunded order with %1 for order ID: %2. Refund reference: %3","Vellykket refundert bestilling med %1 for bestillings-ID: %2. Refusjonsreferanse: %3"
 TWO,TWO
@@ -91,5 +93,8 @@ Version,Versjon
 "You will be redirected to %1 when you place order.","Du vil bli omdirigert til %1 når du legger inn bestilling."
 "Your invoice purchase with %1 failed verification. The cart will be restored.","Fakturakjøpet med %1 mislyktes i bekreftelsen. Vognen vil bli restaurert."
 "Your invoice purchase with %1 has been cancelled. The cart will be restored.","Ditt fakturakjøp med %1 er kansellert. Vognen vil bli restaurert."
+"Your invoice purchase with %1 has been declined.","Ditt fakturakjøp med %1 har blitt avvist."
+"Your invoice purchase with %1 is likely to be accepted subject to additional checks.","Fakturakjøpet ditt med %1 vil sannsynligvis bli akseptert med forbehold om ytterligere kontroller."
 "Your request to %1 failed. Reason: %2","Din forespørsel til %1 mislyktes. Årsak: %2"
+"Your sole trader account could not be verified.","Din eneforhandlerkonto kunne ikke bekreftes."
 https://www.two.inc/what-is-two,https://www.two.inc/no/what-is-two
