@@ -18,6 +18,7 @@
 "Add project field","Lägg till fält för projekt"
 "Allow to applicable countries","Tillåt till tillämpliga länder"
 "Allow to specific countries","Tillåt till specifika länder"
+"Amount is missing","Belopp saknas"
 Branding,Branding
 "Buyer address is invalid.","Köparens adress är ogiltig"
 "Buyer authentication failed.","Köparens autentisering misslyckades."
@@ -66,6 +67,7 @@ OK,OK
 Payment,Betalning
 "Payment method",Betalningsmetod
 "Place Order",Beställa
+"Please try again later.","Försök igen senare."
 Production,Produktion
 Project,Projekt
 Reason,Anledningen
@@ -76,7 +78,7 @@ Search,Söka
 "Search for company","Sök efter företag"
 "Sign up now","Registrera nu"
 "Sole Trader","Enskild näringsidkare"
-"Something went wrong with your request to %1. Please try again later.","Något gick fel med din begäran till %1. Försök igen senare."
+"Something went wrong with your request to %1. %2","Något gick fel med din begäran till %1. %2"
 "Sort order",Sorteringsordning
 "Successfully refunded order with %1 for order ID: %2. Refund reference: %3","Återbetalad beställning med %1 för beställnings-ID: %2. Återbetalningsreferens: %3"
 TWO,TWO
@@ -91,5 +93,8 @@ Version,Version
 "You will be redirected to %1 when you place order.","Du kommer att omdirigeras till %1 när du beställer."
 "Your invoice purchase with %1 failed verification. The cart will be restored.","Ditt fakturaköp med %1 misslyckades med verifiering. Vagnen kommer att återställas."
 "Your invoice purchase with %1 has been cancelled. The cart will be restored.","Ditt fakturaköp med %1 har annullerats. Vagnen kommer att återställas."
+"Your invoice purchase with %1 has been declined.","Ditt fakturaköp med %1 har avvisats."
+"Your invoice purchase with %1 is likely to be accepted subject to additional checks.","Ditt fakturaköp med %1 kommer sannolikt att accepteras under förutsättning av ytterligare kontroller."
 "Your request to %1 failed. Reason: %2","Din begäran till %1 misslyckades. Orsak: %2"
+"Your sole trader account could not be verified.","Ditt enskild näringsidkarekonto kunde inte verifieras."
 https://www.two.inc/what-is-two,https://www.two.inc/what-is-two

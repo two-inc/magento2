@@ -40,6 +40,11 @@ define([
             template: 'Two_Gateway/payment/two_payment'
         },
         redirectAfterPlaceOrder: false,
+        redirectMessage: config.redirectMessage,
+        orderIntentApprovedMessage: config.orderIntentApprovedMessage,
+        orderIntentDeclinedMessage: config.orderIntentDeclinedMessage,
+        generalErrorMessage: config.generalErrorMessage,
+        soleTraderErrorMessage: config.soleTraderErrorMessage,
         isOrderIntentEnabled: config.isOrderIntentEnabled,
         isDepartmentFieldEnabled: config.isDepartmentFieldEnabled,
         isProjectFieldEnabled: config.isProjectFieldEnabled,
@@ -51,24 +56,6 @@ define([
         formSelector: 'form#two_gateway_form',
         companyNameSelector: 'input#company_name',
         companyIdSelector: 'input#company_id',
-        redirectMessage: $t('You will be redirected to %1 when you place order.').replace(
-            '%1',
-            config.provider
-        ),
-        orderIntentApprovedMessage: $t(
-            'Your invoice purchase with %1 is likely to be accepted subject to additional checks.'
-        ).replace('%1', config.provider),
-        orderIntentDeclinedMessage: $t('Your invoice purchase with %1 has been declined.').replace(
-            '%1',
-            config.provider
-        ),
-        generalErrorMessage: $t(
-            'Something went wrong with your request to %1. Please try again later.'
-        ).replace('%1', config.provider),
-        soleTraderErrorMessage: $t(
-            'Something went wrong with your request to %1. Your sole trader account could not be verified.',
-            config.provider
-        ).replace('%1', config.provider),
         enterDetailsManuallyText: $t('Enter details manually'),
         enterDetailsManuallyButton: '#billing_enter_details_manually',
         searchForCompanyText: $t('Search for company'),

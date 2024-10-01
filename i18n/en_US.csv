@@ -18,6 +18,7 @@
 "Add project field","Add project field"
 "Allow to applicable countries","Allow to applicable countries"
 "Allow to specific countries","Allow to specific countries"
+"Amount is missing","Amount is missing"
 Branding,Branding
 "Buyer address is invalid.","Buyer address is invalid."
 "Buyer authentication failed.","Buyer authentication failed."
@@ -66,6 +67,7 @@ OK,OK
 Payment,Payment
 "Payment method","Payment method"
 "Place Order","Place Order"
+"Please try again later.","Please try again later."
 Production,Production
 Project,Project
 Reason,Reason
@@ -76,7 +78,7 @@ Search,Search
 "Search for company","Search for company"
 "Sign up now","Sign up now"
 "Sole Trader","Sole Trader"
-"Something went wrong with your request to %1. Please try again later.","Something went wrong with your request to %1. Please try again later."
+"Something went wrong with your request to %1. %2","Something went wrong with your request to %1. %2"
 "Sort order","Sort order"
 "Successfully refunded order with %1 for order ID: %2. Refund reference: %3","Successfully refunded order with %1 for order ID: %2. Refund reference: %3"
 TWO,TWO
@@ -91,5 +93,8 @@ Version,Version
 "You will be redirected to %1 when you place order.","You will be redirected to %1 when you place order."
 "Your invoice purchase with %1 failed verification. The cart will be restored.","Your invoice purchase with %1 failed verification. The cart will be restored."
 "Your invoice purchase with %1 has been cancelled. The cart will be restored.","Your invoice purchase with %1 has been cancelled. The cart will be restored."
+"Your invoice purchase with %1 has been declined.","Your invoice purchase with %1 has been declined."
+"Your invoice purchase with %1 is likely to be accepted subject to additional checks.","Your invoice purchase with %1 is likely to be accepted subject to additional checks."
 "Your request to %1 failed. Reason: %2","Your request to %1 failed. Reason: %2"
+"Your sole trader account could not be verified.","Your sole trader account could not be verified."
 https://www.two.inc/what-is-two,https://www.two.inc/what-is-two
