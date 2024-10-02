@@ -368,14 +368,13 @@ define([
 
             console.debug({ logger: 'twoPayment.placeOrderIntent', orderIntentRequestBody });
 
+            const queryParams = new URLSearchParams({
+                client: config.orderIntentConfig.extensionPlatformName,
+                client_v: config.orderIntentConfig.extensionDBVersion
+            });
+
             return $.ajax({
-                url:
-                    config.checkoutApiUrl +
-                    '/v1/order_intent?' +
-                    'client=' +
-                    config.orderIntentConfig.extensionPlatformName +
-                    '&client_v=' +
-                    config.orderIntentConfig.extensionDBVersion,
+                url: `${config.checkoutApiUrl}/v1/order_intent?${queryParams.toString()}`,
                 type: 'POST',
                 global: true,
                 contentType: 'application/json',
@@ -427,38 +426,31 @@ define([
                                 dataType: 'json',
                                 delay: 400,
                                 url: function (params) {
-                                    var searchHosts = config.companySearchConfig.searchHosts,
-                                        billingAddress = quote.billingAddress(),
-                                        searchHost = searchHosts[self.countryCode()];
-                                    if (!searchHost) return;
-                                    params.page = params.page || 1;
-                                    return (
-                                        searchHost +
-                                        '/search?limit=' +
-                                        searchLimit +
-                                        '&offset=' +
-                                        (params.page - 1) * searchLimit +
-                                        '&q=' +
-                                        unescape(params.term)
-                                    );
+                                    const queryParams = new URLSearchParams({
+                                        country: self.countryCode(),
+                                        limit: searchLimit,
+                                        offset: ((params.page || 1) - 1) * searchLimit,
+                                        q: unescape(params.term)
+                                    });
+                                    return `${
+                                        config.companySearchConfig.searchHost
+                                    }/companies/v1/company?${queryParams.toString()}`;
                                 },
                                 processResults: function (response, params) {
                                     var items = [];
-                                    if (response.status === 'success') {
-                                        for (var i = 0; i < response.data.items.length; i++) {
-                                            var item = response.data.items[i];
-                                            items.push({
-                                                id: item.name,
-                                                text: item.name,
-                                                html: `${item.highlight} (${item.id})`,
-                                                companyId: item.id
-                                            });
-                                        }
+                                    for (var i = 0; i < response.items.length; i++) {
+                                        var item = response.items[i];
+                                        items.push({
+                                            id: item.name,
+                                            text: item.name,
+                                            html: `${item.highlight} (${item.national_identifier.id})`,
+                                            companyId: item.national_identifier.id
+                                        });
                                     }
                                     return {
                                         results: items,
                                         pagination: {
-                                            more: params.page * searchLimit < response.data.total
+                                            more: false
                                         }
                                     };
                                 },
@@ -635,7 +627,7 @@ define([
         },
 
         getCurrentBuyer() {
-            const URL = config.checkoutApiUrl + '/autofill/v1/buyer/current';
+            const URL = `${config.checkoutApiUrl}/autofill/v1/buyer/current`;
             const OPTIONS = {
                 credentials: 'include',
                 headers: {

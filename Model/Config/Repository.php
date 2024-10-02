@@ -239,13 +239,11 @@ class Repository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function getSearchHostUrls(): array
+    public function getSearchHostUrl(?string $mode = null): string
     {
-        return [
-            'gb' => 'https://gb.search.two.inc',
-            'no' => 'https://no.search.two.inc',
-            'se' => 'https://se.search.two.inc'
-        ];
+        $mode = $mode ?: $this->getMode();
+        $prefix = $mode == 'production' ? 'search' : ('search.' . $mode);
+        return sprintf(self::URL_TEMPLATE, $prefix);
     }
 
     /**

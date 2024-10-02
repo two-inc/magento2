@@ -49,7 +49,7 @@ class ConfigProvider implements ConfigProviderInterface
     public function getConfig(): array
     {
         $companySearchConfig = [
-            'searchHosts' => $this->configRepository->getSearchHostUrls(),
+            'searchHost' => $this->configRepository->getSearchHostUrl(),
             'searchLimit' => 50,
         ];
 
