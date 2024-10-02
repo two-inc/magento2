@@ -51,12 +51,7 @@ define([
             const countryCode = $(this.countrySelector).val().toLowerCase();
             customerData.set('countryCode', countryCode);
             let field = $(this.companyNameSelector).closest('.field');
-            if (countryCode in config.companySearchConfig.searchHosts) {
-                field.show();
-            } else {
-                field.hide();
-                this.setCompanyData();
-            }
+            field.show();
         },
         setCompanyData: function (companyId = '', companyName = '') {
             console.debug({ logger: 'addressAutocomplete.setCompanyData', companyId, companyName });
@@ -88,40 +83,31 @@ define([
                                 dataType: 'json',
                                 delay: 400,
                                 url: function (params) {
-                                    var searchHosts = config.companySearchConfig.searchHosts,
-                                        selectedCountryCode = $(self.countrySelector).val(),
-                                        searchHost = '';
-                                    if (selectedCountryCode.toLowerCase() in searchHosts) {
-                                        searchHost = searchHosts[selectedCountryCode.toLowerCase()];
-                                    }
-                                    params.page = params.page || 1;
-                                    return (
-                                        searchHost +
-                                        '/search?limit=' +
-                                        searchLimit +
-                                        '&offset=' +
-                                        (params.page - 1) * searchLimit +
-                                        '&q=' +
-                                        unescape(params.term)
-                                    );
+                                    const queryParams = new URLSearchParams({
+                                        country: $(self.countrySelector).val(),
+                                        limit: searchLimit,
+                                        offset: ((params.page || 1) - 1) * searchLimit,
+                                        q: unescape(params.term)
+                                    });
+                                    return `${
+                                        config.companySearchConfig.searchHost
+                                    }/companies/v1/company?${queryParams.toString()}`;
                                 },
                                 processResults: function (response, params) {
                                     var items = [];
-                                    if (response.status === 'success') {
-                                        for (var i = 0; i < response.data.items.length; i++) {
-                                            var item = response.data.items[i];
-                                            items.push({
-                                                id: item.name,
-                                                text: item.name,
-                                                html: `${item.highlight} (${item.id})`,
-                                                companyId: item.id
-                                            });
-                                        }
+                                    for (var i = 0; i < response.items.length; i++) {
+                                        var item = response.items[i];
+                                        items.push({
+                                            id: item.name,
+                                            text: item.name,
+                                            html: `${item.highlight} (${item.national_identifier.id})`,
+                                            companyId: item.national_identifier.id
+                                        });
                                     }
                                     return {
                                         results: items,
                                         pagination: {
-                                            more: params.page * searchLimit < response.data.total
+                                            more: false
                                         }
                                     };
                                 },
@@ -154,22 +140,12 @@ define([
                             $('.select2-selection__rendered').text(selectedItem.id);
                             self.setCompanyData(selectedItem.companyId, selectedItem.text);
                             if (self.isAddressSearchEnabled) {
-                                let countryId = $(self.countrySelector).val();
-                                if (
-                                    _.indexOf(
-                                        self.supportedCountryCodes,
-                                        countryId.toLowerCase()
-                                    ) != -1
-                                ) {
+                                const companyId = selectedItem.companyId;
+                                const countryCode = $(self.countrySelector).val().toLowerCase();
+                                if (_.indexOf(self.supportedCountryCodes, countryCode) != -1) {
                                     const addressResponse = $.ajax({
                                         dataType: 'json',
-                                        url:
-                                            config.checkoutApiUrl +
-                                            '/v1/' +
-                                            countryId.toUpperCase() +
-                                            '/company/' +
-                                            selectedItem.companyId +
-                                            '/address'
+                                        url: `${config.checkoutApiUrl}/v1/${countryCode}/company/${companyId}/address`
                                     });
                                     addressResponse.done(function (response) {
                                         if (response.address) {

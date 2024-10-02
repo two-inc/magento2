@@ -48,7 +48,7 @@ Step-by-step to install the Magento® 2 extension through Composer:
 3. Install the Magento® 2 extension through composer and wait till it's completed:
 
     ```bash
-    composer require two-inc/magento2
+    composer require two-inc/magento-plugin
     ```
 
 4. Once completed run the Magento® module enable command:
