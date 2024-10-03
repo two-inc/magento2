@@ -60,8 +60,48 @@ define([
             $(this.companyNameSelector).val(companyName);
             $(this.companyIdSelector).val(companyId);
         },
+        setAddressData: function (address) {
+            console.debug({ logger: 'addressAutocomplete.setAddressData', address });
+            $('input[name="city"]').val(address.city);
+            $('input[name="postcode"]').val(address.postal_code);
+            $('input[name="street[0]"]').val(address.street_address);
+            $('input[name="city"], input[name="postcode"], input[name="street[0]"]').trigger(
+                'change'
+            );
+        },
+        addressLookup: function (selectedCompany, countryCode) {
+            const self = this;
+            if (this.supportedCountryCodes.includes(countryCode.toLowerCase())) {
+                // Use legacy address search for supported country codes
+                const addressResponse = $.ajax({
+                    dataType: 'json',
+                    url: `${config.checkoutApiUrl}/v1/${countryCode}/company/${selectedCompany.companyId}/address`
+                });
+                addressResponse.done(function (response) {
+                    if (response.address) {
+                        self.setAddressData({
+                            city: response.address.city,
+                            postal_code: response.address.postalCode,
+                            street_address: response.address.streetAddress
+                        });
+                    }
+                });
+            } else {
+                // Use new address lookup for unsupported country codes
+                const addressResponse = $.ajax({
+                    dataType: 'json',
+                    url: `${config.companySearchConfig.searchHost}/companies/v1/company/${selectedCompany.lookupId}`
+                });
+                addressResponse.done(function (response) {
+                    // Use new address lookup by default
+                    if (response.address) {
+                        self.setAddressData(response.address);
+                    }
+                });
+            }
+        },
         enableCompanySearch: function () {
-            var self = this;
+            const self = this;
             require(['Two_Gateway/select2-4.1.0/js/select2.min'], function () {
                 $.async(self.companyNameSelector, function (companyNameField) {
                     var searchLimit = config.companySearchConfig.searchLimit;
@@ -101,7 +141,8 @@ define([
                                             id: item.name,
                                             text: item.name,
                                             html: `${item.highlight} (${item.national_identifier.id})`,
-                                            companyId: item.national_identifier.id
+                                            companyId: item.national_identifier.id,
+                                            lookupId: item.lookup_id
                                         });
                                     }
                                     return {
@@ -140,28 +181,8 @@ define([
                             $('.select2-selection__rendered').text(selectedItem.id);
                             self.setCompanyData(selectedItem.companyId, selectedItem.text);
                             if (self.isAddressSearchEnabled) {
-                                const companyId = selectedItem.companyId;
                                 const countryCode = $(self.countrySelector).val().toLowerCase();
-                                if (_.indexOf(self.supportedCountryCodes, countryCode) != -1) {
-                                    const addressResponse = $.ajax({
-                                        dataType: 'json',
-                                        url: `${config.checkoutApiUrl}/v1/${countryCode}/company/${companyId}/address`
-                                    });
-                                    addressResponse.done(function (response) {
-                                        if (response.address) {
-                                            $('input[name="city"]').val(response.address.city);
-                                            $('input[name="postcode"]').val(
-                                                response.address.postalCode
-                                            );
-                                            $('input[name="street[0]"]').val(
-                                                response.address.streetAddress
-                                            );
-                                            $(
-                                                'input[name="city"], input[name="postcode"], input[name="street[0]"]'
-                                            ).trigger('change');
-                                        }
-                                    });
-                                }
+                                self.addressLookup(selectedItem, countryCode);
                             }
                         });
                     if ($(self.companyNameSelector).val()) {
