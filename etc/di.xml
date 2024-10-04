@@ -43,7 +43,8 @@
         <arguments>
             <argument name="environment" xsi:type="array">
                 <item name="payment/two_payment/mode" xsi:type="string">1</item>
-                <item name="payment/two_payment/debug" xsi:type="string">1</item>
+                <item name="payment/two_payment/provider" xsi:type="string">1</item>
+                <item name="payment/two_payment/debug" xsi:type="boolean">1</item>
             </argument>
         </arguments>
     </type>
