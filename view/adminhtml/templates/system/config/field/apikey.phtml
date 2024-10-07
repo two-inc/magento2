@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * Copyright © Two.inc All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+use Two\Gateway\Block\Adminhtml\System\Config\Field\ApiKeyCheck;
+
+/**
+ * @var ApiKeyCheck $block
+ */
+$status = $block->getApiKeyStatus();
+?>
+<div>
+    <span><?= $block->escapeHtml($status['message']); ?></span>
+    <span class="api-key-status-icon <?= $block->escapeHtmlAttr('api-key-' . $status['status']); ?>"></span>
+    <?php if (isset($status['error'])): ?>
+        <span class="api-key-error-message"><?= $block->escapeHtml($status['error']); ?></span>
+    <?php endif; ?>
+</div>
