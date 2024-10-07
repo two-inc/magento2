@@ -60,6 +60,11 @@
                     </depends>
                     <config_path>payment/two_payment/api_key</config_path>
                 </field>
+                <field id="api_key_check" translate="label" type="button" sortOrder="55" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Credentials</label>
+                    <frontend_model>Two\Gateway\Block\Adminhtml\System\Config\Field\ApiKeyCheck</frontend_model>
+                </field>
                 <field id="debug" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                     <label>Debug mode</label>
