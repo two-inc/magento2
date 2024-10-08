@@ -345,7 +345,7 @@ class OrderService
             $this->orderRepository->save($order);
             $this->paymentTransactionRepository->save($transaction);
         } catch (\Exception $e) {
-            $this->logRepository->addDebugLog('auth transaction', $e->getMessage());
+            $this->logRepository->addDebugLog('Auth transaction', $e->getMessage());
         }
     }
 }

@@ -219,7 +219,7 @@ class Two extends AbstractMethod
 
         if ($response['status'] !== static::STATUS_APPROVED) {
             $this->logRepository->addDebugLog(
-                __('Order was not accepted by %1', $this->configRepository->getProvider()),
+                sprintf('Order was not accepted by %1', $this->configRepository->getProvider()),
                 $response
             );
             throw new LocalizedException(
