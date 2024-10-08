@@ -380,16 +380,14 @@ class Two extends AbstractMethod
             $response = $this->apiAdapter->execute('/v1/order/' . $order->getTwoOrderId() . '/cancel');
             if ($response) {
                 $error = $this->getErrorFromResponse($response);
-                $order->addStatusToHistory(
-                    $order->getStatus(),
-                    __(
-                        'Could not update %1 order status to cancelled. ' .
-                        'Please contact support with order ID %2. Error: %3',
-                        $this->configRepository->getProvider(),
-                        $twoOrderId,
-                        $error
-                    )
+                $comment = __(
+                    'Could not update %1 order status to cancelled. ' .
+                    'Please contact support with order ID %2. Error: %3',
+                    $this->configRepository->getProvider(),
+                    $twoOrderId,
+                    $error
                 );
+                $order->addStatusToHistory( $order->getStatus(), $comment->render());
             } else {
                 $order->addStatusToHistory(
                     $order->getStatus(),
@@ -520,14 +518,12 @@ class Two extends AbstractMethod
 
         $order->getPayment()->setAdditionalInformation($additionalInformation);
 
-        $this->addStatusToOrderHistory(
-            $order,
-            __(
-                '%1 order marked as completed with invoice number %2',
-                $this->configRepository->getProvider(),
-                $response['invoice_details']['invoice_number'],
-            )
+        $comment = __(
+            '%1 order marked as completed with invoice number %2',
+            $this->configRepository->getProvider(),
+            $response['invoice_details']['invoice_number'],
         );
+        $this->addStatusToOrderHistory( $order, $comment->render());
     }
 
     /**
@@ -600,15 +596,13 @@ class Two extends AbstractMethod
         $additionalInformation['gateway_data']['credit_note_url'] = $response['credit_note_url'];
         $payment->setAdditionalInformation($additionalInformation);
 
-        $order->addStatusToHistory(
-            $order->getStatus(),
-            __(
-                'Successfully refunded order with %1 for order ID: %2. Refund reference: %3',
-                $this->configRepository->getProvider(),
-                $twoOrderId,
-                $response['refund_no']
-            )
-        )->save();
+        $comment = __(
+            'Successfully refunded order with %1 for order ID: %2. Refund reference: %3',
+            $this->configRepository->getProvider(),
+            $twoOrderId,
+            $response['refund_no']
+        );
+        $order->addStatusToHistory($order->getStatus(), $comment->render())->save();
         return $this;
     }
 

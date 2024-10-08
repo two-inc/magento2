@@ -151,14 +151,12 @@ class SalesOrderSaveAfter implements ObserverInterface
 
         $order->getPayment()->setAdditionalInformation($additionalInformation);
 
-        $this->addStatusToOrderHistory(
-            $order,
-            __(
-                '%1 order marked as completed with invoice number %2',
-                $this->configRepository->getProvider(),
-                $response['invoice_details']['invoice_number']
-            )
+        $comment = __(
+            '%1 order marked as completed with invoice number %2',
+            $this->configRepository->getProvider(),
+            $response['invoice_details']['invoice_number']
         );
+        $this->addStatusToOrderHistory($order, $comment->render());
     }
 
     /**
