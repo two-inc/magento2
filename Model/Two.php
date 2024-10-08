@@ -387,7 +387,7 @@ class Two extends AbstractMethod
                     $twoOrderId,
                     $error
                 );
-                $order->addStatusToHistory( $order->getStatus(), $comment->render());
+                $order->addStatusToHistory($order->getStatus(), $comment->render());
             } else {
                 $order->addStatusToHistory(
                     $order->getStatus(),
@@ -523,7 +523,7 @@ class Two extends AbstractMethod
             $this->configRepository->getProvider(),
             $response['invoice_details']['invoice_number'],
         );
-        $this->addStatusToOrderHistory( $order, $comment->render());
+        $this->addStatusToOrderHistory($order, $comment->render());
     }
 
     /**
