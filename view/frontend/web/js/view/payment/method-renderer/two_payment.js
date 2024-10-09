@@ -44,7 +44,6 @@ define([
         redirectMessage: config.redirectMessage,
         termsAndConditionsMessage: config.termsAndConditionsMessage,
         termsNotAcceptedMessage: config.termsNotAcceptedMessage,
-        termsAndConditionsLink : config.termsAndConditionsLink,
         isTermsAndConditionsEnabled: config.isTermsAndConditionsEnabled,
         provider: config.provider,
         termsAccepted: ko.observable(false),

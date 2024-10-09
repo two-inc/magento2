@@ -65,9 +65,9 @@ class ConfigProvider implements ConfigProviderInterface
         $tryAgainLater = __('Please try again later.');
         $soleTraderaccountCouldNotBeVerified = __('Your sole trader account could not be verified.');
         // Set isTermsAndConditionsEnabled based on provider
-        // This check here is present to only enable the terms and conditions check for the ABN Amro
         $termsAndConditions = __("Terms & Conditions");
-        $termsAndConditionsLink = $this->configRepository->getTermsAndConditionsLink();
+        $termsAndConditionsLink = $this->configRepository::TERMS_AND_CONDITIONS_LINK;
+        // This check here is present to only enable the terms and conditions
         $isTermsAndConditionsEnabled = !empty($termsAndConditionsLink);
 
         return [
@@ -106,7 +106,7 @@ class ConfigProvider implements ConfigProviderInterface
                     ),
                     'termsAndConditionsMessage' => __(
                         'By checking this box, I confirm that I have read and agree to the %1.',
-                        $termsAndConditions
+                        sprintf('<a href="%s" target="_blank">%s</a>', $termsAndConditionsLink, $termsAndConditions)
                     ),
                     'termsNotAcceptedMessage' => __('You must first accept the payment Terms & Conditions.'),
                     'soleTraderErrorMessage' => __(

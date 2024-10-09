@@ -67,6 +67,12 @@
     </div>
 
     <div class="payment-method-content">
+        <!-- ko if: isTermsAndConditionsEnabled -->
+        <div class="payment-method-content terms-container">
+            <input type="checkbox" name="terms-checkbox" data-bind="checked: termsAccepted, event: { change: checkTerms }" />
+            <span class="terms-text" data-bind="html: termsAndConditionsMessage"></span>
+        </div>
+        <!-- /ko -->
         <div class="redirect_message" data-bind="text: redirectMessage"></div>
         <!-- ko if: showModeTab -->
         <!-- ko ifnot: showSoleTrader -->
@@ -269,3 +275,28 @@
         </div>
     </div>
 </div>
+
+<style>
+    .terms-container {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background-color: rgb(245, 245, 245);
+        font-size: 12px !important;
+        border-radius: 0.5rem;
+    }
+
+    .payment-method-content.terms-container {
+        padding: 1rem !important;
+    }
+
+    .terms-text {
+        color: rgba(0, 76, 76, 1);
+        font-weight: 500;
+    }
+
+    .terms-text a {
+        cursor: pointer;
+        text-decoration: none;
+        /* Style the anchor tags inside .terms-text */
+    }
+</style>

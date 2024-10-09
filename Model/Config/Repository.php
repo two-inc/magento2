@@ -82,14 +82,6 @@ class Repository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function getTermsAndConditionsLink(?int $storeId = null): string
-    {
-        return (string)$this->getConfig(self::XML_PATH_TERMS_AND_CONDITIONS_LINK, $storeId);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getMerchantShortName(?int $storeId = null): string
     {
         return (string)$this->getConfig(self::XML_PATH_MERCHANT_SHORT_NAME, $storeId);
