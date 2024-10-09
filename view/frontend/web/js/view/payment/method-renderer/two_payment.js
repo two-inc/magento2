@@ -42,6 +42,8 @@ define([
         },
         redirectAfterPlaceOrder: false,
         redirectMessage: config.redirectMessage,
+        orderIntentResponse: ko.observable(null),
+        orderIntentMessage: ko.observable(''),
         orderIntentApprovedMessage: config.orderIntentApprovedMessage,
         orderIntentDeclinedMessage: config.orderIntentDeclinedMessage,
         generalErrorMessage: config.generalErrorMessage,
@@ -96,15 +98,6 @@ define([
                 fullScreenLoader.startLoader();
                 var self = this;
                 this.placeOrderIntent()
-                    .always(function () {
-                        fullScreenLoader.stopLoader();
-                    })
-                    .done(function (response) {
-                        self.processOrderIntentSuccessResponse(response);
-                    })
-                    .fail(function (response) {
-                        self.processOrderIntentErrorResponse(response);
-                    });
             }
         },
         fillTelephone: function (telephone) {
@@ -380,6 +373,18 @@ define([
                 contentType: 'application/json',
                 headers: {},
                 data: JSON.stringify(orderIntentRequestBody)
+            })
+                .done((response) => {
+                this.orderIntentResponse(response);
+                if (response.approved) {
+                    this.orderIntentMessage(config.orderIntentApprovedMessage);
+                } else {
+                    this.orderIntentMessage(config.orderIntentDeclinedMessage);
+                }
+                console.debug('Order Intent Response:', response);
+            })
+            .fail((jqXHR, textStatus, errorThrown) => {
+                console.error('Order Intent Error:', textStatus, errorThrown, jqXHR.responseText);
             });
         },
         validate: function () {
