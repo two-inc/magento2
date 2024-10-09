@@ -89,7 +89,6 @@ class ConfigProvider implements ConfigProviderInterface
                     'isTwoLinkEnabled' => $this->configRepository->isTwoLinkEnabled(),
                     'isTermsAndConditionsEnabled' => $isTermsAndConditionsEnabled,
                     'termsAndConditionsLink' => $termsAndConditionsLink,
-                    'provider' => $this->configRepository->getProvider(),
                     'redirectMessage' => __(
                         'You will be redirected to %1 when you place order.',
                         $provider

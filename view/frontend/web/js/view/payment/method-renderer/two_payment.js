@@ -45,7 +45,6 @@ define([
         termsAndConditionsMessage: config.termsAndConditionsMessage,
         termsNotAcceptedMessage: config.termsNotAcceptedMessage,
         isTermsAndConditionsEnabled: config.isTermsAndConditionsEnabled,
-        provider: config.provider,
         termsAccepted: ko.observable(false),
         orderIntentApprovedMessage: config.orderIntentApprovedMessage,
         orderIntentDeclinedMessage: config.orderIntentDeclinedMessage,
@@ -211,7 +210,7 @@ define([
             // Additional logging to check termsAccepted
             console.debug({ logger: 'placeOrder', termsAccepted: this.termsAccepted() });
             if (event) event.preventDefault();
-            if (this.isTermsAndConditionsEnabled && !(this.termsAccepted())) {
+            if (this.isTermsAndConditionsEnabled && !this.termsAccepted()) {
                 this.processTermsNotAcceptedErrorResponse();
                 return;
             }
