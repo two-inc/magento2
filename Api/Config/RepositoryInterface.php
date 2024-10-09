@@ -19,6 +19,9 @@ interface RepositoryInterface
     /** Endpoints */
     public const URL_TEMPLATE = 'https://%s.two.inc';
 
+    /** Terms and conditions */
+    public const TERMS_AND_CONDITIONS_LINK = 'https://www.two.inc/terms-privacy';
+
     /** Payment Group */
     public const XML_PATH_ENABLED = 'payment/two_payment/active';
     public const XML_PATH_TITLE = 'payment/two_payment/title';
