@@ -14,6 +14,7 @@ interface RepositoryInterface
 {
     /** Method code */
     public const CODE = 'two_payment';
+    public const PROVIDER = 'Two';
 
     /** Endpoints */
     public const URL_TEMPLATE = 'https://%s.two.inc';
@@ -21,7 +22,6 @@ interface RepositoryInterface
     /** Payment Group */
     public const XML_PATH_ENABLED = 'payment/two_payment/active';
     public const XML_PATH_TITLE = 'payment/two_payment/title';
-    public const XML_PATH_PROVIDER = 'payment/two_payment/provider';
     public const XML_PATH_MODE = 'payment/two_payment/mode';
     public const XML_PATH_MERCHANT_SHORT_NAME = 'payment/two_payment/merchant_short_name';
     public const XML_PATH_API_KEY = 'payment/two_payment/api_key';
@@ -97,15 +97,6 @@ interface RepositoryInterface
      * @return int
      */
     public function getDueInDays(?int $storeId = null): int;
-
-    /**
-     * Get invoice due in days
-     *
-     * @param int|null $storeId
-     *
-     * @return int
-     */
-    public function getProvider(?int $storeId = null): string;
 
     /**
      * Get Fulfill Trigger (invoice or shipment or complete)

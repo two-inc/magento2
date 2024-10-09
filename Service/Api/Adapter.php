@@ -116,7 +116,7 @@ class Adapter
                         'Invalid API response.'
                     );
                     throw new LocalizedException(
-                        __('Invalid API response from %1.', $this->configRepository->getProvider())
+                        __('Invalid API response from %1.', $this->configRepository::PROVIDER)
                     );
                 }
             }

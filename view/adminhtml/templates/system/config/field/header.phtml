@@ -23,7 +23,7 @@
                 'and offers a variety of configuration options to suit your businesses needs.<br>' .
                 'If you would like to know more about how to configure the plugin, ' .
                 'check out our <a href="%2" target="_blank">step by step guide</a>.',
-                $block->configRepository->getProvider(),
+                $block->configRepository::PROVIDER,
                 $block->escapeUrl($block->getDocumentationUrl())
             ), ['br', 'a']); ?>
         </p>

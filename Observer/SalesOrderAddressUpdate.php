@@ -99,7 +99,7 @@ class SalesOrderAddressUpdate implements ObserverInterface
                         $error
                     );
                 } else {
-                    $comment = __('Order edit request was accepted by %1', $this->configRepository->getProvider());
+                    $comment = __('Order edit request was accepted by %1', $this->configRepository::PROVIDER);
                     $order->addStatusToHistory($order->getStatus(), $comment->render());
                 }
             } catch (Exception $e) {

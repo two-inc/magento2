@@ -156,7 +156,7 @@ class OrderService
      */
     public function getOrderByReference()
     {
-        $generalErrorMessage = __('Unable to find the requested %1 order', $this->configRepository->getProvider());
+        $generalErrorMessage = __('Unable to find the requested %1 order', $this->configRepository::PROVIDER);
         $this->urlCookie->delete();
         if (!$this->getOrderReference()) {
             throw new LocalizedException($generalErrorMessage);
@@ -307,7 +307,7 @@ class OrderService
                 $order,
                 sprintf(
                     '%s order payment has been verified',
-                    $this->configRepository->getProvider()
+                    $this->configRepository::PROVIDER
                 )
             );
             $transactionSave = $this->transaction

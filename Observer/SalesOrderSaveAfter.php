@@ -83,7 +83,7 @@ class SalesOrderSaveAfter implements ObserverInterface
                 if (!$this->isWholeOrderShipped($order)) {
                     $error = __(
                         "%1 requires whole order to be shipped before it can be fulfilled.",
-                        $this->configRepository->getProvider()
+                        $this->configRepository::PROVIDER
                     );
                     throw new LocalizedException($error);
                 }
@@ -153,7 +153,7 @@ class SalesOrderSaveAfter implements ObserverInterface
 
         $comment = __(
             '%1 order marked as completed with invoice number %2',
-            $this->configRepository->getProvider(),
+            $this->configRepository::PROVIDER,
             $response['invoice_details']['invoice_number']
         );
         $this->addStatusToOrderHistory($order, $comment->render());
