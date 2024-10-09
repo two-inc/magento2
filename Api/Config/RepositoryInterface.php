@@ -12,15 +12,11 @@ namespace Two\Gateway\Api\Config;
  */
 interface RepositoryInterface
 {
-    /** Method code */
+    /** Provider specific config */
     public const CODE = 'two_payment';
     public const PROVIDER = 'Two';
-
-    /** Endpoints */
-    public const URL_TEMPLATE = 'https://%s.two.inc';
-
-    /** Terms and conditions */
     public const TERMS_AND_CONDITIONS_LINK = 'https://www.two.inc/terms-privacy';
+    public const URL_TEMPLATE = 'https://%s.two.inc';
 
     /** Payment Group */
     public const XML_PATH_ENABLED = 'payment/two_payment/active';
