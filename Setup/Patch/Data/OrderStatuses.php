@@ -47,8 +47,8 @@ class OrderStatuses implements DataPatchInterface
 
         $data = [];
         $statuses = [
-            Two::STATUS_NEW => __('%1 New Order', $this->configRepository->getProvider()),
-            Two::STATUS_FAILED => __('%1 Failed', $this->configRepository->getProvider()),
+            Two::STATUS_NEW => __('%1 New Order', $this->configRepository::PROVIDER),
+            Two::STATUS_FAILED => __('%1 Failed', $this->configRepository::PROVIDER),
         ];
 
         foreach ($statuses as $code => $info) {

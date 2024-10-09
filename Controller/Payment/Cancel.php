@@ -57,7 +57,7 @@ class Cancel extends Action
             $this->orderService->cancelTwoOrder($order);
             $message = __(
                 'Your invoice purchase with %1 has been cancelled. The cart will be restored.',
-                $this->configRepository->getProvider()
+                $this->configRepository::PROVIDER
             );
             throw new LocalizedException($message);
         } catch (Exception $exception) {

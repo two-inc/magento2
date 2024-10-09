@@ -61,7 +61,7 @@ class ConfigProvider implements ConfigProviderInterface
             'weightUnit' => $this->configRepository->getWeightUnit(),
         ];
 
-        $provider = $this->configRepository->getProvider();
+        $provider = $this->configRepository::PROVIDER;
         $tryAgainLater = __('Please try again later.');
         $soleTraderaccountCouldNotBeVerified = __('Your sole trader account could not be verified.');
         return [

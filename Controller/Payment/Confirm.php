@@ -118,7 +118,7 @@ class Confirm extends Action
                 $message = __(
                     'Unable to retrieve payment information for your invoice purchase with %1. ' .
                     'The cart will be restored.',
-                    $this->configRepository->getProvider()
+                    $this->configRepository::PROVIDER
                 );
                 if (!empty($twoOrder['decline_reason'])) {
                     $message = __('%1 Decline reason: %2', $message, $twoOrder['decline_reason']);

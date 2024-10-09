@@ -124,7 +124,7 @@ class SalesOrderShipmentAfter implements ObserverInterface
 
                 $order->getPayment()->setAdditionalInformation($additionalInformation);
 
-                $comment = __('%1 order invoice has not been issued yet.', $this->configRepository->getProvider());
+                $comment = __('%1 order invoice has not been issued yet.', $this->configRepository::PROVIDER);
                 $this->addStatusToOrderHistory($order, $comment->render());
             }
         }
@@ -190,7 +190,7 @@ class SalesOrderShipmentAfter implements ObserverInterface
 
         $comment = __(
             '%1 order marked as completed with invoice number %2',
-            $this->configRepository->getProvider(),
+            $this->configRepository::PROVIDER,
             $response['invoice_details']['invoice_number']
         );
         $this->addStatusToOrderHistory($order, $comment->render());

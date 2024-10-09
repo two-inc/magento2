@@ -54,7 +54,7 @@ class Verificationfailed extends Action
             $order = $this->orderService->getOrderByReference();
             $message = __(
                 'Your invoice purchase with %1 failed verification. The cart will be restored.',
-                $this->configRepository->getProvider()
+                $this->configRepository::PROVIDER
             );
             throw new LocalizedException($message);
         } catch (Exception $exception) {
