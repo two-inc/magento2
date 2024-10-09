@@ -18,6 +18,7 @@
                 <invoice_type>FUNDED_INVOICE</invoice_type>
                 <days_on_invoice>14</days_on_invoice>
                 <finalize_purchase>1</finalize_purchase>
+                <terms_and_conditions_link></terms_and_conditions_link>
                 <enable_order_intent>1</enable_order_intent>
                 <enable_tax_subtotals>1</enable_tax_subtotals>
                 <fulfill_trigger>shipment</fulfill_trigger>

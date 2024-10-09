@@ -37,6 +37,7 @@ interface RepositoryInterface
     public const XML_PATH_ENABLE_ORDER_NOTE = 'payment/two_payment/enable_order_note';
     public const XML_PATH_ENABLE_PO_NUMBER = 'payment/two_payment/enable_po_number';
     public const XML_PATH_ENABLE_TWO_LINK = 'payment/two_payment/enable_two_link';
+    public const XML_PATH_TERMS_AND_CONDITIONS_LINK = 'payment/two_payment/terms_and_conditons_link';
     public const XML_PATH_VERSION = 'payment/two_payment/version';
     public const XML_PATH_DEBUG = 'payment/two_payment/debug';
 
@@ -61,6 +62,15 @@ interface RepositoryInterface
      */
     public function getMode(?int $storeId = null): string;
 
+     /**
+     * Get terms and conditions link
+     *
+     * @param int|null $storeId
+     *
+     * @return string
+     */
+    public function getTermsAndConditionsLink(?int $storeId = null): string;
+    
     /**
      * Get merchant short name
      *
