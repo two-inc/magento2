@@ -25,6 +25,7 @@ Branding,Merknaam
 "Buyer info is inconsistent.","De informatie over de koper is inconsistent."
 "Buyer limit exceeded.","Koperslimiet overschreden."
 "Buyer not found.","Koper niet gevonden."
+"By checking this box, I confirm that I have read and agree to the %1.",
 "Check last 100 debug log records","Controleer de laatste 100 debug-logboekrecords"
 "Check last 100 error log records","Controleer de laatste 100 foutlogboekrecords"
 "Click here to log in or sign up as a Sole Trader.","Klik hier om in te loggen of u aan te melden als zelfstandig ondernemer."
@@ -33,6 +34,10 @@ Branding,Merknaam
 "Could not initiate capture with %1","Kon geen opname starten met %1"
 "Could not initiate refund with %1","Kon geen restitutie starten met %1"
 "Could not update %1 order status to cancelled. Please contact support with order ID %2. Error: %3","Kon %1 orderstatus niet updaten naar geannuleerd. Neem contact op met support met order-ID %2. Fout: %3"
+Credentials,Inloggegevens
+"Credentials are invalid","Inloggegevens zijn ongeldig"
+"Credentials are missing","Inloggegevens ontbreken"
+"Credentials are valid","Inloggegevens zijn geldig"
 "Debug mode",Debug-modus
 Department,Afdeling
 "Developed by Magmodules.","Ontwikkeld door Magmodules."
@@ -62,7 +67,6 @@ OK,OK
 "On Shipment","Op verzending"
 "Order Note",Bestelnotitie
 "Order edit request was accepted by %1","Bestellingswijzigingsverzoek is geaccepteerd door %1"
-"Order was not accepted by %1","Bestelling is niet geaccepteerd door %1"
 "PO Number",PO-nummer
 Payment,Betaling
 "Payment method",Betaalmethode
@@ -82,6 +86,7 @@ Search,Zoekopdracht
 "Sort order",Sorteervolgorde
 "Successfully refunded order with %1 for order ID: %2. Refund reference: %3","Succesvol terugbetaalde bestelling met %1 voor order-ID: %2. Terugbetalingsreferentie: %3"
 TWO,TWEE
+"Terms & Conditions",
 "The %1 payment plugin for Magento simplifies B2B shopping, making it easy and safe for merchants to offer invoices as a payment method.<br>The payment method lives next to other payment methods in your existing checkout, and offers a variety of configuration options to suit your businesses needs.<br>If you would like to know more about how to configure the plugin, check out our <a href=""%2"" target=""_blank"">step by step guide</a>.","De %1-betaalplug-in voor Magento vereenvoudigt B2B-shoppen en maakt het voor handelaren eenvoudig en veilig om facturen als betaalmethode aan te bieden. <br> De betaalmethode staat naast andere betaalmethoden in uw bestaande kassa en biedt een verscheidenheid aan configuratieopties die aansluiten op de behoeften van uw bedrijf. <br> Als u meer wilt weten over het configureren van de plug-in, bekijk dan onze <a href=""%2"" target=""_blank""> stapsgewijze handleiding </a> ."
 "The buyer and the seller are the same company.","De koper en de verkoper zijn hetzelfde bedrijf."
 "The capture action is not available.","De vastlegactie is niet beschikbaar."
@@ -89,7 +94,9 @@ Title,Titel
 "Unable to find the requested %1 order","Kan de gevraagde %1 bestelling niet vinden"
 "Unable to retrieve payment information for your invoice purchase with %1. The cart will be restored.","Betalingsgegevens voor uw factuuraankoop met %1 kunnen niet worden opgehaald. De winkelwagen wordt hersteld."
 Username,Gebruikersnaam
+"Username should be set to %1",
 Version,Versie
+"You must first accept the payment Terms & Conditions.","U moet eerst de betalingsvoorwaarden accepteren."
 "You will be redirected to %1 when you place order.","U wordt doorgestuurd naar %1 wanneer u een bestelling plaatst."
 "Your invoice purchase with %1 failed verification. The cart will be restored.","Uw factuuraankoop met %1 is niet geverifieerd. De winkelwagen wordt hersteld."
 "Your invoice purchase with %1 has been cancelled. The cart will be restored.","Uw factuuraankoop met %1 is geannuleerd. De winkelwagen wordt hersteld."
@@ -97,7 +104,4 @@ Version,Versie
 "Your invoice purchase with %1 is likely to be accepted subject to additional checks.","Uw factuuraankoop met %1 wordt waarschijnlijk geaccepteerd, mits er aanvullende controles worden uitgevoerd."
 "Your request to %1 failed. Reason: %2","Uw verzoek aan %1 is mislukt. Reden: %2"
 "Your sole trader account could not be verified.","Uw eenmanszaakaccount kon niet worden geverifieerd."
-"Terms & Conditions","Algemene voorwaarden"
-"You must first accept the payment Terms & Conditions.","U dient eerst de betalingsvoorwaarden te accepteren."
-"By checking this box, I confirm that I have read and agree to the %1.","Door dit vakje aan te vinken, bevestig ik dat ik de %1 heb gelezen en ermee akkoord ga."
 https://www.two.inc/what-is-two,https://www.two.inc/what-is-two

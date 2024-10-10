@@ -25,6 +25,7 @@ Branding,Branding
 "Buyer info is inconsistent.","Buyer info is inconsistent."
 "Buyer limit exceeded.","Buyer limit exceeded."
 "Buyer not found.","Buyer not found."
+"By checking this box, I confirm that I have read and agree to the %1.","By checking this box, I confirm that I have read and agree to the %1."
 "Check last 100 debug log records","Check last 100 debug log records"
 "Check last 100 error log records","Check last 100 error log records"
 "Click here to log in or sign up as a Sole Trader.","Click here to log in or sign up as a Sole Trader."
@@ -33,6 +34,10 @@ Branding,Branding
 "Could not initiate capture with %1","Could not initiate capture with %1"
 "Could not initiate refund with %1","Could not initiate refund with %1"
 "Could not update %1 order status to cancelled. Please contact support with order ID %2. Error: %3","Could not update %1 order status to cancelled. Please contact support with order ID %2. Error: %3"
+Credentials,Credentials
+"Credentials are invalid","Credentials are invalid"
+"Credentials are missing","Credentials are missing"
+"Credentials are valid","Credentials are valid"
 "Debug mode","Debug mode"
 Department,Department
 "Developed by Magmodules.","Developed by Magmodules."
@@ -62,7 +67,6 @@ OK,OK
 "On Shipment","On Shipment"
 "Order Note","Order Note"
 "Order edit request was accepted by %1","Order edit request was accepted by %1"
-"Order was not accepted by %1","Order was not accepted by %1"
 "PO Number","PO Number"
 Payment,Payment
 "Payment method","Payment method"
@@ -82,6 +86,7 @@ Search,Search
 "Sort order","Sort order"
 "Successfully refunded order with %1 for order ID: %2. Refund reference: %3","Successfully refunded order with %1 for order ID: %2. Refund reference: %3"
 TWO,TWO
+"Terms & Conditions","Terms & Conditions"
 "The %1 payment plugin for Magento simplifies B2B shopping, making it easy and safe for merchants to offer invoices as a payment method.<br>The payment method lives next to other payment methods in your existing checkout, and offers a variety of configuration options to suit your businesses needs.<br>If you would like to know more about how to configure the plugin, check out our <a href=""%2"" target=""_blank"">step by step guide</a>.","The %1 payment plugin for Magento simplifies B2B shopping, making it easy and safe for merchants to offer invoices as a payment method.<br>The payment method lives next to other payment methods in your existing checkout, and offers a variety of configuration options to suit your businesses needs.<br>If you would like to know more about how to configure the plugin, check out our <a href=""%2"" target=""_blank"">step by step guide</a>."
 "The buyer and the seller are the same company.","The buyer and the seller are the same company."
 "The capture action is not available.","The capture action is not available."
@@ -89,7 +94,9 @@ Title,Title
 "Unable to find the requested %1 order","Unable to find the requested %1 order"
 "Unable to retrieve payment information for your invoice purchase with %1. The cart will be restored.","Unable to retrieve payment information for your invoice purchase with %1. The cart will be restored."
 Username,Username
+"Username should be set to %1","Username should be set to %1"
 Version,Version
+"You must first accept the payment Terms & Conditions.","You must first accept the payment Terms & Conditions."
 "You will be redirected to %1 when you place order.","You will be redirected to %1 when you place order."
 "Your invoice purchase with %1 failed verification. The cart will be restored.","Your invoice purchase with %1 failed verification. The cart will be restored."
 "Your invoice purchase with %1 has been cancelled. The cart will be restored.","Your invoice purchase with %1 has been cancelled. The cart will be restored."
@@ -97,7 +104,4 @@ Version,Version
 "Your invoice purchase with %1 is likely to be accepted subject to additional checks.","Your invoice purchase with %1 is likely to be accepted subject to additional checks."
 "Your request to %1 failed. Reason: %2","Your request to %1 failed. Reason: %2"
 "Your sole trader account could not be verified.","Your sole trader account could not be verified."
-"Terms & Conditions","Terms & Conditions"
-"You must first accept the payment Terms & Conditions.","You must first accept the payment Terms & Conditions."
-"By checking this box, I confirm that I have read and agree to the %1.","By checking this box, I confirm that I have read and agree to the %1."
 https://www.two.inc/what-is-two,https://www.two.inc/what-is-two
