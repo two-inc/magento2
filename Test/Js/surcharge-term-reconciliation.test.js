@@ -87,7 +87,14 @@ function loadModel() {
             setTotals: function (next) { totalsObservable(next); }
         }),
         'Magento_Checkout/js/action/get-totals': function (callbacks) {
-            refreshes.push(callbacks || []);
+            const bound = {};
+            const chain = {
+                done: function (cb) { bound.done = cb; return chain; },
+                fail: function (cb) { bound.fail = cb; return chain; },
+                always: function (cb) { bound.always = cb; return chain; }
+            };
+            refreshes.push({ callbacks: callbacks || [], bound: bound });
+            return chain;
         },
         'Magento_Ui/js/model/messageList': {
             addErrorMessage: function (m) { captured.errors.push(m.message); }
@@ -130,7 +137,7 @@ function settle(ctx, index, outcome, net) {
  * @returns {boolean} whether the refresh was allowed to repaint
  */
 function settleRefresh(ctx, index, serverTotals) {
-    const proceed = ctx.refreshes[index].every(function (cb) { return !!cb(); });
+    const proceed = ctx.refreshes[index].callbacks.every(function (cb) { return !!cb(); });
     if (proceed) {
         ctx.totals(serverTotals);
     }
@@ -377,6 +384,26 @@ describe('surcharge model summary refresh (ABN-554)', function () {
         expect(shownSurcharge(ctx)).toBeNull();
         expect(settleRefresh(ctx, 0, serverTotals(200))).toBe(true);
         expect(shownSurcharge(ctx)).toBe(200);
+    });
+
+    it.each([
+        ['answered', 'a refresh that repainted'],
+        ['refused', 'a refresh the server would not answer']
+    ])('leaves a later totals change to refetch the fees after %s (%s)', function (outcome) {
+        const ctx = loadModel();
+        ctx.captured.get(FEES);
+        ctx.model.selectTerm(90);
+        settle(ctx, 0, 'settled', 200);
+
+        if (outcome === 'answered') {
+            settleRefresh(ctx, 0, serverTotals(200));
+        } else {
+            ctx.refreshes[0].bound.fail({}, 'error', 'Internal Server Error');
+        }
+        const feeCallsBefore = ctx.captured.getCalls;
+        ctx.totals({ grand_total: 1400, total_segments: [{ code: 'shipping', title: 'ship', value: 400 }] });
+
+        expect(ctx.captured.getCalls).toBe(feeCallsBefore + 1);
     });
 
     it('drops a refresh a newer term has overtaken', function () {

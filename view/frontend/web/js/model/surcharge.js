@@ -292,7 +292,11 @@ define([
         awaitingOwnRefresh = true;
         getTotalsAction([function () {
             return mySeq === totalsRefreshSeq;
-        }]);
+        }]).fail(function () {
+            // No write is coming, so the next totals change is somebody else's.
+            // Magento's own error processor tells the buyer the fetch failed.
+            awaitingOwnRefresh = false;
+        });
     }
 
     /** Write a settled /select-term response into the chip fees. */
