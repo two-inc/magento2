@@ -18,10 +18,11 @@ define([
     'ko',
     'jquery',
     'Magento_Checkout/js/model/quote',
+    'Magento_Checkout/js/action/get-totals',
     'mage/translate',
     'mage/url',
     'Two_Gateway/js/model/brand-config'
-], function (ko, $, quote, $t, url, brandConfig) {
+], function (ko, $, quote, getTotalsAction, $t, url, brandConfig) {
     'use strict';
 
     var SELECT_TERM_TIMEOUT_MS = 30000;
@@ -63,9 +64,13 @@ define([
     // subscriber, so the fees are re-evaluated once the click settles.
     var totalsMissedWhileUpdating = false;
 
-    // True while this module writes the /select-term totals back, whose
-    // re-emission is not a change to react to.
-    var applyingOwnTotals = false;
+    // True between asking for a summary refresh and its write landing, which
+    // is not a change to react to.
+    var awaitingOwnRefresh = false;
+
+    // Refresh sequence guard: an older response must not repaint over a newer
+    // term's figures.
+    var totalsRefreshSeq = 0;
 
     // Fetch sequence guard. Magento fires quote.getTotals() once on bootstrap
     // (often with subtotal-only basis) and again after /totals-information
@@ -212,7 +217,12 @@ define([
     // loader hanging forever. Values are server-authoritative either way,
     // so no stale-display drift.
     quote.getTotals().subscribe(function (totals) {
-        if (!totals || applyingOwnTotals) {
+        if (!totals) {
+            return;
+        }
+        if (awaitingOwnRefresh) {
+            awaitingOwnRefresh = false;
+            lastTotalsSnapshot = snapshotTotals(totals);
             return;
         }
         if (isUpdating()) {
@@ -270,25 +280,23 @@ define([
     }
 
     /**
-     * Write a settled /select-term response into the summary and the chip fees.
+     * Repaint the summary from the quote /select-term saved before answering.
+     *
+     * The response's own segments are never written into the quote: they carry
+     * code/title/value only, and a summary component reading an extension
+     * attribute off one throws inside knockout's notification, leaving the rest
+     * of the summary on the previous term's figures (ABN-554).
      */
+    function refreshSummary() {
+        var mySeq = ++totalsRefreshSeq;
+        awaitingOwnRefresh = true;
+        getTotalsAction([function () {
+            return mySeq === totalsRefreshSeq;
+        }]);
+    }
+
+    /** Write a settled /select-term response into the chip fees. */
     function applyResponse(data) {
-        var currentTotals = quote.getTotals()();
-        if (currentTotals) {
-            currentTotals.grand_total = data.grand_total;
-            currentTotals.base_grand_total = data.base_grand_total;
-            currentTotals.tax_amount = data.tax_amount;
-            currentTotals.total_segments = data.total_segments;
-            applyingOwnTotals = true;
-            try {
-                quote.setTotals(currentTotals);
-            } finally {
-                applyingOwnTotals = false;
-            }
-            // Record the post-/select-term state so loadFees doesn't refetch on
-            // the totals re-emit setTotals just triggered.
-            lastTotalsSnapshot = snapshotTotals(currentTotals);
-        }
         if (data.tax_display) {
             taxDisplay(data.tax_display);
         }
@@ -360,6 +368,8 @@ define([
                 pendingTerm = days;
                 return;
             }
+            // A refresh whose write never landed must not swallow this term's.
+            awaitingOwnRefresh = false;
             termRefused(false);
             isUpdating(true);
             // Do NOT clear termSurcharges here. A chip click only changes
@@ -399,6 +409,7 @@ define([
                 guarded(function () {
                     confirmedTerm(days);
                 });
+                guarded(refreshSummary);
             }).fail(function (xhr, status, err) {
                 console.warn('Two_Gateway: select-term failed', status, err);
                 guarded(revertSelection);

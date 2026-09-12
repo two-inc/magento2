@@ -95,6 +95,7 @@ function defaultMocks() {
             shippingMethod: makeObservable({ carrier_code: 'freeshipping' }),
             isVirtual: function () { return false; }
         },
+        'Magento_Checkout/js/action/get-totals': function () {},
         'Magento_Customer/js/customer-data': {
             get: function () { return makeObservable({}); },
             set: function () {},

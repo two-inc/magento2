@@ -57,6 +57,7 @@ function settledResponse(net) {
 function loadModel() {
     const mocks = defaultMocks();
     const posts = [];
+    const refreshes = [];
     const captured = { errors: [], getCalls: 0 };
     const totalsObservable = observable({ grand_total: 1000, total_segments: [] });
 
@@ -85,6 +86,9 @@ function loadModel() {
             getTotals: function () { return totalsObservable; },
             setTotals: function (next) { totalsObservable(next); }
         }),
+        'Magento_Checkout/js/action/get-totals': function (callbacks) {
+            refreshes.push(callbacks || []);
+        },
         'Magento_Ui/js/model/messageList': {
             addErrorMessage: function (m) { captured.errors.push(m.message); }
         },
@@ -94,7 +98,13 @@ function loadModel() {
         'Two_Gateway/js/model/brand-config': brandConfigMock({ selectedPaymentTerm: 30, currencySymbol: '\u20ac' })
     });
 
-    return { model: model, posts: posts, captured: captured, totals: totalsObservable };
+    return {
+        model: model,
+        posts: posts,
+        refreshes: refreshes,
+        captured: captured,
+        totals: totalsObservable
+    };
 }
 
 /** Settle one captured POST the way the spec asks for. */
@@ -111,6 +121,25 @@ function settle(ctx, index, outcome, net) {
         post.done(settledResponse(net));
     }
     post.always();
+}
+
+/**
+ * Answer a queued summary refresh the way Magento's totals action does: run
+ * the guard callbacks, and write the server's totals only if all pass.
+ *
+ * @returns {boolean} whether the refresh was allowed to repaint
+ */
+function settleRefresh(ctx, index, serverTotals) {
+    const proceed = ctx.refreshes[index].every(function (cb) { return !!cb(); });
+    if (proceed) {
+        ctx.totals(serverTotals);
+    }
+    return proceed;
+}
+
+/** The server totals a refresh answers with for a term whose fee is `net`. */
+function serverTotals(net) {
+    return { grand_total: 1000 + net, total_segments: [{ code: 'two_surcharge', title: 'fee', value: net }] };
 }
 
 /** The surcharge value the order summary is showing. */
@@ -163,6 +192,7 @@ describe('surcharge model confirmed-term reconciliation (ABN-550)', function () 
 
         ctx.posts[0].done(wrapped ? [answer] : answer);
         ctx.posts[0].always();
+        settleRefresh(ctx, 0, serverTotals(200));
 
         expect(ctx.model.isTermReconciled()).toBe(true);
         expect(shownSurcharge(ctx)).toBe(200);
@@ -215,6 +245,7 @@ describe('surcharge model confirmed-term reconciliation (ABN-550)', function () 
         expect(ctx.model.termStatusMessage()).toBe(APPLYING);
 
         settle(ctx, 1, 'settled', 150);
+        settleRefresh(ctx, 1, serverTotals(150));
 
         expect(ctx.model.selectedTerm()).toBe(60);
         expect(shownSurcharge(ctx)).toBe(150);
@@ -248,7 +279,7 @@ describe('surcharge model confirmed-term reconciliation (ABN-550)', function () 
         expect(ctx.model.isTermReconciled()).toBe(true);
     });
 
-    it('a totals subscriber throwing leaves the term confirmed and the fetch usable', function () {
+    it('a totals subscriber throwing on the refresh leaves the term confirmed and the fetch usable', function () {
         const ctx = loadModel();
         ctx.captured.get(FEES);
         let thrown = false;
@@ -258,9 +289,10 @@ describe('surcharge model confirmed-term reconciliation (ABN-550)', function () 
             throw new Error('a third-party summary subscriber');
         });
         ctx.model.selectTerm(90);
-
         settle(ctx, 0, 'settled', 200);
 
+        expect(function () { settleRefresh(ctx, 0, serverTotals(200)); })
+            .toThrow('a third-party summary subscriber');
         expect(ctx.model.isUpdating()).toBe(false);
         expect(ctx.model.selectedTerm()).toBe(90);
         expect(ctx.model.isTermReconciled()).toBe(true);
@@ -280,6 +312,7 @@ describe('surcharge model confirmed-term reconciliation (ABN-550)', function () 
         ctx.model.selectTerm(90);
 
         settle(ctx, 0, 'settled', 200);
+        settleRefresh(ctx, 0, serverTotals(200));
 
         expect(ctx.captured.getCalls).toBe(feeCallsBefore);
     });
@@ -313,6 +346,52 @@ describe('surcharge model confirmed-term reconciliation (ABN-550)', function () 
         settle(ctx, 0, 'settled', 200);
 
         expect(ctx.captured.getCalls).toBe(feeCallsBefore + 1);
+    });
+});
+
+describe('surcharge model summary refresh (ABN-554)', function () {
+    it.each([
+        ['settled', 1, 200, 'a confirmed term repaints the summary from the server'],
+        ['failed', 0, null, 'a refused call reverts, and the summary already shows the priced term'],
+        ['empty', 0, null, 'a 200 carrying no totals confirmed nothing to repaint'],
+        ['blank', 0, null, 'a 200 carrying an empty segment set confirmed nothing to repaint']
+    ])('%s asks for %p summary refresh (%s)', function (outcome, expected, net) {
+        const ctx = loadModel();
+        ctx.captured.get(FEES);
+        ctx.model.selectTerm(90);
+
+        settle(ctx, 0, outcome, net);
+
+        expect(ctx.refreshes).toHaveLength(expected);
+    });
+
+    it('leaves the summary alone until the server answers the refresh', function () {
+        const ctx = loadModel();
+        ctx.captured.get(FEES);
+        ctx.model.selectTerm(90);
+
+        // Given a /select-term answer carrying its own flattened segments
+        settle(ctx, 0, 'settled', 200);
+
+        // Then they are not written into the quote — only the server's are
+        expect(shownSurcharge(ctx)).toBeNull();
+        expect(settleRefresh(ctx, 0, serverTotals(200))).toBe(true);
+        expect(shownSurcharge(ctx)).toBe(200);
+    });
+
+    it('drops a refresh a newer term has overtaken', function () {
+        const ctx = loadModel();
+        ctx.captured.get(FEES);
+        ctx.model.selectTerm(90);
+        settle(ctx, 0, 'settled', 200);
+        ctx.model.selectTerm(60);
+        settle(ctx, 1, 'settled', 150);
+
+        // The 90-day refresh answers last; repainting it would show a fee the
+        // quote is no longer priced on.
+        expect(settleRefresh(ctx, 1, serverTotals(150))).toBe(true);
+        expect(settleRefresh(ctx, 0, serverTotals(200))).toBe(false);
+        expect(shownSurcharge(ctx)).toBe(150);
     });
 });
 
