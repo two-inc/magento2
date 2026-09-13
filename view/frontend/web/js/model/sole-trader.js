@@ -543,8 +543,8 @@
      *
      * A focusin a browser re-fires on window return counts as the buyer focusing that
      * control, unless it is the field the launch parked focus on. The park stands for the
-     * whole flight: the window losing focus to the popup blurs that field, so a park
-     * dropped on focusout is a park no return can ever match (ABN-554).
+     * whole flight, because the window losing focus to the popup blurs that field and the
+     * return's re-fire is the first focus it gets back (ABN-554).
      */
     SoleTrader.prototype.watchForReturnToCheckout = function () {
         if (this._returnHandler) return;
