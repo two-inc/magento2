@@ -74,12 +74,17 @@ class CheckoutTileCopyTest extends TestCase
                 '', self::TAGLINE_KEY, self::FAQ_URL, false,
                 'Pay in 30 days, <a href="' . self::FAQ_URL . '" target="_blank" rel="noopener">read more</a>.',
                 false, '', 'Pay in 30 days, ' . $anchor . 'read more</a>.',
-                'the merchant field now carries a link of its own, which the previous escaping flattened to text',
+                'the merchant field may carry a link of its own, and it survives as a link',
             ],
             'admin subtitle set' => [
                 '', self::TAGLINE_KEY, self::FAQ_URL, false, '  Pay later & <b>relax</b>  ',
                 false, '', 'Pay later &amp; relax',
                 'merchant free text replaces the tagline and keeps only what the escaper allows',
+            ],
+            'admin subtitle of markup around whitespace' => [
+                '', self::TAGLINE_KEY, self::FAQ_URL, false, '<b> </b>',
+                false, '', 'For all companies, ' . $anchor . 'read more</a>.',
+                'copy whose only content is markup the escaper drops is emptiness too, so the tagline still shows',
             ],
         ];
     }

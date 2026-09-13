@@ -63,6 +63,11 @@ class AnchorOnlyHtmlEscaperTest extends TestCase
                 'read more',
                 'a script URL loses the anchor and keeps the text',
             ],
+            'javascript href containing an https URL' => [
+                '<a href="javascript:x=\'https://ok.example\'">read more</a>',
+                'read more',
+                'a script URL carrying https: later in the string is still not an http(s) target',
+            ],
             'data href' => [
                 '<a href="data:text/html,pwned">read more</a>',
                 'read more',
@@ -148,10 +153,35 @@ class AnchorOnlyHtmlEscaperTest extends TestCase
                 '<a href="https://faq.example.test/x?to=a@b">read more</a>',
                 'an @ past the authority is ordinary query text',
             ],
+            'at sign in a query on the authority itself' => [
+                '<a href="https://faq.example.test?to=a@b">read more</a>',
+                '<a href="https://faq.example.test?to=a@b">read more</a>',
+                'a query opening straight off the authority ends it, so the @ after it is not userinfo',
+            ],
+            'at sign in a fragment on the authority itself' => [
+                '<a href="https://faq.example.test#@b">read more</a>',
+                '<a href="https://faq.example.test#@b">read more</a>',
+                'a fragment ends the authority the same way',
+            ],
             'uppercase target and rel' => [
                 '<a href="' . self::URL . '" target="_BLANK" rel="NOOPENER">read more</a>',
                 '<a href="' . self::URL . '" target="_blank" rel="noopener">read more</a>',
                 'browsers read these keywords case-insensitively, so they are matched that way and re-emitted lowercased',
+            ],
+            'target without rel' => [
+                '<a href="' . self::URL . '" target="_blank">read more</a>',
+                '<a href="' . self::URL . '" target="_blank" rel="noopener">read more</a>',
+                'a new-tab link gets noopener whether or not the copy asked for it',
+            ],
+            'stricter rel token set' => [
+                '<a href="' . self::URL . '" rel="noopener noreferrer">read more</a>',
+                '<a href="' . self::URL . '" rel="noopener">read more</a>',
+                'rel is read as a token set, so writing the stricter pair does not cost the link its noopener',
+            ],
+            'uppercase rel on its own' => [
+                '<a href="' . self::URL . '" rel="NOOPENER">read more</a>',
+                '<a href="' . self::URL . '" rel="noopener">read more</a>',
+                'rel is matched case-insensitively even with no target to pair it with',
             ],
             'malformed utf-8 byte' => [
                 "caf\xC3\xA9 \xC0\xAF costs \xE2\x82\xAC5",

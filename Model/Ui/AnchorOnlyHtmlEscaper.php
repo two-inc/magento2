@@ -16,7 +16,8 @@ namespace Two\Gateway\Model\Ui;
  * this module does not itself emit can reach the page. The href itself is only
  * checked for scheme and userinfo, not vouched for - whoever writes the copy
  * chooses where an http(s) link points. `target` and `rel` are matched
- * case-insensitively and re-emitted lowercased, as browsers treat those keywords.
+ * case-insensitively, as browsers treat those keywords; `rel` is read as a
+ * token set, and a kept `target="_blank"` always carries `rel="noopener"`.
  */
 class AnchorOnlyHtmlEscaper
 {
@@ -91,11 +92,15 @@ class AnchorOnlyHtmlEscaper
             return '';
         }
 
+        $opensNewTab = strtolower(trim($attributes['target'] ?? '')) === self::ALLOWED_TARGET;
+        $relTokens = preg_split('/\s+/', strtolower(trim($attributes['rel'] ?? '')), -1, PREG_SPLIT_NO_EMPTY);
+
         $anchor = '<a href="' . htmlspecialchars($href, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"';
-        if (strtolower(trim($attributes['target'] ?? '')) === self::ALLOWED_TARGET) {
+        if ($opensNewTab) {
             $anchor .= ' target="' . self::ALLOWED_TARGET . '"';
         }
-        if (strtolower(trim($attributes['rel'] ?? '')) === self::ALLOWED_REL) {
+        // A new tab without noopener hands the opener over, so the pair is not the copy's to split.
+        if ($opensNewTab || in_array(self::ALLOWED_REL, $relTokens, true)) {
             $anchor .= ' rel="' . self::ALLOWED_REL . '"';
         }
 

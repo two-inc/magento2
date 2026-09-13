@@ -114,7 +114,7 @@
                 <field id="subtitle" translate="label comment" type="text" sortOrder="20" showInDefault="1"
                        showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Subtitle</label>
-                    <comment>Optional subtitle shown beneath the title at checkout. Leave blank to use the default.</comment>
+                    <comment>Optional subtitle shown beneath the title at checkout. Leave blank to use the default. Can be set per store view.</comment>
                     <config_path>payment/two_payment/subtitle</config_path>
                 </field>
                 <field id="sort_order" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1"

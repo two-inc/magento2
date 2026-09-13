@@ -28,9 +28,11 @@ class CheckoutTileCopy
      */
     public function getSubtitleHtml(): string
     {
-        $configured = trim($this->configRepository->getSubtitle());
+        // Emptiness is judged after escaping: copy that is only markup the
+        // escaper drops would otherwise emit a blank subtitle element.
+        $configured = trim($this->htmlEscaper->escape($this->configRepository->getSubtitle()));
         if ($configured !== '') {
-            return $this->htmlEscaper->escape($configured);
+            return $configured;
         }
 
         $key = $this->brandRegistry->getCheckoutSubtitle();
