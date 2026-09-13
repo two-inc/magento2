@@ -632,14 +632,18 @@ regains focus, which is the field the launch parked focus on — and by then the
 popup is gone, so nothing read at that moment tells the re-fire from the buyer
 (ABN-554).
 
-**The hold ends on that re-fire, and on nothing timed.** It is the window's own
-`focus` event the pair is bound to — measured in a live browser at anything from
-a second after the popup closed to a minute, however long the buyer stays away —
-so the popup's close is bookkeeping and releases nothing. The pair is swallowed
-whole and the `focusin` half clears the hold, which is why the field pair alone,
-with no window focus beside it, leaves the hold standing. A `pointerdown`, a
-`click` or a keystroke on the field clears it outright: a buyer who comes back
-and reaches for the control gets the popover.
+**The hold ends on a focus pair on the field, and on nothing timed.** A pair with
+the window's own `focus` beside it is that window's return — measured in a live
+browser at anything from a second after the popup closed to a minute, however long
+the buyer stays away — so the popup's close is bookkeeping and releases nothing;
+that pair is swallowed whole and its `focusin` half clears the hold without
+opening. A pair with no window `focus` beside it is a buyer arriving on the field
+by Tab, and its `focusin` half clears the hold AND opens the popover, so a
+keyboard-only buyer is never left without the control. The launch's own park is
+neither: it reaches the field through the same programmatic path a close does,
+which the focus opener skips outright. A `pointerdown`, a `click` or a keystroke
+on the field clears the hold as well: a buyer who comes back and reaches for the
+control gets the popover.
 
 **The close-on-focus-leave path is the exception, and deliberately so.** It only
 fires once focus has settled on another control, so taking focus back would undo

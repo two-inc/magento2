@@ -16,7 +16,9 @@
  *    real outcome paths, never by calling `open()`/`close()` on the panel;
  *  - a real `mousedown` on the field is asserted to still open the popover
  *    after the flight, which is what separates a scoped suppression from an
- *    opener switched off.
+ *    opener switched off;
+ *  - the pair a Tab arrival sends is asserted to open the popover, which is what
+ *    separates the re-fire being told apart from the opener being held shut.
  */
 
 'use strict';
@@ -198,7 +200,17 @@ function windowReturnRefire() {
     refireFocusOnField();
 }
 
-/** The field pair on its own, which no window return ever sends unaccompanied. */
+/**
+ * Move focus to a control of its own, never with `blur()`: jsdom answers a
+ * `blur()` with a window-targeted focus, which arms the return this suite is about.
+ */
+function focusAway() {
+    const away = document.createElement('input');
+    document.body.appendChild(away);
+    away.focus();
+}
+
+/** The field pair on its own, which is what a Tab onto the field sends. */
 function refireFocusOnField() {
     const field = document.querySelector(FIELD);
     dispatchNative(field, 'focus');
@@ -270,13 +282,37 @@ describe('the popup closing must not reopen the company-search popover (ABN-554)
         expect(ctx.rec.handles).toHaveLength(1);
     });
 
-    test('the field pair alone leaves the hold standing, however long it stands', async function () {
+    test('the field pair with no window focus is the buyer arriving by Tab', async function () {
+        await heldWithPopoverShut();
+
+        refireFocusOnField();
+
+        expect(popoverIsOpen()).toBe(true);
+    });
+
+    test('that arrival ends the hold, so focus alone opens the popover afterwards', async function () {
         await heldWithPopoverShut();
         refireFocusOnField();
-        refireFocusOnField();
+        expect(popoverIsOpen()).toBe(true);
+        // Focus leaving for another control closes the popover and touches no hold.
+        focusAway();
+        await flush();
+        expect(popoverIsOpen()).toBe(false);
 
         dispatchNative(document.querySelector(FIELD), 'focus');
 
+        expect(popoverIsOpen()).toBe(true);
+    });
+
+    test('the park putting focus back on the field is not that arrival', async function () {
+        const ctx = await heldWithPopoverShut();
+        focusAway();
+
+        ctx.component.panel().restoreFieldFocus();
+
+        expect(document.activeElement).toBe(document.querySelector(FIELD));
+        expect(popoverIsOpen()).toBe(false);
+        windowReturnRefire();
         expect(popoverIsOpen()).toBe(false);
     });
 
