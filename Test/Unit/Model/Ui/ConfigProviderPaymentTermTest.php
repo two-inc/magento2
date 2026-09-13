@@ -5,12 +5,14 @@ namespace Two\Gateway\Test\Unit\Model\Ui;
 
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\View\Asset\Repository as AssetRepository;
+use Magento\Framework\Phrase;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Two\Gateway\Api\BrandRegistryInterface;
 use Two\Gateway\Model\Config\Repository as ConfigRepositoryImpl;
 use Two\Gateway\Model\Config\Source\PaymentTermsType;
 use Two\Gateway\Model\Two;
+use Two\Gateway\Model\Ui\AnchorOnlyHtmlEscaper;
 use Two\Gateway\Model\Ui\CheckoutTileCopy;
 use Two\Gateway\Model\Ui\ConfigProvider;
 use Two\Gateway\Service\Api\SupportedCompanyTypes;
@@ -36,10 +38,16 @@ use Two\Gateway\Service\Merchant\SettingsProvider;
  */
 class ConfigProviderPaymentTermTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        Phrase::setRenderer(null);
+    }
+
     private function build(
         ApiKeyStatus $apiKeyStatus,
         ?int $defaultTerm,
-        string $termsType = PaymentTermsType::STANDARD
+        string $termsType = PaymentTermsType::STANDARD,
+        string $providerFullName = 'Acme Pay Ltd'
     ): ConfigProvider {
         $reflection = new \ReflectionClass(ConfigProvider::class);
         $provider = $reflection->newInstanceWithoutConstructor();
@@ -57,7 +65,7 @@ class ConfigProviderPaymentTermTest extends TestCase
 
         $brandRegistry = $this->createMock(BrandRegistryInterface::class);
         $brandRegistry->method('getProductName')->willReturn('Acme Pay');
-        $brandRegistry->method('getProviderFullName')->willReturn('Acme Pay Ltd');
+        $brandRegistry->method('getProviderFullName')->willReturn($providerFullName);
         $brandRegistry->method('getAboutUrl')->willReturn('');
 
         // The real settings provider over a mocked record fetch, so the
@@ -88,6 +96,7 @@ class ConfigProviderPaymentTermTest extends TestCase
             'storeManager' => $this->storeManager(),
             'supportedCompanyTypes' => $this->createMock(SupportedCompanyTypes::class),
             'checkoutTileCopy' => $this->createMock(CheckoutTileCopy::class),
+            'htmlEscaper' => new AnchorOnlyHtmlEscaper(),
         ];
         foreach ($properties as $name => $value) {
             $reflection->getProperty($name)->setValue($provider, $value);
@@ -191,6 +200,86 @@ class ConfigProviderPaymentTermTest extends TestCase
             ['', false, 'an unset row reads as standard'],
             ['END_OF_MONTH', false, 'the comparison is exact, so an upper-case row is not end of month'],
         ];
+    }
+
+    /**
+     * Given an admin-supplied translation carrying markup; when the consent
+     * sentence is published; then only the terms link survives (ABN-554).
+     *
+     * @dataProvider consentSentenceRows
+     */
+    public function testTheConsentSentenceCarriesOnlyItsOwnLink(
+        string $sentence,
+        string $termsText,
+        string $providerFullName,
+        string $expected,
+        string $case
+    ): void {
+        Phrase::setRenderer(self::rendererTranslating([
+            'I accept the %1 and authorize %2 to process my data automatically.' => $sentence,
+            'payment terms' => $termsText,
+        ]));
+
+        $provider = $this->build($this->statusService(ApiKeyStatus::OK, 200, []), 30, PaymentTermsType::STANDARD, $providerFullName);
+
+        $this->assertSame($expected, $this->publish($provider, 0)['paymentTermsMessage'], $case);
+    }
+
+    /**
+     * @return array<string,array{0:string,1:string,2:string,3:string,4:string}>
+     */
+    public static function consentSentenceRows(): array
+    {
+        $sentence = 'I accept the %1 and authorize %2 to process my data automatically.';
+        $link = '<a href="https://checkout.example/terms" target="_blank" rel="noopener">';
+
+        return [
+            'markup in the sentence translation' => [
+                $sentence . '<img src=x onerror=alert(1)>',
+                'payment terms',
+                'Acme Pay Ltd',
+                'I accept the ' . $link . 'payment terms</a> and authorize Acme Pay Ltd'
+                    . ' to process my data automatically.',
+                'a translated sentence cannot add a tag of its own',
+            ],
+            'markup in the link-text translation' => [
+                $sentence,
+                '</a><img src=x onerror=alert(1)>',
+                'Acme Pay Ltd',
+                'I accept the ' . $link . '</a> and authorize Acme Pay Ltd'
+                    . ' to process my data automatically.',
+                'a translated link text cannot close the anchor and open its own markup',
+            ],
+            'markup in the provider name' => [
+                $sentence,
+                'payment terms',
+                '<b>Acme</b> & Pay Ltd',
+                'I accept the ' . $link . 'payment terms</a> and authorize Acme &amp; Pay Ltd'
+                    . ' to process my data automatically.',
+                'the provider name is text, and an ampersand in it is entity-encoded rather than refused',
+            ],
+        ];
+    }
+
+    /** @param array<string,string> $translations */
+    private static function rendererTranslating(array $translations): object
+    {
+        return new class ($translations) implements \Magento\Framework\Phrase\RendererInterface {
+            /** @param array<string,string> $translations */
+            public function __construct(private array $translations)
+            {
+            }
+
+            public function render(array $source, array $arguments): string
+            {
+                $text = $this->translations[$source[0]] ?? $source[0];
+                foreach ($arguments as $index => $value) {
+                    $text = str_replace('%' . ($index + 1), (string)$value, $text);
+                }
+
+                return $text;
+            }
+        };
     }
 
     /**

@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 use Two\Gateway\Api\BrandRegistryInterface;
 use Two\Gateway\Model\Config\Repository as ConfigRepositoryImpl;
 use Two\Gateway\Model\Two;
+use Two\Gateway\Model\Ui\AnchorOnlyHtmlEscaper;
 use Two\Gateway\Model\Ui\CheckoutTileCopy;
 use Two\Gateway\Model\Ui\ConfigProvider;
 use Two\Gateway\Service\Api\SupportedCompanyTypes;
@@ -112,6 +113,7 @@ class ConfigProviderAboutControlTest extends TestCase
             'storeManager' => $this->storeManager(),
             'supportedCompanyTypes' => $this->createMock(SupportedCompanyTypes::class),
             'checkoutTileCopy' => $checkoutTileCopy,
+            'htmlEscaper' => new AnchorOnlyHtmlEscaper(),
         ];
         foreach ($properties as $name => $value) {
             $reflection->getProperty($name)->setValue($provider, $value);
