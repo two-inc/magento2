@@ -214,8 +214,12 @@
     gap: 4px;
 }
 
+/* Empty alternative text: aria-checked already states the selection, so the
+   tick must not reach the chip's accessible name. A browser too old for the
+   syntax drops the declaration and draws no tick, leaving the selection to the
+   chip's own fill (ABN-554). */
 .two-term-chip--selected .two-term-chip__days::before {
-    content: '\2713';
+    content: '\2713' / '';
     color: var(--color-white);
     font-size: 14px;
     font-weight: 700;
