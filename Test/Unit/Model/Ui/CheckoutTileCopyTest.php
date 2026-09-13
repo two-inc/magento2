@@ -105,6 +105,54 @@ class CheckoutTileCopyTest extends TestCase
         $this->assertSame('What is Acme Pay?', $copy->getAboutLinkText());
     }
 
+    /**
+     * @return array<string, array{0:string,1:bool,2:string,3:string}>
+     */
+    public static function tooltipRows(): array
+    {
+        return [
+            'brand about url with the toggle on' => [
+                self::ABOUT_URL, true, self::tooltipHtml(),
+                'the icon is a link, so its tooltip carries the body copy and no anchor of its own',
+            ],
+            'no brand about url' => [
+                '', true, '',
+                'no target means no icon, so there is nothing for a tooltip to describe',
+            ],
+            'brand about url with the toggle off' => [
+                self::ABOUT_URL, false, '',
+                'the merchant toggle removes the whole control, tooltip included',
+            ],
+            'non-http about url' => [
+                'javascript:alert(1)', true, '',
+                'a script URL renders no icon and therefore no tooltip',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider tooltipRows
+     */
+    public function testTooltipFollowsTheIconItDescribes(
+        string $brandAboutUrl,
+        bool $aboutLinkEnabled,
+        string $expectedTooltip,
+        string $description
+    ): void {
+        $copy = $this->build($brandAboutUrl, '', '', $aboutLinkEnabled, '');
+
+        $this->assertSame($expectedTooltip, $copy->getAboutTooltipHtml(), $description);
+    }
+
+    private static function tooltipHtml(): string
+    {
+        return '<p>Acme Pay is a payment solution for B2B purchases online, allowing you to buy from your'
+            . ' favourite merchants and suppliers on trade credit. Using Acme Pay, you can access flexible'
+            . ' trade credit instantly to make purchasing simple.</p>'
+            . '<p><strong>Buy now, receive your goods, pay your invoice later.</strong></p>'
+            . '<p>Click to find out more</p>';
+    }
+
     private function build(
         string $brandAboutUrl,
         string $brandTaglineKey,

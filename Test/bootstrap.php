@@ -179,6 +179,10 @@ require_once __DIR__ . '/Stubs/PaymentMethod.php';
 // it is mockable; per-symbol guard lives inside the stub file.
 require_once __DIR__ . '/Stubs/MessageManager.php';
 
+// View asset repository with a real getUrl(), so the checkout tile's icon URL
+// is mockable; per-symbol guard lives inside the stub file.
+require_once __DIR__ . '/Stubs/AssetRepository.php';
+
 // Catch-all autoloader for remaining Magento classes/interfaces.
 // Creates empty stubs so that type hints, extends, and implements resolve.
 spl_autoload_register(function ($class) {
