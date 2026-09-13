@@ -115,6 +115,11 @@ class ConfigProvider implements ConfigProviderInterface
      */
     private $logRepository;
 
+    /**
+     * @var AnchorOnlyHtmlEscaper
+     */
+    private $htmlEscaper;
+
     /** @var bool */
     private $withholdLogged = false;
 
@@ -135,6 +140,7 @@ class ConfigProvider implements ConfigProviderInterface
         SupportedCompanyTypes $supportedCompanyTypes,
         CheckoutTileCopy $checkoutTileCopy,
         LogRepository $logRepository,
+        AnchorOnlyHtmlEscaper $htmlEscaper,
         ?string $code = null
     ) {
         $this->configRepository = $configRepository;
@@ -148,6 +154,7 @@ class ConfigProvider implements ConfigProviderInterface
         $this->supportedCompanyTypes = $supportedCompanyTypes;
         $this->checkoutTileCopy = $checkoutTileCopy;
         $this->logRepository = $logRepository;
+        $this->htmlEscaper = $htmlEscaper;
         $this->code = $code ?? $brandRegistry->getCode();
     }
 
@@ -329,11 +336,16 @@ class ConfigProvider implements ConfigProviderInterface
                     'termUnavailableMessage' => __(
                         'The payment terms you selected are no longer available. Please select your payment terms again.'
                     ),
-                    'paymentTermsMessage' => __(
+                    // Bound `html:` by the renderer, and every part of it -
+                    // the sentence, the link text - is an admin-editable
+                    // translation. The escaper keeps the one anchor this
+                    // sentence is built around and drops everything else
+                    // (ABN-554).
+                    'paymentTermsMessage' => $this->htmlEscaper->escape(__(
                         'I accept the %1 and authorize %2 to process my data automatically.',
                         sprintf('<a href="%s" target="_blank">%s</a>', $paymentTermsLink, $paymentTerms),
                         $this->brandRegistry->getProviderFullName()
-                    ),
+                    )),
                     'termsNotAcceptedMessage' => __('You must accept %1 to place order.', $paymentTerms),
                     'soleTraderErrorMessage' => __(
                         'Something went wrong with your request to %1. %2',

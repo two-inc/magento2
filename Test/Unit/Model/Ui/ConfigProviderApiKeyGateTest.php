@@ -11,6 +11,7 @@ use Two\Gateway\Api\BrandRegistryInterface;
 use Two\Gateway\Api\Log\RepositoryInterface as LogRepository;
 use Two\Gateway\Model\Config\Repository as ConfigRepositoryImpl;
 use Two\Gateway\Model\Two;
+use Two\Gateway\Model\Ui\AnchorOnlyHtmlEscaper;
 use Two\Gateway\Model\Ui\CheckoutTileCopy;
 use Two\Gateway\Model\Ui\ConfigProvider;
 use Two\Gateway\Service\Api\SupportedCompanyTypes;
@@ -84,6 +85,7 @@ class ConfigProviderApiKeyGateTest extends TestCase
             'storeManager' => $this->storeManager(),
             'supportedCompanyTypes' => $this->createMock(SupportedCompanyTypes::class),
             'checkoutTileCopy' => $this->createMock(CheckoutTileCopy::class),
+            'htmlEscaper' => new AnchorOnlyHtmlEscaper(),
             'logRepository' => $this->logRepository ?? $this->createMock(LogRepository::class),
         ];
         foreach ($properties as $name => $value) {
