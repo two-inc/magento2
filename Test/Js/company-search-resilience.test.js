@@ -714,7 +714,7 @@ describe('what the panel paints for each outcome', () => {
         [
             undefined,
             '',
-            'a hit the API sent no label for'
+            'no label at all'
         ]
     ])('a row renders %s as %s (%s)', async (html, rendered) => {
         await type('exa');
