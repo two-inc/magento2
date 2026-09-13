@@ -88,7 +88,9 @@ function load() {
                 // panel built, which a re-render detaches until the panel rebuilds.
                 getPanelElement: function () { return storedPopover; },
                 getField: function () { return [document.getElementById('company')]; },
-                close: function () { popoverClosed += 1; }
+                close: function () { popoverClosed += 1; },
+                restoreFieldFocus: function () { document.getElementById('company').focus(); },
+                holdFieldOpener: function () {}
             };
         }
     });
@@ -267,4 +269,36 @@ test('closing the popup releases the watcher, so a later focus closes nothing', 
     document.getElementById('other-field').focus();
 
     expect(ctx.flow._returnHandler).toBe(null);
+});
+
+describe('the window losing focus to the popup leaves the park armed (ABN-554)', () => {
+    /** The launch's park, driven through the real deferred park. */
+    async function parked() {
+        const ctx = load();
+        ctx.flow.parkFocusDroppedByPopup();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(ctx.flow._parkedFocus).toBe(document.getElementById('company'));
+        return ctx;
+    }
+
+    /** What a browser sends the checkout window when the popup takes the focus off it. */
+    function windowBlursToPopup(node) {
+        node.dispatchEvent(new FocusEvent('blur'));
+        node.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    }
+
+    test.each([
+        ['the parked field', true, 'the buyer came back to an enrolment they have not finished'],
+        ['unrelated control', false, 'the buyer left capture, so the signup goes with it']
+    ])('back on %s: popup open=%p (%s)', async (arriveOn, open, why) => {
+        const ctx = await parked();
+        const field = document.getElementById('company');
+
+        windowBlursToPopup(field);
+        const target = arriveOn === 'the parked field' ? field : document.getElementById('other-field');
+        target.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+        expect(tagged(why, [ctx.flow.isPopupOpen(), ctx.flow._popupWindow.closed]))
+            .toEqual(tagged(why, [open, !open]));
+    });
 });

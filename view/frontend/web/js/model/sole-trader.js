@@ -525,6 +525,7 @@
             if (!field || !document.contains(field)) return;
             // Before the focus, which the return watch sees synchronously.
             this._parkedFocus = field;
+            panel.holdFieldOpener(true);
             panel.restoreFieldFocus();
         }, 0);
     };
@@ -538,17 +539,13 @@
      * gets a popup of its own.
      *
      * A focusin a browser re-fires on window return counts as the buyer focusing that
-     * control, unless it is the field the launch parked focus on and focus has not left it.
+     * control, unless it is the field the launch parked focus on. The park stands for the
+     * whole flight: the window losing focus to the popup blurs that field, so a park
+     * dropped on focusout is a park no return can ever match (ABN-554).
      */
     SoleTrader.prototype.watchForReturnToCheckout = function () {
         if (this._returnHandler) return;
         this._returnHandler = (event) => {
-            // Focus that LEAVES is what tells a window return's re-fire apart from the
-            // buyer arriving on the parked field: the re-fire carries no focusout (ABN-554).
-            if (event.type === 'focusout') {
-                if (event.target === this._parkedFocus) this._parkedFocus = null;
-                return;
-            }
             if (!this.isPopupOpen()) return;
             const target = event.target;
             if (target === this._parkedFocus) return;
@@ -573,18 +570,18 @@
             if (chip && typeof chip.click === 'function') chip.click();
         };
         document.addEventListener('focusin', this._returnHandler, true);
-        document.addEventListener('focusout', this._returnHandler, true);
     };
 
     /** Release the watcher with the popup it was armed for. */
     SoleTrader.prototype.stopReturnToCheckoutWatcher = function () {
+        const panel = this._component.panel();
+        if (panel) panel.holdFieldOpener(false);
         // The flight's own park is not a place the buyer chose, so the abandon reclaim
         // that follows reads the unplaced focus the launch actually left it (ABN-554).
         if (this._parkedFocus && document.activeElement === this._parkedFocus) this._parkedFocus.blur();
         this._parkedFocus = null;
         if (!this._returnHandler) return;
         document.removeEventListener('focusin', this._returnHandler, true);
-        document.removeEventListener('focusout', this._returnHandler, true);
         this._returnHandler = null;
     };
 

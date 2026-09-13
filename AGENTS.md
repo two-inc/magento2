@@ -625,6 +625,12 @@ focus alone, so any keydown on the field, a click on it, or focus arriving from
 anywhere else brings the popover straight back; a flag left set is a popover that
 never reopens.
 
+**`holdFieldOpener()` holds that same FOCUS opener off for a whole signup
+flight**, and the pointer and keyboard openers stay live throughout. A browser
+re-fires `focus` on whatever the opener window still holds the moment a popup
+closes, which is the field the launch parked focus on — and by then the popup is
+gone, so nothing read at that moment tells the re-fire from the buyer (ABN-554).
+
 **The close-on-focus-leave path is the exception, and deliberately so.** It only
 fires once focus has settled on another control, so taking focus back would undo
 the buyer's own Tab (TWO-25326).
@@ -685,9 +691,11 @@ that control, so an alt-tab back onto a control is classified like any other
 arrival. Opening the popup blurs whatever held focus for exactly that reason.
 A popover left on screen around a document focusing nothing reaches no keystroke
 at all, so the launch parks that focus on the company field one tick later
-(ABN-554). That one control is exempt from the rules above until focus leaves
-it: a window return re-fires `focusin` there with no `focusout` before it, and
-that is not the buyer arriving.
+(ABN-554). That one control is exempt from the rules above for the whole
+flight, not merely until focus leaves it: the window losing focus to the popup
+blurs the field, so an exemption dropped on `focusout` is one no return can ever
+match, and a buyer clicking back into the checkout would end their own
+enrolment.
 
 **The close is only abandonment while the checkout is still in sole-trader
 mode** (ABN-565). The popup's close is noticed by a 300ms poll, so a chip the
