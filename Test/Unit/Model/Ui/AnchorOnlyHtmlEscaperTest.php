@@ -198,6 +198,31 @@ class AnchorOnlyHtmlEscaperTest extends TestCase
                 'Pay in 30 days &lt; see <a href="' . self::URL . '">terms</a>',
                 'a stray < is text and does not swallow the copy up to the next >',
             ],
+            'uppercase scheme' => [
+                '<a href="HTTPS://x.example.test">read more</a>',
+                '<a href="HTTPS://x.example.test">read more</a>',
+                'browsers read the scheme case-insensitively, so an uppercase one is still a link',
+            ],
+            'padded close tag' => [
+                '<a href="' . self::URL . '">read more</a  > and on',
+                '<a href="' . self::URL . '">read more</a> and on',
+                'padding inside the close tag still closes the anchor rather than letting it swallow the tail',
+            ],
+            'repeated href' => [
+                '<a href="javascript:alert(1)" href="' . self::URL . '">read more</a>',
+                'read more',
+                'browsers act on the first attribute, so a later href cannot launder the script URL in front of it',
+            ],
+            'repeated rel' => [
+                '<a href="' . self::URL . '" rel="nofollow" rel="noopener">read more</a>',
+                '<a href="' . self::URL . '">read more</a>',
+                'the first rel is the one that counts, so a later noopener is not read as one',
+            ],
+            'anchor-prefixed tag name' => [
+                '<abbr href="' . self::URL . '">read more</abbr>',
+                'read more',
+                'only the anchor element is an anchor, not every tag whose name starts with one',
+            ],
         ];
     }
 

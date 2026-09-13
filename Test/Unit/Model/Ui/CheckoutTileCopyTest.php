@@ -86,6 +86,11 @@ class CheckoutTileCopyTest extends TestCase
                 false, '', 'For all companies, ' . $anchor . 'read more</a>.',
                 'copy whose only content is markup the escaper drops is emptiness too, so the tagline still shows',
             ],
+            'tagline key carrying stray markup' => [
+                '', self::TAGLINE_KEY . '<img src=x onerror="alert(1)">', self::FAQ_URL, false, '',
+                false, '', 'For all companies, ' . $anchor . 'read more</a>.',
+                'a translation file is merchant-editable copy too, so the tagline goes through the escaper as well',
+            ],
         ];
     }
 
