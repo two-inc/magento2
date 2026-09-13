@@ -635,16 +635,97 @@ describe('what the panel paints for each outcome', () => {
     test("a row renders the API's match highlighting, not the plain text", async () => {
         await type('exa');
         resolvers[0]({
-            items: [{ text: 'Example Trading Ltd', html: '<em>Exa</em>mple Trading Ltd' }],
+            items: [{ text: 'Example Trading Ltd', html: '<mark><b>Exa</b></mark>mple Trading Ltd' }],
             unavailable: false,
             aborted: false
         });
         await nextTick();
 
         const row = document.querySelector(ROW);
-        expect(row.querySelector('em')).not.toBeNull();
-        expect(row.querySelector('em').textContent).toBe('Exa');
+        expect(row.querySelector('mark b')).not.toBeNull();
+        expect(row.querySelector('mark b').textContent).toBe('Exa');
         expect(row.textContent).toBe('Example Trading Ltd');
+    });
+
+    // ABN-554. A row's label is registry-sourced markup, so it is rebuilt as
+    // nodes: the API's own `<mark><b>` pair becomes elements, everything else
+    // stays text.
+    test.each([
+        [
+            '<mark><b>Exa</b></mark>mple Ltd',
+            '<mark><b>Exa</b></mark>mple Ltd',
+            "the API's own highlight"
+        ],
+        [
+            '<script>alert(1)</script>Example Ltd',
+            '&lt;script&gt;alert(1)&lt;/script&gt;Example Ltd',
+            'a script tag'
+        ],
+        [
+            '<img src=x onerror=alert(1)>Example Ltd',
+            '&lt;img src=x onerror=alert(1)&gt;Example Ltd',
+            'an image with an error handler'
+        ],
+        [
+            '<mark onclick="x()">Exa</mark>mple Ltd',
+            '&lt;mark onclick="x()"&gt;Exa&lt;/mark&gt;mple Ltd',
+            'an attribute on the permitted tag'
+        ],
+        [
+            '<MARK>Exa</MARK>mple Ltd',
+            '&lt;MARK&gt;Exa&lt;/MARK&gt;mple Ltd',
+            'an uppercase tag name'
+        ],
+        [
+            '<mark>Exa</mark  >mple Ltd',
+            '<mark>Exa&lt;/mark  &gt;mple Ltd</mark>',
+            'a padded close tag'
+        ],
+        [
+            '<b onmouseover=x>Exa</b>mple Ltd',
+            '&lt;b onmouseover=x&gt;Exa&lt;/b&gt;mple Ltd',
+            'an attribute on the bold tag'
+        ],
+        [
+            '</mark>Example Ltd',
+            '&lt;/mark&gt;Example Ltd',
+            'a close tag that opens nothing'
+        ],
+        [
+            '<mark><b>Exa</b>mple Ltd',
+            '<mark><b>Exa</b>mple Ltd</mark>',
+            'an unbalanced open tag'
+        ],
+        [
+            '<mark><b>Exa</mark></b>mple Ltd',
+            '<mark><b>Exa&lt;/mark&gt;</b>mple Ltd</mark>',
+            'crossed close tags'
+        ],
+        [
+            '<mark><mark>Exa</mark></mark>mple Ltd',
+            '<mark><mark>Exa</mark></mark>mple Ltd',
+            'nested marks'
+        ],
+        [
+            '&lt;mark&gt;Exa&lt;/mark&gt;mple Ltd',
+            '&amp;lt;mark&amp;gt;Exa&amp;lt;/mark&amp;gt;mple Ltd',
+            'an already entity-encoded mark'
+        ],
+        [
+            undefined,
+            '',
+            'no label at all'
+        ]
+    ])('a row renders %s as %s (%s)', async (html, rendered) => {
+        await type('exa');
+        resolvers[0]({
+            items: [{ text: 'Example Ltd', html: html }],
+            unavailable: false,
+            aborted: false
+        });
+        await nextTick();
+
+        expect(document.querySelector(ROW).innerHTML).toBe(rendered);
     });
 
     test('a cached answer takes down a spinner an abort left up', async () => {
