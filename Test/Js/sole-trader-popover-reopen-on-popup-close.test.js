@@ -43,11 +43,12 @@ const TRADER = { company_name: 'Alpha Trading', organization_number: '123456' };
  * @returns {object} `{ rec, mocks, globals }`
  */
 function makeEnv(buyerRef) {
-    const rec = { handles: [], intervals: [], messageListeners: [] };
+    const rec = { handles: [], intervals: [], messageListeners: [], blocked: false };
     let intervalSeq = 0;
 
     const fakeWindow = {
         open: function () {
+            if (rec.blocked) return null;
             const handle = {
                 closed: false,
                 close: function () { this.closed = true; },
@@ -176,6 +177,12 @@ async function openedStack() {
     });
 }
 
+/** The buyer's own way of closing the popover, on the field the launch parked focus on. */
+function escapeOnField() {
+    const field = document.querySelector(FIELD);
+    field.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+}
+
 function popoverIsOpen() {
     const node = document.querySelector(PANEL);
     return !!node && !node.hasAttribute('hidden');
@@ -216,7 +223,10 @@ describe('the popup closing must not reopen the company-search popover (ABN-554)
         ])).toEqual(tagged(why, [expectedOpen, String(expectedOpen)]));
     });
 
-    test('a real mousedown on the field still opens the popover after the flight', async function () {
+    test.each([
+        ['mousedown', 'the pointer opener is never held, so it opens throughout'],
+        ['focus', 'the hold ends with the flight, and the focus opener is alive again']
+    ])('a real %s on the field opens the popover after the flight (%s)', async function (opener, why) {
         const ctx = await openedStack();
         ctx.buyerRef.value = TRADER;
         ctx.rec.messageListeners
@@ -230,7 +240,21 @@ describe('the popup closing must not reopen the company-search popover (ABN-554)
         await flush();
         expect(popoverIsOpen()).toBe(false);
 
-        dispatchNative(document.querySelector(FIELD), 'mousedown');
+        dispatchNative(document.querySelector(FIELD), opener);
+
+        expect(tagged(why, popoverIsOpen())).toEqual(tagged(why, true));
+    });
+
+    test('a supersede the browser blocks leaves the focus opener alive', async function () {
+        const ctx = await openedStack();
+        // No replacement popup means no close poll, and so nothing left to end the flight.
+        ctx.rec.blocked = true;
+        ctx.component.soleTrader().selectDifferentSoleTrader();
+        await flush();
+        escapeOnField();
+        expect(popoverIsOpen()).toBe(false);
+
+        dispatchNative(document.querySelector(FIELD), 'focus');
 
         expect(popoverIsOpen()).toBe(true);
     });

@@ -340,6 +340,9 @@
         if (!this.hasSignupTokens()) return null;
         if (this.isPopupOpen()) this._popupWindow.close();
         this.stopPopupCloseWatcher();
+        // With it goes the close poll that would have released the panel's opener hold,
+        // and a blocked re-open arms no replacement to release it later (ABN-554).
+        this.stopReturnToCheckoutWatcher();
 
         let params = `businessToken=${this.delegationToken}`;
         params += `&autofillToken=${this.autofillToken}`;

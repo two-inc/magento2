@@ -692,10 +692,8 @@ arrival. Opening the popup blurs whatever held focus for exactly that reason.
 A popover left on screen around a document focusing nothing reaches no keystroke
 at all, so the launch parks that focus on the company field one tick later
 (ABN-554). That one control is exempt from the rules above for the whole
-flight, not merely until focus leaves it: the window losing focus to the popup
-blurs the field, so an exemption dropped on `focusout` is one no return can ever
-match, and a buyer clicking back into the checkout would end their own
-enrolment.
+flight: the window losing focus to the popup blurs the field, and a buyer
+clicking back into the checkout would otherwise end their own enrolment.
 
 **The close is only abandonment while the checkout is still in sole-trader
 mode** (ABN-565). The popup's close is noticed by a 300ms poll, so a chip the
