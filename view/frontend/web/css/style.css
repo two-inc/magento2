@@ -42,6 +42,12 @@
     display: inline-block;
 }
 
+.two-title-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .two-payment-title {
     font-weight: 700;
 }
@@ -49,7 +55,6 @@
 .two-about {
     position: relative;
     display: inline-flex;
-    align-self: flex-start;
 }
 
 .two-payment-method .two-about-icon {

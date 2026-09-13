@@ -82,7 +82,7 @@ class CheckoutTileCopy
             return '';
         }
 
-        $product = $this->brandRegistry->getProductName();
+        $product = htmlspecialchars($this->brandRegistry->getProductName(), ENT_QUOTES, 'UTF-8');
 
         // One literal per phrase: Magento's i18n scanner cannot harvest a concatenated key.
         return '<p>' . (string)__('%1 is a payment solution for B2B purchases online, allowing you to buy from your favourite merchants and suppliers on trade credit. Using %1, you can access flexible trade credit instantly to make purchasing simple.', $product) . '</p>'

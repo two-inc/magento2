@@ -153,19 +153,30 @@ class CheckoutTileCopyTest extends TestCase
             . '<p>Click to find out more</p>';
     }
 
+    public function testTooltipEscapesTheBrandName(): void
+    {
+        $copy = $this->build(self::ABOUT_URL, '', '', true, '', '<b>Acme</b> & Pay');
+
+        $tooltip = $copy->getAboutTooltipHtml();
+
+        $this->assertStringContainsString('&lt;b&gt;Acme&lt;/b&gt; &amp; Pay is a payment solution', $tooltip);
+        $this->assertStringNotContainsString('<b>Acme</b>', $tooltip);
+    }
+
     private function build(
         string $brandAboutUrl,
         string $brandTaglineKey,
         string $brandFaqUrl,
         bool $aboutLinkEnabled,
-        string $adminSubtitle
+        string $adminSubtitle,
+        string $productName = 'Acme Pay'
     ): CheckoutTileCopy {
         $configRepository = $this->createMock(ConfigRepository::class);
         $configRepository->method('isAboutLinkEnabled')->willReturn($aboutLinkEnabled);
         $configRepository->method('getSubtitle')->willReturn($adminSubtitle);
 
         $brandRegistry = $this->createMock(BrandRegistryInterface::class);
-        $brandRegistry->method('getProductName')->willReturn('Acme Pay');
+        $brandRegistry->method('getProductName')->willReturn($productName);
         $brandRegistry->method('getAboutUrl')->willReturn($brandAboutUrl);
         $brandRegistry->method('getCheckoutSubtitle')->willReturn($brandTaglineKey);
         $brandRegistry->method('getCheckoutSubtitleFaqUrl')->willReturn($brandFaqUrl);

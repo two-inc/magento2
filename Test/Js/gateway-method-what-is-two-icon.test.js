@@ -135,6 +135,33 @@ describe('the about control is an anchor-wrapped icon (ABN-554)', () => {
     });
 });
 
+describe('the icon renders beside the tile title (ABN-554)', () => {
+    /** The row that holds the title; the subtitle opens the next line of the block. */
+    function titleRow() {
+        const match = withoutComments(read(TEMPLATE)).match(
+            /<div class="two-title-row">([\s\S]*?)<!--\s*ko if:\s*twoSubtitleHtml\s*-->/
+        );
+        if (match === null) {
+            throw new Error('the template has no title row ahead of the subtitle');
+        }
+        return match[1];
+    }
+
+    test.each([
+        { pattern: /class="two-payment-title"/, case: 'the tile title' },
+        { pattern: /<!--\s*ko if:\s*showWhatIsTwo\s*-->/, case: 'the about control' }
+    ])('the title row holds $case', ({ pattern }) => {
+        expect(titleRow()).toMatch(pattern);
+    });
+
+    test('the row lays its children out horizontally', () => {
+        const row = read(STYLESHEET).match(/\.two-title-row\s*\{([\s\S]*?)\}/)[1];
+
+        expect(row).toMatch(/display:\s*flex;/);
+        expect(row).not.toMatch(/flex-direction:\s*column/);
+    });
+});
+
 describe('the renderer feeds the control from checkoutConfig (ABN-554)', () => {
     test.each([
         { field: 'aboutTooltipHtml', case: 'the tooltip copy' },
