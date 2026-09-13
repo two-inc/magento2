@@ -100,6 +100,14 @@ describe('the about control is an anchor-wrapped icon (ABN-554)', () => {
         },
         {
             element: TOOLTIP,
+            // aria-describedby resolves a directly referenced node whether or
+            // not it is hidden; without this the closed, opacity-0 body is also
+            // read as stray text in document flow.
+            pattern: /\baria-hidden="true"/,
+            case: 'the body is out of document flow for assistive tech'
+        },
+        {
+            element: TOOLTIP,
             pattern: /id:\s*aboutTooltipId\(\)/,
             case: 'the body carries the id the anchor points at'
         },
