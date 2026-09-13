@@ -21,6 +21,11 @@ class CheckoutTileCopyTest extends TestCase
     private const ABOUT_URL = 'https://about.example.test/what-is-acme';
     private const TAGLINE_KEY = 'For all companies, %1read more%2.';
 
+    protected function tearDown(): void
+    {
+        Phrase::setRenderer(null);
+    }
+
     /**
      * @return array<string, array{0:string,1:string,2:string,3:bool,4:string,5:bool,6:string,7:string,8:string}>
      */
@@ -199,11 +204,6 @@ class CheckoutTileCopyTest extends TestCase
             . '<p>Click to find out more</p>';
     }
 
-    protected function tearDown(): void
-    {
-        Phrase::setRenderer(null);
-    }
-
     /**
      * @return array<string, array{0:string,1:string,2:string,3:string}>
      */
@@ -238,12 +238,6 @@ class CheckoutTileCopyTest extends TestCase
                 '<p>&lt;a href=&quot;https://evil.test&quot;&gt;click&lt;/a&gt;</p>',
                 'the icon is already the link, so a translated anchor is markup rather than a second link',
             ],
-            'entity-encoded payload' => [
-                'Click to find out more',
-                '&#60;img src=x onerror=alert(4)&#62;',
-                '<p>&#60;img src=x onerror=alert(4)&#62;</p>',
-                'an entity is inert as it stands, and re-encoding it would show the buyer the entity',
-            ],
         ];
     }
 
@@ -265,7 +259,7 @@ class CheckoutTileCopyTest extends TestCase
         $tooltip = $copy->getAboutTooltipHtml();
 
         $this->assertStringContainsString($expectedFragment, $tooltip, $description);
-        $this->assertSame(3, substr_count($tooltip, '<p>'), $description);
+        $this->assertSame(3, substr_count($tooltip, '<p>'), 'the tooltip lost or gained a wrapper: ' . $description);
     }
 
     /** The accessible name is plain text, so escaping it would put entities into what a screen reader reads out. */

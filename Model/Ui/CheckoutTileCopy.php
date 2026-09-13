@@ -91,8 +91,6 @@ class CheckoutTileCopy
 
         $product = $this->brandRegistry->getProductName();
 
-        // Phrase by phrase, not the assembled string: translations are admin-editable,
-        // the wrappers are this method's own and must survive.
         // One literal per phrase: Magento's i18n scanner cannot harvest a concatenated key.
         return '<p>' . $this->htmlEscaper->escapeTextOnly((string)__('%1 is a payment solution for B2B purchases online, allowing you to buy from your favourite merchants and suppliers on trade credit. Using %1, you can access flexible trade credit instantly to make purchasing simple.', $product)) . '</p>'
             . '<p><strong>' . $this->htmlEscaper->escapeTextOnly((string)__('Buy now, receive your goods, pay your invoice later.')) . '</strong></p>'
