@@ -20,8 +20,6 @@ class CheckoutTileCopyTest extends TestCase
     private const FAQ_URL = 'https://faq.example.test/invoice';
     private const ABOUT_URL = 'https://about.example.test/what-is-acme';
     private const TAGLINE_KEY = 'For all companies, %1read more%2.';
-    private const PAYLOAD = '<img src=x onerror=alert(1)>';
-    private const ESCAPED_PAYLOAD = '&lt;img src=x onerror=alert(1)&gt;';
 
     /**
      * @return array<string, array{0:string,1:string,2:string,3:bool,4:string,5:bool,6:string,7:string,8:string}>
@@ -207,59 +205,77 @@ class CheckoutTileCopyTest extends TestCase
     }
 
     /**
-     * @return array<string, array{0:string,1:string,2:string}>
+     * @return array<string, array{0:string,1:string,2:string,3:string}>
      */
     public static function tooltipTranslationRows(): array
     {
+        $body = '%1 is a payment solution for B2B purchases online, allowing you to buy from your favourite'
+            . ' merchants and suppliers on trade credit. Using %1, you can access flexible trade credit'
+            . ' instantly to make purchasing simple.';
+
         return [
             'body paragraph' => [
-                '%1 is a payment solution for B2B purchases online, allowing you to buy from your favourite'
-                    . ' merchants and suppliers on trade credit. Using %1, you can access flexible trade credit'
-                    . ' instantly to make purchasing simple.',
-                '<p>' . self::ESCAPED_PAYLOAD . '</p>',
+                $body,
+                '<img src=x onerror=alert(1)>',
+                '<p>&lt;img src=x onerror=alert(1)&gt;</p>',
                 'a translated body paragraph cannot open markup, and keeps its own <p>',
             ],
             'emphasised line' => [
                 'Buy now, receive your goods, pay your invoice later.',
-                '<p><strong>' . self::ESCAPED_PAYLOAD . '</strong></p>',
+                '<svg onload=alert(2)></svg>',
+                '<p><strong>&lt;svg onload=alert(2)&gt;&lt;/svg&gt;</strong></p>',
                 'a translated emphasis line cannot open markup, and keeps its own <p><strong>',
             ],
             'closing line' => [
                 'Click to find out more',
-                '<p>' . self::ESCAPED_PAYLOAD . '</p>',
-                'the closing line is plain text, so translated markup is inert there too',
+                '</p><script>alert(3)</script><p>',
+                '<p>&lt;/p&gt;&lt;script&gt;alert(3)&lt;/script&gt;&lt;p&gt;</p>',
+                'a translation cannot close the wrapper it was given and open its own',
+            ],
+            'anchor in a translation' => [
+                'Click to find out more',
+                '<a href="https://evil.test">click</a>',
+                '<p>&lt;a href=&quot;https://evil.test&quot;&gt;click&lt;/a&gt;</p>',
+                'the icon is already the link, so a translated anchor is markup rather than a second link',
+            ],
+            'entity-encoded payload' => [
+                'Click to find out more',
+                '&#60;img src=x onerror=alert(4)&#62;',
+                '<p>&#60;img src=x onerror=alert(4)&#62;</p>',
+                'an entity is inert as it stands, and re-encoding it would show the buyer the entity',
             ],
         ];
     }
 
     /**
      * Given an admin-supplied translation carrying markup; when the tooltip renders;
-     * then the markup is inert and the method's own wrappers survive.
+     * then no tag of the translation's survives and the method's own wrappers do.
      *
      * @dataProvider tooltipTranslationRows
      */
     public function testTooltipEscapesTranslatedMarkup(
         string $translatedKey,
+        string $payload,
         string $expectedFragment,
         string $description
     ): void {
-        Phrase::setRenderer(self::rendererTranslating($translatedKey, self::PAYLOAD));
+        Phrase::setRenderer(self::rendererTranslating($translatedKey, $payload));
         $copy = $this->build(self::ABOUT_URL, '', '', true, '');
 
         $tooltip = $copy->getAboutTooltipHtml();
 
         $this->assertStringContainsString($expectedFragment, $tooltip, $description);
-        $this->assertStringNotContainsString('<img', $tooltip, $description);
+        $this->assertSame(3, substr_count($tooltip, '<p>'), $description);
     }
 
-    /** A translation reaches the aria-label through an escaping attr binding, so it stays plain text here. */
-    public function testAboutLinkTextIsPlainTextAndNotEscaped(): void
+    /** The accessible name is plain text, so escaping it would put entities into what a screen reader reads out. */
+    public function testAboutLinkTextIsPlainText(): void
     {
-        Phrase::setRenderer(self::rendererTranslating('What is %1?', self::PAYLOAD));
+        Phrase::setRenderer(self::rendererTranslating('What is %1?', 'Wat is %1 & co?'));
 
         $text = $this->build(self::ABOUT_URL, '', '', true, '')->getAboutLinkText();
 
-        $this->assertSame(self::PAYLOAD, $text);
+        $this->assertSame('Wat is Acme Pay & co?', $text);
     }
 
     private static function rendererTranslating(string $key, string $translation): object

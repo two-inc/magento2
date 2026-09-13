@@ -32,11 +32,6 @@ class Phrase
         self::$renderer = $renderer;
     }
 
-    public static function getRenderer()
-    {
-        return self::$renderer;
-    }
-
     public function render(): string
     {
         if (self::$renderer !== null) {

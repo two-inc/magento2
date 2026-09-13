@@ -10,7 +10,9 @@ namespace Two\Gateway\Model\Ui;
 /**
  * Reduces buyer-facing copy to text plus links: an `<a>` with an http(s) href
  * survives, every other tag is dropped and its text kept, and all other markup
- * is escaped.
+ * is escaped. Copy whose contract is plain text goes through escapeTextOnly()
+ * instead, which keeps no tag at all - a dropped tag there would hide the
+ * translator's typo rather than show it.
  *
  * Surviving anchors are rebuilt from their allowed attributes, so no attribute
  * this module does not itself emit can reach the page. The href itself is only
@@ -69,7 +71,7 @@ class AnchorOnlyHtmlEscaper
         return $result . str_repeat('</a>', $openAnchors);
     }
 
-    /** Copy whose contract is plain text: an anchor in it is translator markup, not a link. */
+    /** Plain-text copy: even a valid anchor is markup here, not a link. */
     public function escapeTextOnly(string $text): string
     {
         return $this->escapeText($this->stripControlCharacters($text));
