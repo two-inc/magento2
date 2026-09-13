@@ -141,9 +141,8 @@ describe('the manual-entry affordance is a real, native button', () => {
     });
 
     test('the label is set as text, never as markup', () => {
-        // The result rows disable escaping so server-side highlighting can
-        // render, which makes the catalogue an injection point if a label is
-        // ever interpolated into HTML.
+        // A catalogue string interpolated into HTML is an injection point the
+        // row sanitiser does not cover.
         const source = readSource(COMPONENT_PATH);
 
         expect(source).toContain("this.translate('" + MSGID + "')");
