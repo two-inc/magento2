@@ -44,8 +44,8 @@ class SubtitleTest extends TestCase
         $this->expectException(LocalizedException::class);
         $this->expectExceptionMessage(sprintf(
             'Subtitle accepts plain text and a single link only; "%s" would be shown as "%s".',
-            $value,
-            $shown
+            htmlspecialchars($value, ENT_QUOTES, 'UTF-8'),
+            htmlspecialchars($shown, ENT_QUOTES, 'UTF-8')
         ));
 
         $this->buildModel($value)->beforeSave();

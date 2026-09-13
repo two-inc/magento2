@@ -54,10 +54,12 @@ class Subtitle extends Value
     {
         $value = (string)$this->getValue();
         if (!$this->escaper->rendersUnchanged($value)) {
+            // Admin notices render their text unescaped, and the whole point
+            // of this message is to show markup as markup.
             throw new LocalizedException(__(
                 'Subtitle accepts plain text and a single link only; "%1" would be shown as "%2".',
-                $value,
-                $this->escaper->escape($value)
+                htmlspecialchars($value, ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($this->escaper->escape($value), ENT_QUOTES, 'UTF-8')
             ));
         }
 
