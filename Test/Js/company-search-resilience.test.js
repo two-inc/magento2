@@ -653,65 +653,70 @@ describe('what the panel paints for each outcome', () => {
     test.each([
         [
             '<mark><b>Exa</b></mark>mple Ltd',
-            ['MARK', 'B'],
-            'Example Ltd',
+            '<mark><b>Exa</b></mark>mple Ltd',
             "the API's own highlight"
         ],
         [
             '<script>alert(1)</script>Example Ltd',
-            [],
-            '<script>alert(1)</script>Example Ltd',
+            '&lt;script&gt;alert(1)&lt;/script&gt;Example Ltd',
             'a script tag'
         ],
         [
             '<img src=x onerror=alert(1)>Example Ltd',
-            [],
-            '<img src=x onerror=alert(1)>Example Ltd',
+            '&lt;img src=x onerror=alert(1)&gt;Example Ltd',
             'an image with an error handler'
         ],
         [
             '<mark onclick="x()">Exa</mark>mple Ltd',
-            [],
-            '<mark onclick="x()">Exa</mark>mple Ltd',
+            '&lt;mark onclick="x()"&gt;Exa&lt;/mark&gt;mple Ltd',
             'an attribute on the permitted tag'
         ],
         [
             '<MARK>Exa</MARK>mple Ltd',
-            [],
-            '<MARK>Exa</MARK>mple Ltd',
+            '&lt;MARK&gt;Exa&lt;/MARK&gt;mple Ltd',
             'an uppercase tag name'
         ],
         [
             '<mark>Exa</mark  >mple Ltd',
-            ['MARK'],
-            'Exa</mark  >mple Ltd',
+            '<mark>Exa&lt;/mark  &gt;mple Ltd</mark>',
             'a padded close tag'
         ],
         [
             '<b onmouseover=x>Exa</b>mple Ltd',
-            [],
-            '<b onmouseover=x>Exa</b>mple Ltd',
+            '&lt;b onmouseover=x&gt;Exa&lt;/b&gt;mple Ltd',
             'an attribute on the bold tag'
         ],
         [
+            '</mark>Example Ltd',
+            '&lt;/mark&gt;Example Ltd',
+            'a close tag that opens nothing'
+        ],
+        [
             '<mark><b>Exa</b>mple Ltd',
-            ['MARK', 'B'],
-            'Example Ltd',
+            '<mark><b>Exa</b>mple Ltd</mark>',
             'an unbalanced open tag'
         ],
         [
+            '<mark><b>Exa</mark></b>mple Ltd',
+            '<mark><b>Exa&lt;/mark&gt;</b>mple Ltd</mark>',
+            'crossed close tags'
+        ],
+        [
             '<mark><mark>Exa</mark></mark>mple Ltd',
-            ['MARK', 'MARK'],
-            'Example Ltd',
+            '<mark><mark>Exa</mark></mark>mple Ltd',
             'nested marks'
         ],
         [
             '&lt;mark&gt;Exa&lt;/mark&gt;mple Ltd',
-            [],
-            '&lt;mark&gt;Exa&lt;/mark&gt;mple Ltd',
+            '&amp;lt;mark&amp;gt;Exa&amp;lt;/mark&amp;gt;mple Ltd',
             'an already entity-encoded mark'
+        ],
+        [
+            undefined,
+            '',
+            'a hit the API sent no label for'
         ]
-    ])('a row keeps %s as %p', async (html, tags, text, description) => {
+    ])('a row renders %s as %s (%s)', async (html, rendered) => {
         await type('exa');
         resolvers[0]({
             items: [{ text: 'Example Ltd', html: html }],
@@ -720,9 +725,7 @@ describe('what the panel paints for each outcome', () => {
         });
         await nextTick();
 
-        const row = document.querySelector(ROW);
-        expect(Array.from(row.querySelectorAll('*')).map((el) => el.tagName)).toEqual(tags, description);
-        expect(row.textContent).toBe(text, description);
+        expect(document.querySelector(ROW).innerHTML).toBe(rendered);
     });
 
     test('a cached answer takes down a spinner an abort left up', async () => {
