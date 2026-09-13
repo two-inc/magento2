@@ -799,9 +799,11 @@ without it the group swallows Tab.
 
 `isTermChecked()` is the single definition of a selected chip, read by the
 `aria-checked` binding and by the visual `--selected` class, so the tick and the
-exposed state cannot drift apart. A selection matching no chip leaves nothing
-checked, and `focusableTerm()` puts the tab stop on the first chip so the group
-cannot drop out of the tab order.
+exposed state cannot drift apart. The tick is drawn with an empty alternative
+text (`content: '\2713' / ''`), so the selection is stated by `aria-checked`
+alone and never repeated inside the chip's accessible name. A selection matching
+no chip leaves nothing checked, and `focusableTerm()` puts the tab stop on the
+first chip so the group cannot drop out of the tab order.
 
 **`termOptions` is a plain array, not a computed.** Knockout's `foreach` over a
 recomputed array rebuilds every chip node, and a `/select-term` response
