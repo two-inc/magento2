@@ -6,6 +6,7 @@ namespace Two\Gateway\Test\Unit\Model\Ui;
 use PHPUnit\Framework\TestCase;
 use Two\Gateway\Api\BrandRegistryInterface;
 use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
+use Two\Gateway\Model\Ui\AnchorOnlyHtmlEscaper;
 use Two\Gateway\Model\Ui\CheckoutTileCopy;
 
 /**
@@ -71,8 +72,8 @@ class CheckoutTileCopyTest extends TestCase
             ],
             'admin subtitle set' => [
                 '', self::TAGLINE_KEY, self::FAQ_URL, false, '  Pay later & <b>relax</b>  ',
-                false, '', 'Pay later &amp; &lt;b&gt;relax&lt;/b&gt;',
-                'merchant free text is escaped and never carries a read-more link',
+                false, '', 'Pay later &amp; relax',
+                'merchant free text replaces the tagline and keeps only what the escaper allows',
             ],
         ];
     }
@@ -122,6 +123,6 @@ class CheckoutTileCopyTest extends TestCase
         $brandRegistry->method('getCheckoutSubtitle')->willReturn($brandTaglineKey);
         $brandRegistry->method('getCheckoutSubtitleFaqUrl')->willReturn($brandFaqUrl);
 
-        return new CheckoutTileCopy($configRepository, $brandRegistry);
+        return new CheckoutTileCopy($configRepository, $brandRegistry, new AnchorOnlyHtmlEscaper());
     }
 }
