@@ -285,7 +285,9 @@ class ConfigProvider implements ConfigProviderInterface
                     'aboutLinkUrl' => $this->checkoutTileCopy->getAboutLinkUrl(),
                     'aboutLinkText' => $this->checkoutTileCopy->getAboutLinkText(),
                     'aboutTooltipHtml' => $this->checkoutTileCopy->getAboutTooltipHtml(),
-                    'aboutIconUrl' => $this->assetRepository->getUrl('Two_Gateway::images/question.svg'),
+                    'aboutIconUrl' => $this->checkoutTileCopy->isAboutLinkVisible()
+                        ? $this->assetRepository->getUrl('Two_Gateway::images/question.svg')
+                        : '',
                     'displayTooltips' => $this->configRepository->isDisplayTooltipsEnabled(),
                     'surchargeDescription' => $this->configRepository->getSurchargeLineDescription(),
                     'isPaymentTermsEnabled' => true,

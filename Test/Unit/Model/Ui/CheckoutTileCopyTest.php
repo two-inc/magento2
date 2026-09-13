@@ -98,11 +98,39 @@ class CheckoutTileCopyTest extends TestCase
         $this->assertSame($expectedSubtitle, $copy->getSubtitleHtml(), $description);
     }
 
-    public function testAboutLinkTextNamesTheBrandProduct(): void
+    /**
+     * @return array<string, array{0:string,1:bool,2:string,3:string}>
+     */
+    public static function aboutLinkTextRows(): array
     {
-        $copy = $this->build(self::ABOUT_URL, '', '', true, '');
+        return [
+            'brand about url with the toggle on' => [
+                self::ABOUT_URL, true, 'What is Acme Pay?',
+                'the accessible name of the icon names the brand product',
+            ],
+            'no brand about url' => [
+                '', true, '',
+                'no target means no icon, so there is no name to give one',
+            ],
+            'brand about url with the toggle off' => [
+                self::ABOUT_URL, false, '',
+                'the merchant toggle removes the whole control, name included',
+            ],
+        ];
+    }
 
-        $this->assertSame('What is Acme Pay?', $copy->getAboutLinkText());
+    /**
+     * @dataProvider aboutLinkTextRows
+     */
+    public function testAboutLinkTextFollowsTheIconItNames(
+        string $brandAboutUrl,
+        bool $aboutLinkEnabled,
+        string $expectedText,
+        string $description
+    ): void {
+        $copy = $this->build($brandAboutUrl, '', '', $aboutLinkEnabled, '');
+
+        $this->assertSame($expectedText, $copy->getAboutLinkText(), $description);
     }
 
     /**

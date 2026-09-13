@@ -49,7 +49,10 @@ function attributesOf(pattern) {
 
 const ICON_ANCHOR = /<a\b([^>]*\bclass="two-about-icon"[^>]*)>/;
 const ICON_IMAGE = /<img\b([^>]*)>/;
-const TOOLTIP = /<span\b([^>]*\bclass="two-about-tooltip"[^>]*)>/;
+// Flow content, not phrasing: the tooltip body holds <p>s, so neither the
+// wrapper nor the body may be a span.
+const WRAPPER = /<div\b([^>]*\bclass="two-about"[^>]*)>/;
+const TOOLTIP = /<div\b([^>]*\bclass="two-about-tooltip"[^>]*)>/;
 
 describe('the about control is an anchor-wrapped icon (ABN-554)', () => {
     test.each([
@@ -92,6 +95,11 @@ describe('the about control is an anchor-wrapped icon (ABN-554)', () => {
             element: ICON_IMAGE,
             pattern: /src:\s*aboutIconUrl/,
             case: 'the icon asset comes from the server-resolved URL'
+        },
+        {
+            element: WRAPPER,
+            pattern: /\bclass="two-about"/,
+            case: 'the control wrapper is flow content, so it may hold the body'
         },
         {
             element: TOOLTIP,

@@ -22,7 +22,11 @@
                         data-bind="attr: {'for': getCode()}, text: getTitle()"
                     ></label>
                     <!-- ko if: showWhatIsTwo -->
-                    <span class="two-about">
+                    <!-- Divs, not spans: the tooltip body holds <p>s, which a
+                         span's phrasing-only content model forbids. -->
+                    <div class="two-about">
+                        <!-- noopener without noreferrer: the Referer is how the
+                             brand's own about page attributes the visit. -->
                         <a
                             class="two-about-icon"
                             target="_blank"
@@ -30,13 +34,13 @@
                             data-bind="attr: {href: aboutLinkUrl, 'aria-label': aboutLinkText,
                                        'aria-describedby': aboutTooltipId()}"
                         ><img alt="" data-bind="attr: {src: aboutIconUrl}" /></a>
-                        <span
+                        <div
                             class="two-about-tooltip"
                             role="tooltip"
                             aria-hidden="true"
                             data-bind="attr: {id: aboutTooltipId()}, html: aboutTooltipHtml"
-                        ></span>
-                    </span>
+                        ></div>
+                    </div>
                     <!-- /ko -->
                 </div>
                 <!-- ko if: twoSubtitleHtml -->

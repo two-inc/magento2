@@ -68,7 +68,9 @@ class CheckoutTileCopy
 
     public function getAboutLinkText(): string
     {
-        return (string)__('What is %1?', $this->brandRegistry->getProductName());
+        return $this->isAboutLinkVisible()
+            ? (string)__('What is %1?', $this->brandRegistry->getProductName())
+            : '';
     }
 
     /**
