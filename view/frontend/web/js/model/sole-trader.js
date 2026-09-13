@@ -487,7 +487,9 @@
         this._popupCloseWatcherId = setInterval(() => {
             if (!win.closed) return;
             this.stopPopupCloseWatcher();
-            this.stopReturnToCheckoutWatcher();
+            // The close is bookkeeping: the field re-fire it will provoke comes with the
+            // window's return, which is unbounded from here (ABN-554).
+            this.stopReturnToCheckoutWatcher({ releaseOpener: false });
             // The handshake's buyer lookup can still be out; it owns the
             // outcome from here and will write whatever identity it resolves.
             if (this._signupConfirming) return;
@@ -575,10 +577,16 @@
         document.addEventListener('focusin', this._returnHandler, true);
     };
 
-    /** Release the watcher with the popup it was armed for. */
-    SoleTrader.prototype.stopReturnToCheckoutWatcher = function () {
+    /**
+     * Release the watcher with the popup it was armed for.
+     *
+     * @param {object} [options] `{ releaseOpener: false }` where the popup's own
+     *        disappearance is all that has happened, and the field's opener stays
+     *        held for the window return still to come (ABN-554).
+     */
+    SoleTrader.prototype.stopReturnToCheckoutWatcher = function (options) {
         const panel = this._component.panel();
-        if (panel) panel.holdFieldOpener(false);
+        if (panel && !(options && options.releaseOpener === false)) panel.holdFieldOpener(false);
         // The flight's own park is not a place the buyer chose, so the abandon reclaim
         // that follows reads the unplaced focus the launch actually left it (ABN-554).
         if (this._parkedFocus && document.activeElement === this._parkedFocus) this._parkedFocus.blur();

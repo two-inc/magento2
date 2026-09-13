@@ -627,9 +627,19 @@ never reopens.
 
 **`holdFieldOpener()` holds that same FOCUS opener off for a whole signup
 flight**, and the pointer and keyboard openers stay live throughout. A browser
-re-fires `focus` on whatever the opener window still holds the moment a popup
-closes, which is the field the launch parked focus on — and by then the popup is
-gone, so nothing read at that moment tells the re-fire from the buyer (ABN-554).
+re-fires `focus` and `focusin` on whatever the opener window still holds when it
+regains focus, which is the field the launch parked focus on — and by then the
+popup is gone, so nothing read at that moment tells the re-fire from the buyer
+(ABN-554).
+
+**The hold ends on that re-fire, and on nothing timed.** It is the window's own
+`focus` event the pair is bound to — measured in a live browser at anything from
+a second after the popup closed to a minute, however long the buyer stays away —
+so the popup's close is bookkeeping and releases nothing. The pair is swallowed
+whole and the `focusin` half clears the hold, which is why the field pair alone,
+with no window focus beside it, leaves the hold standing. A `pointerdown`, a
+`click` or a keystroke on the field clears it outright: a buyer who comes back
+and reaches for the control gets the popover.
 
 **The close-on-focus-leave path is the exception, and deliberately so.** It only
 fires once focus has settled on another control, so taking focus back would undo

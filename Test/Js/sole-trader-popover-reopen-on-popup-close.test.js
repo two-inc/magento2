@@ -188,7 +188,17 @@ function popoverIsOpen() {
     return !!node && !node.hasAttribute('hidden');
 }
 
-/** What a browser sends the opener window when the popup it launched goes away. */
+/**
+ * What a browser sends the opener when the buyer's screen comes back to it: the
+ * window's own focus, and beside it the pair re-fired on the control that still
+ * holds focus. All three are synthesised here; jsdom sends none of them.
+ */
+function windowReturnRefire() {
+    window.dispatchEvent(new window.Event('focus'));
+    refireFocusOnField();
+}
+
+/** The field pair on its own, which no window return ever sends unaccompanied. */
 function refireFocusOnField() {
     const field = document.querySelector(FIELD);
     dispatchNative(field, 'focus');
@@ -213,9 +223,11 @@ describe('the popup closing must not reopen the company-search popover (ABN-554)
         }
 
         ctx.handle.closed = true;
-        refireFocusOnField();
+        // The close is noticed first and the return arrives whenever the buyer comes
+        // back, which is the ordering a live browser was measured in.
         ctx.poll.fn();
         await flush();
+        windowReturnRefire();
 
         expect(tagged(why, [
             popoverIsOpen(),
@@ -223,10 +235,15 @@ describe('the popup closing must not reopen the company-search popover (ABN-554)
         ])).toEqual(tagged(why, [expectedOpen, String(expectedOpen)]));
     });
 
-    test.each([
-        ['mousedown', 'the pointer opener is never held, so it opens throughout'],
-        ['focus', 'the hold ends with the flight, and the focus opener is alive again']
-    ])('a real %s on the field opens the popover after the flight (%s)', async function (opener, why) {
+    /**
+     * The popover shut with the hold still standing: the signup adopted a trader
+     * and closed the popover itself, and the buyer's screen has not come back yet.
+     *
+     * Nothing here blurs a node, deliberately. jsdom answers an `element.blur()`
+     * with a focus event whose target is the WINDOW, which no browser does, and
+     * that is indistinguishable from the return this suite is about.
+     */
+    async function heldWithPopoverShut() {
         const ctx = await openedStack();
         ctx.buyerRef.value = TRADER;
         ctx.rec.messageListeners
@@ -235,14 +252,64 @@ describe('the popup closing must not reopen the company-search popover (ABN-554)
         await flush();
         await flush();
         ctx.handle.closed = true;
-        refireFocusOnField();
-        ctx.poll.fn();
-        await flush();
+        expect(popoverIsOpen()).toBe(false);
+        return ctx;
+    }
+
+    test.each([
+        ['mousedown', 'the pointer opener is never held, so it opens throughout'],
+        ['focus', 'the window return took the hold with it, and the focus opener is alive again']
+    ])('a real %s on the field opens the popover after the window return (%s)', async function (opener, why) {
+        const ctx = await heldWithPopoverShut();
+        windowReturnRefire();
         expect(popoverIsOpen()).toBe(false);
 
         dispatchNative(document.querySelector(FIELD), opener);
 
         expect(tagged(why, popoverIsOpen())).toEqual(tagged(why, true));
+        expect(ctx.rec.handles).toHaveLength(1);
+    });
+
+    test('the field pair alone leaves the hold standing, however long it stands', async function () {
+        await heldWithPopoverShut();
+        refireFocusOnField();
+        refireFocusOnField();
+
+        dispatchNative(document.querySelector(FIELD), 'focus');
+
+        expect(popoverIsOpen()).toBe(false);
+    });
+
+    test('the popup close alone leaves the hold standing', async function () {
+        const ctx = await heldWithPopoverShut();
+        ctx.poll.fn();
+        await flush();
+
+        dispatchNative(document.querySelector(FIELD), 'focus');
+
+        expect(popoverIsOpen()).toBe(false);
+    });
+
+    test.each([
+        ['pointerdown', 'a press on the field is the buyer reaching for the panel'],
+        ['click', 'and so is a click that arrives without one']
+    ])('a %s on the field ends the hold (%s)', async function (type, why) {
+        await heldWithPopoverShut();
+
+        dispatchNative(document.querySelector(FIELD), type);
+        dispatchNative(document.querySelector(FIELD), 'focus');
+
+        expect(tagged(why, popoverIsOpen())).toEqual(tagged(why, true));
+    });
+
+    test('Escape on the field ends the hold', async function () {
+        await heldWithPopoverShut();
+
+        escapeOnField();
+        expect(popoverIsOpen()).toBe(false);
+        dispatchNative(document.querySelector(FIELD), 'focus');
+
+        expect(popoverIsOpen()).toBe(true);
     });
 
     test('a supersede the browser blocks leaves the focus opener alive', async function () {
