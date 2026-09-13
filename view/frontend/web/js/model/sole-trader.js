@@ -340,6 +340,9 @@
         if (!this.hasSignupTokens()) return null;
         if (this.isPopupOpen()) this._popupWindow.close();
         this.stopPopupCloseWatcher();
+        // With it goes the close poll that would have released the panel's opener hold,
+        // and a blocked re-open arms no replacement to release it later (ABN-554).
+        this.stopReturnToCheckoutWatcher();
 
         let params = `businessToken=${this.delegationToken}`;
         params += `&autofillToken=${this.autofillToken}`;
@@ -484,7 +487,9 @@
         this._popupCloseWatcherId = setInterval(() => {
             if (!win.closed) return;
             this.stopPopupCloseWatcher();
-            this.stopReturnToCheckoutWatcher();
+            // The close is bookkeeping: the field re-fire it will provoke comes with the
+            // window's return, which is unbounded from here (ABN-554).
+            this.stopReturnToCheckoutWatcher({ releaseOpener: false });
             // The handshake's buyer lookup can still be out; it owns the
             // outcome from here and will write whatever identity it resolves.
             if (this._signupConfirming) return;
@@ -525,6 +530,7 @@
             if (!field || !document.contains(field)) return;
             // Before the focus, which the return watch sees synchronously.
             this._parkedFocus = field;
+            panel.holdFieldOpener(true);
             panel.restoreFieldFocus();
         }, 0);
     };
@@ -538,17 +544,13 @@
      * gets a popup of its own.
      *
      * A focusin a browser re-fires on window return counts as the buyer focusing that
-     * control, unless it is the field the launch parked focus on and focus has not left it.
+     * control, unless it is the field the launch parked focus on. The park stands for the
+     * whole flight, because the window losing focus to the popup blurs that field and the
+     * return's re-fire is the first focus it gets back (ABN-554).
      */
     SoleTrader.prototype.watchForReturnToCheckout = function () {
         if (this._returnHandler) return;
         this._returnHandler = (event) => {
-            // Focus that LEAVES is what tells a window return's re-fire apart from the
-            // buyer arriving on the parked field: the re-fire carries no focusout (ABN-554).
-            if (event.type === 'focusout') {
-                if (event.target === this._parkedFocus) this._parkedFocus = null;
-                return;
-            }
             if (!this.isPopupOpen()) return;
             const target = event.target;
             if (target === this._parkedFocus) return;
@@ -573,18 +575,24 @@
             if (chip && typeof chip.click === 'function') chip.click();
         };
         document.addEventListener('focusin', this._returnHandler, true);
-        document.addEventListener('focusout', this._returnHandler, true);
     };
 
-    /** Release the watcher with the popup it was armed for. */
-    SoleTrader.prototype.stopReturnToCheckoutWatcher = function () {
+    /**
+     * Release the watcher with the popup it was armed for.
+     *
+     * @param {object} [options] `{ releaseOpener: false }` where the popup's own
+     *        disappearance is all that has happened, and the field's opener stays
+     *        held for the window return still to come (ABN-554).
+     */
+    SoleTrader.prototype.stopReturnToCheckoutWatcher = function (options) {
+        const panel = this._component.panel();
+        if (panel && !(options && options.releaseOpener === false)) panel.holdFieldOpener(false);
         // The flight's own park is not a place the buyer chose, so the abandon reclaim
         // that follows reads the unplaced focus the launch actually left it (ABN-554).
         if (this._parkedFocus && document.activeElement === this._parkedFocus) this._parkedFocus.blur();
         this._parkedFocus = null;
         if (!this._returnHandler) return;
         document.removeEventListener('focusin', this._returnHandler, true);
-        document.removeEventListener('focusout', this._returnHandler, true);
         this._returnHandler = null;
     };
 
