@@ -28,7 +28,7 @@ class SharedCapturePhraseHarvestTest extends TestCase
     private const HOST_MODULE = 'view/frontend/web/js/model/company-capture.js';
 
     /** Guards the extraction below against silently matching nothing. */
-    private const KNOWN_SEAM_PHRASE_COUNT = 7;
+    private const KNOWN_SEAM_PHRASE_COUNT = 9;
 
     public function testTheHostAnswersTheSeamFromThatDictionary(): void
     {

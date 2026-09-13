@@ -248,6 +248,12 @@ define([
      */
     function buildSharedPhrases() {
         return {
+            '1 result is available, use up and down arrow keys to navigate.': $t(
+                '1 result is available, use up and down arrow keys to navigate.'
+            ),
+            '%1 results are available, use up and down arrow keys to navigate.': $t(
+                '%1 results are available, use up and down arrow keys to navigate.'
+            ),
             'Company Number': $t('Company Number'),
             'Company search is unavailable right now. Please try again shortly.':
                 $t('Company search is unavailable right now. Please try again shortly.'),
