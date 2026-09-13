@@ -209,7 +209,7 @@ describe('the tooltip opens on hover and on keyboard focus (ABN-554)', () => {
         expect(read(STYLESHEET)).toMatch(pattern);
     });
 
-    test('the closed tooltip keeps its box, so aria-describedby still resolves to text', () => {
+    test('the closed tooltip stays in the layout, so it can transition rather than pop', () => {
         const closed = read(STYLESHEET).match(/\.two-about-tooltip\s*\{([\s\S]*?)\}/)[1];
 
         expect(closed).toMatch(/opacity:\s*0;/);

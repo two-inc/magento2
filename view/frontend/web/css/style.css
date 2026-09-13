@@ -68,8 +68,7 @@
     height: 19px;
 }
 
-/* Opacity rather than display/visibility: aria-describedby only resolves to
-   text the accessibility tree still holds. */
+/* Opacity rather than display/visibility: the open transition needs a fadeable property. */
 .two-about-tooltip {
     position: absolute;
     left: 0;
