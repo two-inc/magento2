@@ -80,7 +80,8 @@ class CheckoutTileCopy
     /**
      * The tooltip body for the about icon; empty whenever the icon itself is
      * withheld. The closing line is plain text — the icon is the link, so an
-     * anchor here would be a second, duplicate one.
+     * anchor here would be a second, duplicate one. Renderers bind the result
+     * unescaped, so every phrase is escaped here.
      */
     public function getAboutTooltipHtml(): string
     {
@@ -88,11 +89,11 @@ class CheckoutTileCopy
             return '';
         }
 
-        $product = htmlspecialchars($this->brandRegistry->getProductName(), ENT_QUOTES, 'UTF-8');
+        $product = $this->brandRegistry->getProductName();
 
         // One literal per phrase: Magento's i18n scanner cannot harvest a concatenated key.
-        return '<p>' . (string)__('%1 is a payment solution for B2B purchases online, allowing you to buy from your favourite merchants and suppliers on trade credit. Using %1, you can access flexible trade credit instantly to make purchasing simple.', $product) . '</p>'
-            . '<p><strong>' . (string)__('Buy now, receive your goods, pay your invoice later.') . '</strong></p>'
-            . '<p>' . (string)__('Click to find out more') . '</p>';
+        return '<p>' . $this->htmlEscaper->escapeTextOnly((string)__('%1 is a payment solution for B2B purchases online, allowing you to buy from your favourite merchants and suppliers on trade credit. Using %1, you can access flexible trade credit instantly to make purchasing simple.', $product)) . '</p>'
+            . '<p><strong>' . $this->htmlEscaper->escapeTextOnly((string)__('Buy now, receive your goods, pay your invoice later.')) . '</strong></p>'
+            . '<p>' . $this->htmlEscaper->escapeTextOnly((string)__('Click to find out more')) . '</p>';
     }
 }

@@ -17,14 +17,27 @@ class Phrase
     /** @var array */
     private $arguments;
 
+    /** @var \Magento\Framework\Phrase\RendererInterface|null */
+    private static $renderer;
+
     public function __construct(string $text, array $arguments = [])
     {
         $this->text = $text;
         $this->arguments = $arguments;
     }
 
+    /** Nullable so a test can restore the untranslated default; Magento only ever swaps it. */
+    public static function setRenderer($renderer = null): void
+    {
+        self::$renderer = $renderer;
+    }
+
     public function render(): string
     {
+        if (self::$renderer !== null) {
+            return (string)self::$renderer->render([$this->text], $this->arguments);
+        }
+
         $result = $this->text;
         foreach ($this->arguments as $index => $value) {
             $result = str_replace('%' . ($index + 1), (string)$value, $result);

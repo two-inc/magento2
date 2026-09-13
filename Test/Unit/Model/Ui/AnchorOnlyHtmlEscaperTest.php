@@ -227,6 +227,53 @@ class AnchorOnlyHtmlEscaperTest extends TestCase
     }
 
     /**
+     * @return array<string, array{0:string,1:string,2:string}>
+     */
+    public static function textOnlyRows(): array
+    {
+        return [
+            'an anchor' => [
+                '<a href="https://evil.test" target="_blank">click</a>',
+                '&lt;a href=&quot;https://evil.test&quot; target=&quot;_blank&quot;&gt;click&lt;/a&gt;',
+                'text-only copy has no link to preserve, so even a valid anchor stays visible text',
+            ],
+            'an event-handler tag' => [
+                '<img src=x onerror=alert(1)>',
+                '&lt;img src=x onerror=alert(1)&gt;',
+                'the classic payload renders as its own source',
+            ],
+            'copy already carrying entities' => [
+                '&lt;script&gt;alert(1)&lt;/script&gt;',
+                '&lt;script&gt;alert(1)&lt;/script&gt;',
+                'an entity is already inert, and re-encoding it would show the buyer the entity itself',
+            ],
+            'a numeric character reference' => [
+                '&#60;img src=x onerror=alert(1)&#62;',
+                '&#60;img src=x onerror=alert(1)&#62;',
+                'innerHTML decodes this in the data state, so it is text rather than a tag',
+            ],
+            'a control character' => [
+                "<\x00img src=x>",
+                '&lt;img src=x&gt;',
+                'a NUL cannot be used to break the escape up',
+            ],
+            'plain copy' => [
+                'Pay later & relax',
+                'Pay later &amp; relax',
+                'ordinary copy survives with only its ampersand encoded',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider textOnlyRows
+     */
+    public function testTextOnlyEscapingKeepsNoMarkup(string $input, string $expected, string $description): void
+    {
+        $this->assertSame($expected, (new AnchorOnlyHtmlEscaper())->escapeTextOnly($input), $description);
+    }
+
+    /**
      * @dataProvider escapingRows
      */
     public function testEscaping(string $input, string $expected, string $description): void

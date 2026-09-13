@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Two\Gateway\Test\Unit\Model\Ui;
 
+use Magento\Framework\Phrase;
 use PHPUnit\Framework\TestCase;
 use Two\Gateway\Api\BrandRegistryInterface;
 use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
@@ -19,6 +20,11 @@ class CheckoutTileCopyTest extends TestCase
     private const FAQ_URL = 'https://faq.example.test/invoice';
     private const ABOUT_URL = 'https://about.example.test/what-is-acme';
     private const TAGLINE_KEY = 'For all companies, %1read more%2.';
+
+    protected function tearDown(): void
+    {
+        Phrase::setRenderer(null);
+    }
 
     /**
      * @return array<string, array{0:string,1:string,2:string,3:bool,4:string,5:bool,6:string,7:string,8:string}>
@@ -196,6 +202,93 @@ class CheckoutTileCopyTest extends TestCase
             . ' trade credit instantly to make purchasing simple.</p>'
             . '<p><strong>Buy now, receive your goods, pay your invoice later.</strong></p>'
             . '<p>Click to find out more</p>';
+    }
+
+    /**
+     * @return array<string, array{0:string,1:string,2:string,3:string}>
+     */
+    public static function tooltipTranslationRows(): array
+    {
+        $body = '%1 is a payment solution for B2B purchases online, allowing you to buy from your favourite'
+            . ' merchants and suppliers on trade credit. Using %1, you can access flexible trade credit'
+            . ' instantly to make purchasing simple.';
+
+        return [
+            'body paragraph' => [
+                $body,
+                '<img src=x onerror=alert(1)>',
+                '<p>&lt;img src=x onerror=alert(1)&gt;</p>',
+                'a translated body paragraph cannot open markup, and keeps its own <p>',
+            ],
+            'emphasised line' => [
+                'Buy now, receive your goods, pay your invoice later.',
+                '<svg onload=alert(2)></svg>',
+                '<p><strong>&lt;svg onload=alert(2)&gt;&lt;/svg&gt;</strong></p>',
+                'a translated emphasis line cannot open markup, and keeps its own <p><strong>',
+            ],
+            'closing line' => [
+                'Click to find out more',
+                '</p><script>alert(3)</script><p>',
+                '<p>&lt;/p&gt;&lt;script&gt;alert(3)&lt;/script&gt;&lt;p&gt;</p>',
+                'a translation cannot close the wrapper it was given and open its own',
+            ],
+            'anchor in a translation' => [
+                'Click to find out more',
+                '<a href="https://evil.test">click</a>',
+                '<p>&lt;a href=&quot;https://evil.test&quot;&gt;click&lt;/a&gt;</p>',
+                'the icon is already the link, so a translated anchor is markup rather than a second link',
+            ],
+        ];
+    }
+
+    /**
+     * Given an admin-supplied translation carrying markup; when the tooltip renders;
+     * then no tag of the translation's survives and the method's own wrappers do.
+     *
+     * @dataProvider tooltipTranslationRows
+     */
+    public function testTooltipEscapesTranslatedMarkup(
+        string $translatedKey,
+        string $payload,
+        string $expectedFragment,
+        string $description
+    ): void {
+        Phrase::setRenderer(self::rendererTranslating($translatedKey, $payload));
+        $copy = $this->build(self::ABOUT_URL, '', '', true, '');
+
+        $tooltip = $copy->getAboutTooltipHtml();
+
+        $this->assertStringContainsString($expectedFragment, $tooltip, $description);
+        $this->assertSame(3, substr_count($tooltip, '<p>'), 'the tooltip lost or gained a wrapper: ' . $description);
+    }
+
+    /** The accessible name is plain text, so escaping it would put entities into what a screen reader reads out. */
+    public function testAboutLinkTextIsPlainText(): void
+    {
+        Phrase::setRenderer(self::rendererTranslating('What is %1?', 'Wat is %1 & co?'));
+
+        $text = $this->build(self::ABOUT_URL, '', '', true, '')->getAboutLinkText();
+
+        $this->assertSame('Wat is Acme Pay & co?', $text);
+    }
+
+    private static function rendererTranslating(string $key, string $translation): object
+    {
+        return new class ($key, $translation) implements \Magento\Framework\Phrase\RendererInterface {
+            public function __construct(private string $key, private string $translation)
+            {
+            }
+
+            public function render(array $source, array $arguments): string
+            {
+                $text = $source[0] === $this->key ? $this->translation : $source[0];
+                foreach ($arguments as $index => $value) {
+                    $text = str_replace('%' . ($index + 1), (string)$value, $text);
+                }
+
+                return $text;
+            }
+        };
     }
 
     public function testTooltipEscapesTheBrandName(): void
