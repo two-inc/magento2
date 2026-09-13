@@ -314,6 +314,62 @@ class AnchorOnlyHtmlEscaperTest extends TestCase
         $this->assertSame([], $raised, 'escaping an empty attribute value raised: ' . implode('; ', $raised));
     }
 
+    /**
+     * @return array<string, array{0:string,1:bool,2:string}>
+     */
+    public static function renderBoundaryRows(): array
+    {
+        return [
+            'empty' => ['', true, 'an empty subtitle is nothing to strip'],
+            'plain copy' => ['Pay later, interest free', true, 'plain copy renders verbatim'],
+            'apostrophe and ampersand' => [
+                "Don't wait & save",
+                true,
+                'text the escaper only entity-encodes is not markup',
+            ],
+            'stray less-than' => ['2 < 3', true, 'a stray < is encoded as text, not treated as markup'],
+            'pre-existing entity' => ['Tea &amp; coffee', true, 'copy that already carries an entity is left alone'],
+            'permitted anchor' => [
+                '<a href="' . self::URL . '">read more</a>',
+                true,
+                'the anchor the tile allows survives verbatim',
+            ],
+            'permitted new-tab anchor' => [
+                '<a href="' . self::URL . '" target="_blank" rel="noopener">read more</a>',
+                true,
+                'so does the new-tab form this module itself emits',
+            ],
+            'dropped tag' => ['<b>Pay</b> later', false, 'a dropped tag changes what the buyer reads'],
+            'refused href' => [
+                '<a href="javascript:alert(1)">read more</a>',
+                false,
+                'a link whose target is refused loses its anchor',
+            ],
+            'anchor rewritten to add noopener' => [
+                '<a href="' . self::URL . '" target="_blank">read more</a>',
+                false,
+                'a new-tab link is rewritten to carry noopener, so it is not what was typed',
+            ],
+            'dropped attribute' => [
+                '<a href="' . self::URL . '" onclick="steal()">read more</a>',
+                false,
+                'a dropped attribute is a change too',
+            ],
+            'control character' => ["safe\x00ish", false, 'a control character is removed'],
+        ];
+    }
+
+    /**
+     * The admin accept/reject boundary is this escaper's own render boundary
+     * (ABN-554): entity-encoding plain text is not a change.
+     *
+     * @dataProvider renderBoundaryRows
+     */
+    public function testRendersUnchangedIgnoresEntityEncodingOnly(string $input, bool $expected, string $description): void
+    {
+        $this->assertSame($expected, (new AnchorOnlyHtmlEscaper())->rendersUnchanged($input), $description);
+    }
+
     /** A non-string subtitle yields '' rather than a TypeError, as on the other platforms. */
     public function testANonStringInputIsCoerced(): void
     {

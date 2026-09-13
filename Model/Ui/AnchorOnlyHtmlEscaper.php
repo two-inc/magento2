@@ -71,6 +71,22 @@ class AnchorOnlyHtmlEscaper
         return $result . str_repeat('</a>', $openAnchors);
     }
 
+    /**
+     * Whether escaping leaves the value's content alone - the admin
+     * accept/reject boundary, so it is the render boundary (ABN-554).
+     * Entity encoding is not a change; only markup this class drops or
+     * rewrites fails.
+     *
+     * @param mixed $html
+     */
+    public function rendersUnchanged($html): bool
+    {
+        $html = (string) $html;
+
+        return html_entity_decode($this->escape($html), ENT_QUOTES, 'UTF-8')
+            === html_entity_decode($html, ENT_QUOTES, 'UTF-8');
+    }
+
     /** Plain-text copy: even a valid anchor is markup here, not a link. */
     public function escapeTextOnly(string $text): string
     {
