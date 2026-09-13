@@ -943,12 +943,13 @@ define([
             // value: it is what gets submitted, and hiding it from the buyer is
             // not the same as not having it.
             const displayIdentifier = formatCompanyNumber(identifier);
+            const label = item.highlight || item.name || '';
             items.push({
                 id: item.name,
                 text: item.name,
                 html: displayIdentifier
-                    ? `${item.highlight} (${displayIdentifier})`
-                    : item.highlight,
+                    ? `${label} (${displayIdentifier})`
+                    : label,
                 companyId: identifier,
                 // Required by lookupCompanyAddress(); dropping it silently
                 // disables address autofill.
