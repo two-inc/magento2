@@ -12,17 +12,28 @@ namespace Two\Gateway\Model\Ui;
  * survives, every other tag is dropped and its text kept, and all other markup
  * is escaped.
  *
- * Surviving anchors are rebuilt from scratch rather than filtered, so no
- * attribute this module does not itself emit can reach the page.
+ * Surviving anchors are rebuilt from their allowed attributes, so no attribute
+ * this module does not itself emit can reach the page. The href itself is only
+ * checked for scheme and userinfo, not vouched for - whoever writes the copy
+ * chooses where an http(s) link points. `target` and `rel` are matched
+ * case-insensitively and re-emitted lowercased, as browsers treat those keywords.
  */
 class AnchorOnlyHtmlEscaper
 {
     private const ALLOWED_TARGET = '_blank';
     private const ALLOWED_REL = 'noopener';
 
-    public function escape(string $html): string
+    /** @param mixed $html */
+    public function escape($html): string
     {
-        $parts = preg_split('/(<[^>]*>)/', $html, -1, PREG_SPLIT_DELIM_CAPTURE);
+        // Only a name-like tag opens markup; a stray '<' stays text rather than
+        // swallowing the copy up to the next '>'.
+        $parts = preg_split(
+            '/(<\/?[a-zA-Z][^>]*>)/',
+            $this->stripControlCharacters((string) $html),
+            -1,
+            PREG_SPLIT_DELIM_CAPTURE
+        );
         if ($parts === false) {
             return '';
         }
@@ -59,7 +70,13 @@ class AnchorOnlyHtmlEscaper
 
     private function escapeText(string $text): string
     {
-        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8', false);
+        // ENT_SUBSTITUTE: without it one malformed byte blanks the whole run.
+        return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false);
+    }
+
+    private function stripControlCharacters(string $text): string
+    {
+        return (string) preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $text);
     }
 
     private function rebuildAnchor(string $tag): string
@@ -69,8 +86,12 @@ class AnchorOnlyHtmlEscaper
         if (!preg_match('/^https?:\/\//i', $href)) {
             return '';
         }
+        // Userinfo is the classic spoof: everything before the '@' reads as the host.
+        if (preg_match('/^https?:\/\/[^\/?#]*@/i', $href)) {
+            return '';
+        }
 
-        $anchor = '<a href="' . htmlspecialchars($href, ENT_QUOTES, 'UTF-8') . '"';
+        $anchor = '<a href="' . htmlspecialchars($href, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"';
         if (strtolower(trim($attributes['target'] ?? '')) === self::ALLOWED_TARGET) {
             $anchor .= ' target="' . self::ALLOWED_TARGET . '"';
         }
@@ -95,7 +116,11 @@ class AnchorOnlyHtmlEscaper
         foreach ($matches as $match) {
             $name = strtolower($match[1]);
             if (!isset($attributes[$name])) {
-                $attributes[$name] = $match[2] !== '' ? $match[2] : ($match[3] !== '' ? $match[3] : ($match[4] ?? ''));
+                // PREG_SET_ORDER truncates each set at the last participating
+                // group, so an empty quoted value leaves later groups absent.
+                $attributes[$name] = $match[2] !== ''
+                    ? $match[2]
+                    : (($match[3] ?? '') !== '' ? $match[3] : ($match[4] ?? ''));
             }
         }
 

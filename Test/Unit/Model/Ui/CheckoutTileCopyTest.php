@@ -70,6 +70,12 @@ class CheckoutTileCopyTest extends TestCase
                 false, '', '',
                 'a script URL in the tagline renders no tagline',
             ],
+            'admin subtitle carrying a link' => [
+                '', self::TAGLINE_KEY, self::FAQ_URL, false,
+                'Pay in 30 days, <a href="' . self::FAQ_URL . '" target="_blank" rel="noopener">read more</a>.',
+                false, '', 'Pay in 30 days, ' . $anchor . 'read more</a>.',
+                'the merchant field now carries a link of its own, which the previous escaping flattened to text',
+            ],
             'admin subtitle set' => [
                 '', self::TAGLINE_KEY, self::FAQ_URL, false, '  Pay later & <b>relax</b>  ',
                 false, '', 'Pay later &amp; relax',

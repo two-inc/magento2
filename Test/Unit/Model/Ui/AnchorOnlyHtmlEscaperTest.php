@@ -93,6 +93,81 @@ class AnchorOnlyHtmlEscaperTest extends TestCase
                 '<a href="https://a.example.test/1">outer inner</a> tail',
                 'a nested anchor loses its tag, not its text',
             ],
+            'http scheme' => [
+                '<a href="http://faq.example.test/x">read more</a>',
+                '<a href="http://faq.example.test/x">read more</a>',
+                'plain http is a reachable page, not only https',
+            ],
+            'uppercase tag' => [
+                '<A HREF="' . self::URL . '">read more</A>',
+                '<a href="' . self::URL . '">read more</a>',
+                'an uppercase tag is markup too, not text',
+            ],
+            'padded href' => [
+                '<a href="  ' . self::URL . '  ">read more</a>',
+                '<a href="' . self::URL . '">read more</a>',
+                'padding a stored href does not change the target',
+            ],
+            'entity-encoded script URL' => [
+                '<a href="&#106;avascript:alert(1)">read more</a>',
+                'read more',
+                'entity-encoding a script URL does not smuggle it past the scheme test',
+            ],
+            'entity already in the copy' => [
+                'Tea &amp; coffee & cake',
+                'Tea &amp; coffee &amp; cake',
+                'an entity already in the copy is left alone while a bare ampersand is escaped',
+            ],
+            'two-parameter query string' => [
+                '<a href="https://faq.example.test/x?a=1&amp;b=2">read more</a>',
+                '<a href="https://faq.example.test/x?a=1&amp;b=2">read more</a>',
+                'a two-parameter query string survives one decode and one re-encode unchanged',
+            ],
+            'quote inside href' => [
+                "<a href='https://faq.example.test/x?q=\"z\"'>read more</a>",
+                '<a href="https://faq.example.test/x?q=&quot;z&quot;">read more</a>',
+                'a quote inside the href is encoded rather than closing the attribute',
+            ],
+            'empty double-quoted href' => [
+                '<a href="">read more</a>',
+                'read more',
+                'an empty href is no link',
+            ],
+            'empty single-quoted href' => [
+                "<a href=''>read more</a>",
+                'read more',
+                'nor is an empty single-quoted one',
+            ],
+            'userinfo in href' => [
+                '<a href="https://user:pw@evil.example.test">read more</a>',
+                'read more',
+                'userinfo lets the text before the @ pose as the host, so the link is dropped',
+            ],
+            'at sign past the authority' => [
+                '<a href="https://faq.example.test/x?to=a@b">read more</a>',
+                '<a href="https://faq.example.test/x?to=a@b">read more</a>',
+                'an @ past the authority is ordinary query text',
+            ],
+            'uppercase target and rel' => [
+                '<a href="' . self::URL . '" target="_BLANK" rel="NOOPENER">read more</a>',
+                '<a href="' . self::URL . '" target="_blank" rel="noopener">read more</a>',
+                'browsers read these keywords case-insensitively, so they are matched that way and re-emitted lowercased',
+            ],
+            'malformed utf-8 byte' => [
+                "caf\xC3\xA9 \xC0\xAF costs \xE2\x82\xAC5",
+                "caf\u{00E9} \u{FFFD}\u{FFFD} costs \u{20AC}5",
+                'one malformed byte is substituted, not allowed to blank the whole run',
+            ],
+            'control character' => [
+                "safe\x00ish",
+                'safeish',
+                'a control character cannot render and is dropped',
+            ],
+            'stray less-than' => [
+                'Pay in 30 days < see <a href="' . self::URL . '">terms</a>',
+                'Pay in 30 days &lt; see <a href="' . self::URL . '">terms</a>',
+                'a stray < is text and does not swallow the copy up to the next >',
+            ],
         ];
     }
 
@@ -102,5 +177,44 @@ class AnchorOnlyHtmlEscaperTest extends TestCase
     public function testEscaping(string $input, string $expected, string $description): void
     {
         $this->assertSame($expected, (new AnchorOnlyHtmlEscaper())->escape($input), $description);
+    }
+
+    /**
+     * The subtitle is re-escaped on every render, so a second pass has to be a
+     * no-op - otherwise each render would re-encode the last one's entities.
+     *
+     * @dataProvider escapingRows
+     */
+    public function testEscapingIsIdempotent(string $input, string $expected, string $description): void
+    {
+        $this->assertSame($expected, (new AnchorOnlyHtmlEscaper())->escape($expected), 'escaping twice changes the output: ' . $description);
+    }
+
+    /**
+     * An empty quoted value leaves its capture group absent, and the resulting
+     * notice would be written into the middle of the checkout markup on a shop
+     * with display_errors on.
+     */
+    public function testAnEmptyAttributeValueRaisesNoWarning(): void
+    {
+        $raised = [];
+        set_error_handler(static function (int $severity, string $message) use (&$raised): bool {
+            $raised[] = $message;
+
+            return true;
+        });
+        try {
+            (new AnchorOnlyHtmlEscaper())->escape('<a href="" target="" rel="">read more</a>');
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame([], $raised, 'escaping an empty attribute value raised: ' . implode('; ', $raised));
+    }
+
+    /** A non-string subtitle yields '' rather than a TypeError, as on the other platforms. */
+    public function testANonStringInputIsCoerced(): void
+    {
+        $this->assertSame('', (new AnchorOnlyHtmlEscaper())->escape(null));
     }
 }
