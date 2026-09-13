@@ -43,13 +43,14 @@ function announced() {
 describe("ABN-554: the company-search panel's live region", () => {
     let panel;
     let answer;
+    let companySearch;
 
     beforeEach(() => {
         document.body.innerHTML =
             '<div class="control"><input id="company_name" type="text"></div>';
 
         answer = { items: [], unavailable: false, aborted: false };
-        const companySearch = loadAmdModule(MODEL_PATH, { jquery: $ }, GLOBALS);
+        companySearch = loadAmdModule(MODEL_PATH, { jquery: $ }, GLOBALS);
         companySearch.SEARCH_DEBOUNCE_MS = 0;
         companySearch.MIN_INPUT_LENGTH = 1;
         companySearch.searchCompanies = function () {
@@ -155,6 +156,21 @@ describe("ABN-554: the company-search panel's live region", () => {
                 '2 results are available, use up and down arrow keys to navigate.'
             );
             expect(document.querySelector(LIVE_SELECTOR).children).toHaveLength(1);
+        });
+
+        test.each([
+            ['k', 'one character'],
+            ['ka', 'two, still under the threshold']
+        ])('%s answers nothing, so nothing is announced - %s', async (term) => {
+            companySearch.MIN_INPUT_LENGTH = 3;
+            panel.open();
+            const query = document.querySelector('.two-company-dropdown__query');
+
+            query.value = term;
+            query.dispatchEvent(new window.Event('input', { bubbles: true }));
+            await tick();
+
+            await expect(announced()).resolves.toBe('');
         });
 
         test('the search being down says so rather than reporting no matches', async () => {
