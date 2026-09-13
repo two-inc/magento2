@@ -98,11 +98,97 @@ class CheckoutTileCopyTest extends TestCase
         $this->assertSame($expectedSubtitle, $copy->getSubtitleHtml(), $description);
     }
 
-    public function testAboutLinkTextNamesTheBrandProduct(): void
+    /**
+     * @return array<string, array{0:string,1:bool,2:string,3:string}>
+     */
+    public static function aboutLinkTextRows(): array
     {
-        $copy = $this->build(self::ABOUT_URL, '', '', true, '');
+        return [
+            'brand about url with the toggle on' => [
+                self::ABOUT_URL, true, 'What is Acme Pay?',
+                'the accessible name of the icon names the brand product',
+            ],
+            'no brand about url' => [
+                '', true, '',
+                'no target means no icon, so there is no name to give one',
+            ],
+            'brand about url with the toggle off' => [
+                self::ABOUT_URL, false, '',
+                'the merchant toggle removes the whole control, name included',
+            ],
+        ];
+    }
 
-        $this->assertSame('What is Acme Pay?', $copy->getAboutLinkText());
+    /**
+     * @dataProvider aboutLinkTextRows
+     */
+    public function testAboutLinkTextFollowsTheIconItNames(
+        string $brandAboutUrl,
+        bool $aboutLinkEnabled,
+        string $expectedText,
+        string $description
+    ): void {
+        $copy = $this->build($brandAboutUrl, '', '', $aboutLinkEnabled, '');
+
+        $this->assertSame($expectedText, $copy->getAboutLinkText(), $description);
+    }
+
+    /**
+     * @return array<string, array{0:string,1:bool,2:string,3:string}>
+     */
+    public static function tooltipRows(): array
+    {
+        return [
+            'brand about url with the toggle on' => [
+                self::ABOUT_URL, true, self::tooltipHtml(),
+                'the icon is a link, so its tooltip carries the body copy and no anchor of its own',
+            ],
+            'no brand about url' => [
+                '', true, '',
+                'no target means no icon, so there is nothing for a tooltip to describe',
+            ],
+            'brand about url with the toggle off' => [
+                self::ABOUT_URL, false, '',
+                'the merchant toggle removes the whole control, tooltip included',
+            ],
+            'non-http about url' => [
+                'javascript:alert(1)', true, '',
+                'a script URL renders no icon and therefore no tooltip',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider tooltipRows
+     */
+    public function testTooltipFollowsTheIconItDescribes(
+        string $brandAboutUrl,
+        bool $aboutLinkEnabled,
+        string $expectedTooltip,
+        string $description
+    ): void {
+        $copy = $this->build($brandAboutUrl, '', '', $aboutLinkEnabled, '');
+
+        $this->assertSame($expectedTooltip, $copy->getAboutTooltipHtml(), $description);
+    }
+
+    private static function tooltipHtml(): string
+    {
+        return '<p>Acme Pay is a payment solution for B2B purchases online, allowing you to buy from your'
+            . ' favourite merchants and suppliers on trade credit. Using Acme Pay, you can access flexible'
+            . ' trade credit instantly to make purchasing simple.</p>'
+            . '<p><strong>Buy now, receive your goods, pay your invoice later.</strong></p>'
+            . '<p>Click to find out more</p>';
+    }
+
+    public function testTooltipEscapesTheBrandName(): void
+    {
+        $copy = $this->build(self::ABOUT_URL, '', '', true, '', '<b>Acme</b> & Pay');
+
+        $tooltip = $copy->getAboutTooltipHtml();
+
+        $this->assertStringContainsString('&lt;b&gt;Acme&lt;/b&gt; &amp; Pay is a payment solution', $tooltip);
+        $this->assertStringNotContainsString('<b>Acme</b>', $tooltip);
     }
 
     private function build(
@@ -110,14 +196,15 @@ class CheckoutTileCopyTest extends TestCase
         string $brandTaglineKey,
         string $brandFaqUrl,
         bool $aboutLinkEnabled,
-        string $adminSubtitle
+        string $adminSubtitle,
+        string $productName = 'Acme Pay'
     ): CheckoutTileCopy {
         $configRepository = $this->createMock(ConfigRepository::class);
         $configRepository->method('isAboutLinkEnabled')->willReturn($aboutLinkEnabled);
         $configRepository->method('getSubtitle')->willReturn($adminSubtitle);
 
         $brandRegistry = $this->createMock(BrandRegistryInterface::class);
-        $brandRegistry->method('getProductName')->willReturn('Acme Pay');
+        $brandRegistry->method('getProductName')->willReturn($productName);
         $brandRegistry->method('getAboutUrl')->willReturn($brandAboutUrl);
         $brandRegistry->method('getCheckoutSubtitle')->willReturn($brandTaglineKey);
         $brandRegistry->method('getCheckoutSubtitleFaqUrl')->willReturn($brandFaqUrl);

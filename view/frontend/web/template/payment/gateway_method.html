@@ -13,23 +13,38 @@
                 visible: isRadioButtonVisible()"
             />
             <div class="two-title-block">
-                <!-- The method radio takes its accessible name from this label
-                     (ABN-554); the subtitle and the about link stay outside it
-                     so neither is read as part of the name. -->
-                <label
-                    class="two-payment-title"
-                    data-bind="attr: {'for': getCode()}, text: getTitle()"
-                ></label>
+                <div class="two-title-row">
+                    <!-- The method radio takes its accessible name from this label
+                         (ABN-554); the subtitle and the about control stay outside
+                         it so neither is read as part of the name. -->
+                    <label
+                        class="two-payment-title"
+                        data-bind="attr: {'for': getCode()}, text: getTitle()"
+                    ></label>
+                    <!-- ko if: showWhatIsTwo -->
+                    <!-- Divs, not spans: the tooltip body holds <p>s, which a
+                         span's phrasing-only content model forbids. -->
+                    <div class="two-about">
+                        <!-- noopener without noreferrer: the Referer is how the
+                             brand's own about page attributes the visit. -->
+                        <a
+                            class="two-about-icon"
+                            target="_blank"
+                            rel="noopener"
+                            data-bind="attr: {href: aboutLinkUrl, 'aria-label': aboutLinkText,
+                                       'aria-describedby': aboutTooltipId()}"
+                        ><img alt="" data-bind="attr: {src: aboutIconUrl}" /></a>
+                        <div
+                            class="two-about-tooltip"
+                            role="tooltip"
+                            aria-hidden="true"
+                            data-bind="attr: {id: aboutTooltipId()}, html: aboutTooltipHtml"
+                        ></div>
+                    </div>
+                    <!-- /ko -->
+                </div>
                 <!-- ko if: twoSubtitleHtml -->
                 <div class="two-payment-subtitle" data-bind="html: twoSubtitleHtml"></div>
-                <!-- /ko -->
-                <!-- ko if: showWhatIsTwo -->
-                <a
-                    class="two-about-link"
-                    target="_blank"
-                    rel="noopener"
-                    data-bind="attr: {href: aboutLinkUrl}, text: aboutLinkText"
-                ></a>
                 <!-- /ko -->
             </div>
             <div class="two-payment-shield"></div>

@@ -252,6 +252,8 @@ define([
             this.showWhatIsTwo(!!config.showAboutLink);
             this.aboutLinkUrl = config.aboutLinkUrl || '';
             this.aboutLinkText = config.aboutLinkText || '';
+            this.aboutTooltipHtml = config.aboutTooltipHtml || '';
+            this.aboutIconUrl = config.aboutIconUrl || '';
             this.displayTooltips = config.displayTooltips !== false;
             this.paymentTermsMessage = config.paymentTermsMessage;
             this.termsNotAcceptedMessage = config.termsNotAcceptedMessage;
@@ -467,6 +469,9 @@ define([
         // Same reason as the region id above: every ARIA association in this
         // template is keyed on the payment code, or a second brand tile's
         // controls point at the first tile's text (ABN-554).
+        aboutTooltipId: function () {
+            return 'two-about-tooltip-' + this.getCode();
+        },
         termGroupLabelId: function () {
             return 'two-term-group-label-' + this.getCode();
         },
