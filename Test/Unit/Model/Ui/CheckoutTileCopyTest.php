@@ -6,6 +6,7 @@ namespace Two\Gateway\Test\Unit\Model\Ui;
 use PHPUnit\Framework\TestCase;
 use Two\Gateway\Api\BrandRegistryInterface;
 use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
+use Two\Gateway\Model\Ui\AnchorOnlyHtmlEscaper;
 use Two\Gateway\Model\Ui\CheckoutTileCopy;
 
 /**
@@ -69,10 +70,26 @@ class CheckoutTileCopyTest extends TestCase
                 false, '', '',
                 'a script URL in the tagline renders no tagline',
             ],
+            'admin subtitle carrying a link' => [
+                '', self::TAGLINE_KEY, self::FAQ_URL, false,
+                'Pay in 30 days, <a href="' . self::FAQ_URL . '" target="_blank" rel="noopener">read more</a>.',
+                false, '', 'Pay in 30 days, ' . $anchor . 'read more</a>.',
+                'the merchant field may carry a link of its own, and it survives as a link',
+            ],
             'admin subtitle set' => [
                 '', self::TAGLINE_KEY, self::FAQ_URL, false, '  Pay later & <b>relax</b>  ',
-                false, '', 'Pay later &amp; &lt;b&gt;relax&lt;/b&gt;',
-                'merchant free text is escaped and never carries a read-more link',
+                false, '', 'Pay later &amp; relax',
+                'merchant free text replaces the tagline and keeps only what the escaper allows',
+            ],
+            'admin subtitle of markup around whitespace' => [
+                '', self::TAGLINE_KEY, self::FAQ_URL, false, '<b> </b>',
+                false, '', 'For all companies, ' . $anchor . 'read more</a>.',
+                'copy whose only content is markup the escaper drops is emptiness too, so the tagline still shows',
+            ],
+            'tagline key carrying stray markup' => [
+                '', self::TAGLINE_KEY . '<img src=x onerror="alert(1)">', self::FAQ_URL, false, '',
+                false, '', 'For all companies, ' . $anchor . 'read more</a>.',
+                'a translation file is merchant-editable copy too, so the tagline goes through the escaper as well',
             ],
         ];
     }
@@ -209,6 +226,6 @@ class CheckoutTileCopyTest extends TestCase
         $brandRegistry->method('getCheckoutSubtitle')->willReturn($brandTaglineKey);
         $brandRegistry->method('getCheckoutSubtitleFaqUrl')->willReturn($brandFaqUrl);
 
-        return new CheckoutTileCopy($configRepository, $brandRegistry);
+        return new CheckoutTileCopy($configRepository, $brandRegistry, new AnchorOnlyHtmlEscaper());
     }
 }

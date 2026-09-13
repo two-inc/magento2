@@ -15,20 +15,24 @@ class CheckoutTileCopy
 {
     public function __construct(
         private readonly ConfigRepository $configRepository,
-        private readonly BrandRegistryInterface $brandRegistry
+        private readonly BrandRegistryInterface $brandRegistry,
+        private readonly AnchorOnlyHtmlEscaper $htmlEscaper
     ) {
     }
 
     /**
-     * May contain HTML; renderers bind it unescaped. The merchant override
-     * (TWO-25386) is free text, so it is escaped and never translated; the
-     * brand tagline is a translation key whose %1/%2 the FAQ URL fills.
+     * Renderers bind the result unescaped, so AnchorOnlyHtmlEscaper is the only
+     * gate on it: a link survives, nothing else does. The merchant override
+     * (TWO-25386) wins over the brand tagline, which is a translation key whose
+     * %1/%2 the FAQ URL fills.
      */
     public function getSubtitleHtml(): string
     {
-        $configured = trim($this->configRepository->getSubtitle());
+        // Emptiness is judged after escaping: copy that is only markup the
+        // escaper drops would otherwise emit a blank subtitle element.
+        $configured = trim($this->htmlEscaper->escape($this->configRepository->getSubtitle()));
         if ($configured !== '') {
-            return htmlspecialchars($configured, ENT_QUOTES, 'UTF-8');
+            return $configured;
         }
 
         $key = $this->brandRegistry->getCheckoutSubtitle();
@@ -37,11 +41,11 @@ class CheckoutTileCopy
             return '';
         }
 
-        return (string)__(
+        return $this->htmlEscaper->escape((string)__(
             $key,
             '<a href="' . htmlspecialchars($faqUrl, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener">',
             '</a>'
-        );
+        ));
     }
 
     /** The merchant toggle can only hide the link, never give it a target. */
