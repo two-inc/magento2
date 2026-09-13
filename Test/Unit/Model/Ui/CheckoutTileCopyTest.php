@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Two\Gateway\Test\Unit\Model\Ui;
 
+use Magento\Framework\Phrase;
 use PHPUnit\Framework\TestCase;
 use Two\Gateway\Api\BrandRegistryInterface;
 use Two\Gateway\Api\Config\RepositoryInterface as ConfigRepository;
@@ -19,6 +20,8 @@ class CheckoutTileCopyTest extends TestCase
     private const FAQ_URL = 'https://faq.example.test/invoice';
     private const ABOUT_URL = 'https://about.example.test/what-is-acme';
     private const TAGLINE_KEY = 'For all companies, %1read more%2.';
+    private const PAYLOAD = '<img src=x onerror=alert(1)>';
+    private const ESCAPED_PAYLOAD = '&lt;img src=x onerror=alert(1)&gt;';
 
     /**
      * @return array<string, array{0:string,1:string,2:string,3:bool,4:string,5:bool,6:string,7:string,8:string}>
@@ -196,6 +199,86 @@ class CheckoutTileCopyTest extends TestCase
             . ' trade credit instantly to make purchasing simple.</p>'
             . '<p><strong>Buy now, receive your goods, pay your invoice later.</strong></p>'
             . '<p>Click to find out more</p>';
+    }
+
+    protected function tearDown(): void
+    {
+        Phrase::setRenderer(null);
+    }
+
+    /**
+     * @return array<string, array{0:string,1:string,2:string}>
+     */
+    public static function tooltipTranslationRows(): array
+    {
+        return [
+            'body paragraph' => [
+                '%1 is a payment solution for B2B purchases online, allowing you to buy from your favourite'
+                    . ' merchants and suppliers on trade credit. Using %1, you can access flexible trade credit'
+                    . ' instantly to make purchasing simple.',
+                '<p>' . self::ESCAPED_PAYLOAD . '</p>',
+                'a translated body paragraph cannot open markup, and keeps its own <p>',
+            ],
+            'emphasised line' => [
+                'Buy now, receive your goods, pay your invoice later.',
+                '<p><strong>' . self::ESCAPED_PAYLOAD . '</strong></p>',
+                'a translated emphasis line cannot open markup, and keeps its own <p><strong>',
+            ],
+            'closing line' => [
+                'Click to find out more',
+                '<p>' . self::ESCAPED_PAYLOAD . '</p>',
+                'the closing line is plain text, so translated markup is inert there too',
+            ],
+        ];
+    }
+
+    /**
+     * Given an admin-supplied translation carrying markup; when the tooltip renders;
+     * then the markup is inert and the method's own wrappers survive.
+     *
+     * @dataProvider tooltipTranslationRows
+     */
+    public function testTooltipEscapesTranslatedMarkup(
+        string $translatedKey,
+        string $expectedFragment,
+        string $description
+    ): void {
+        Phrase::setRenderer(self::rendererTranslating($translatedKey, self::PAYLOAD));
+        $copy = $this->build(self::ABOUT_URL, '', '', true, '');
+
+        $tooltip = $copy->getAboutTooltipHtml();
+
+        $this->assertStringContainsString($expectedFragment, $tooltip, $description);
+        $this->assertStringNotContainsString('<img', $tooltip, $description);
+    }
+
+    /** A translation reaches the aria-label through an escaping attr binding, so it stays plain text here. */
+    public function testAboutLinkTextIsPlainTextAndNotEscaped(): void
+    {
+        Phrase::setRenderer(self::rendererTranslating('What is %1?', self::PAYLOAD));
+
+        $text = $this->build(self::ABOUT_URL, '', '', true, '')->getAboutLinkText();
+
+        $this->assertSame(self::PAYLOAD, $text);
+    }
+
+    private static function rendererTranslating(string $key, string $translation): object
+    {
+        return new class ($key, $translation) implements \Magento\Framework\Phrase\RendererInterface {
+            public function __construct(private string $key, private string $translation)
+            {
+            }
+
+            public function render(array $source, array $arguments): string
+            {
+                $text = $source[0] === $this->key ? $this->translation : $source[0];
+                foreach ($arguments as $index => $value) {
+                    $text = str_replace('%' . ($index + 1), (string)$value, $text);
+                }
+
+                return $text;
+            }
+        };
     }
 
     public function testTooltipEscapesTheBrandName(): void

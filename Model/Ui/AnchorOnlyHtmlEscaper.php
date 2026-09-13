@@ -69,6 +69,12 @@ class AnchorOnlyHtmlEscaper
         return $result . str_repeat('</a>', $openAnchors);
     }
 
+    /** Copy whose contract is plain text: an anchor in it is translator markup, not a link. */
+    public function escapeTextOnly(string $text): string
+    {
+        return $this->escapeText($this->stripControlCharacters($text));
+    }
+
     private function escapeText(string $text): string
     {
         // ENT_SUBSTITUTE: without it one malformed byte blanks the whole run.

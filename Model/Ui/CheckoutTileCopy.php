@@ -88,11 +88,13 @@ class CheckoutTileCopy
             return '';
         }
 
-        $product = htmlspecialchars($this->brandRegistry->getProductName(), ENT_QUOTES, 'UTF-8');
+        $product = $this->brandRegistry->getProductName();
 
+        // Each phrase is escaped alone, not the assembled string: translations are
+        // admin-editable, the <p>/<strong> are this method's own and must survive.
         // One literal per phrase: Magento's i18n scanner cannot harvest a concatenated key.
-        return '<p>' . (string)__('%1 is a payment solution for B2B purchases online, allowing you to buy from your favourite merchants and suppliers on trade credit. Using %1, you can access flexible trade credit instantly to make purchasing simple.', $product) . '</p>'
-            . '<p><strong>' . (string)__('Buy now, receive your goods, pay your invoice later.') . '</strong></p>'
-            . '<p>' . (string)__('Click to find out more') . '</p>';
+        return '<p>' . $this->htmlEscaper->escapeTextOnly((string)__('%1 is a payment solution for B2B purchases online, allowing you to buy from your favourite merchants and suppliers on trade credit. Using %1, you can access flexible trade credit instantly to make purchasing simple.', $product)) . '</p>'
+            . '<p><strong>' . $this->htmlEscaper->escapeTextOnly((string)__('Buy now, receive your goods, pay your invoice later.')) . '</strong></p>'
+            . '<p>' . $this->htmlEscaper->escapeTextOnly((string)__('Click to find out more')) . '</p>';
     }
 }
