@@ -62,7 +62,7 @@ afterEach(() => {
 
 describe('the popover mode chips show where the keyboard is (ABN-554)', () => {
     test.each([
-        ['selected', 'the selected chip, whose own blue fill the ring has to survive'],
+        ['selected', 'the selected chip'],
         ['plain', 'an unselected chip']
     ])('a keyboard-focused chip is ringed: %s (%s)', (which) => {
         const chip = render()[which];

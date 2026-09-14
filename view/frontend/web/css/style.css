@@ -241,9 +241,12 @@
     position: relative;
 }
 
-.two-term-chip:hover:not(.two-term-chip--selected):not(.two-term-chip--single) {
+/* A sole offered term is disabled, and the affordance would promise a click
+   that does nothing. */
+.two-term-chip:hover:not(:disabled):not(.two-term-chip--selected),
+.two-term-chip:focus:not(:disabled):not(.two-term-chip--selected) {
     /* Padding absorbs the 1px the border gives up, so the chip does not resize
-       under the pointer. */
+       under the pointer or the keyboard. */
     padding: 9px 17px;
     border-width: 1px;
     border-color: var(--color-chip-accent);
@@ -251,20 +254,26 @@
 }
 
 /* The group is one tab stop with arrow-key traversal, so the focused chip has
-   to be identifiable; offset outside the chip to stay visible against the
-   selected chip's own solid fill. Keyboard only: a clicked chip gets no ring. */
+   to be identifiable; offset outside so the ring is not lost against the chip's
+   own edge. Keyboard only: a clicked chip gets no ring. */
 .two-term-chip:focus-visible {
     outline: 2px solid var(--color-chip-accent);
     outline-offset: 2px;
 }
 
-.two-term-chip--selected,
-.two-term-chip--selected:hover,
-.two-term-chip--selected:focus,
-.two-term-chip--selected:active {
+/* Base class doubled throughout the chip rules: every state's winner is then
+   decided by specificity, never by source position. */
+.two-term-chip.two-term-chip--selected,
+.two-term-chip.two-term-chip--selected:hover,
+.two-term-chip.two-term-chip--selected:focus,
+.two-term-chip.two-term-chip--selected:active {
     border-color: var(--color-chip-accent);
     background: var(--color-chip-accent);
     color: var(--color-white);
+}
+
+.two-term-chip.two-term-chip--selected:focus:not(:disabled) {
+    background: var(--color-gray89);
 }
 
 .two-term-chip__days {
@@ -407,8 +416,8 @@
 
 
 /* `:disabled` on every selector, to outscore the theme's own `button:disabled`. */
-.two-term-chip--single,
-.two-term-chip--single:disabled {
+.two-term-chip.two-term-chip--single,
+.two-term-chip.two-term-chip--single:disabled {
     border-color: var(--color-chip-accent);
     background: var(--color-chip-accent);
     color: var(--color-white);
@@ -418,8 +427,8 @@
     opacity: 1;
 }
 
-.two-term-chip--single:hover,
-.two-term-chip--single:disabled:hover {
+.two-term-chip.two-term-chip--single:hover,
+.two-term-chip.two-term-chip--single:disabled:hover {
     border-color: var(--color-chip-accent);
 }
 
@@ -805,23 +814,28 @@
     text-transform: none !important;
 }
 
-.two-company-mode-chip--selected {
+.two-company-mode-chip.two-company-mode-chip--selected {
     color: var(--color-white);
     border-color: var(--color-chip-accent);
     background-color: var(--color-chip-accent);
 }
 
-.two-company-mode-chip:hover:not(.two-company-mode-chip--selected) {
+.two-company-mode-chip:hover:not(.two-company-mode-chip--selected),
+.two-company-mode-chip:focus:not(.two-company-mode-chip--selected) {
     /* Padding absorbs the 1px the border gives up, so the chip does not resize
-       under the pointer. */
+       under the pointer or the keyboard. */
     padding: 6px 11px;
     border-width: 1px;
     border-color: var(--color-chip-accent);
     background-color: var(--color-gray89);
 }
 
-/* The term chips' ring, offset outside so it survives the selected chip's own
-   solid fill (ABN-554). */
+.two-company-mode-chip.two-company-mode-chip--selected:focus {
+    background-color: var(--color-gray89);
+}
+
+/* The term chips' ring, offset outside so it is not lost against the chip's own
+   edge (ABN-554). */
 .two-company-mode-chip:focus-visible {
     outline: 2px solid var(--color-chip-accent);
     outline-offset: 2px;

@@ -3,11 +3,14 @@
  * See COPYING.txt for license details.
  *
  * ABN-591. The unbranded chip palette — payment-term chips and company-mode
- * chips alike, in all four states, on the one stylesheet both Luma and Amasty
+ * chips alike, in every state, on the one stylesheet both Luma and Amasty
  * load.
  *
  * Computed values under the real stylesheet, not a reading of its text: a rule
- * a later selector out-scored would still be present in the source.
+ * a later selector out-scored would still be present in the source. jsdom
+ * resolves the cascade by source order alone and weighs no specificity, so the
+ * chip rules are written so the intended winner is both the more specific rule
+ * and the later one.
  */
 
 'use strict';
@@ -33,12 +36,14 @@ const CONTROLS = [
         name: 'payment-term chip',
         base: 'two-term-chip',
         selected: 'two-term-chip--selected',
+        exempt: 'two-term-chip--single',
         wrap: ['<div class="two-term-chips"><div class="two-term-chips__container">', '</div></div>']
     },
     {
         name: 'company-mode chip',
         base: 'two-company-mode-chip',
         selected: 'two-company-mode-chip--selected',
+        exempt: null,
         wrap: [
             '<span class="two-company-field-wrap"><div class="two-company-dropdown">'
                 + '<div class="two-company-mode-chips">',
@@ -79,15 +84,23 @@ function injectStylesheet() {
 /**
  * @param {Object} control one entry of CONTROLS
  * @param {string} classes extra classes putting the chip into one state
+ * @param {Object} [options] `focused` to put the keyboard on it, `disabled` for the native flag
  * @returns {Element} the chip
  */
-function chip(control, classes) {
+function chip(control, classes, options) {
+    const settings = options || {};
     injectStylesheet();
     document.body.innerHTML = control.wrap[0]
-        + '<button type="button" class="' + control.base + ' ' + classes + '" id="chip">30 days</button>'
+        + '<button type="button" class="' + control.base + ' ' + classes + '" id="chip"'
+        + (settings.disabled ? ' disabled' : '') + '>30 days</button>'
         + control.wrap[1];
 
-    return document.getElementById('chip');
+    const element = document.getElementById('chip');
+    if (settings.focused) {
+        element.focus();
+    }
+
+    return element;
 }
 
 /**
@@ -118,6 +131,18 @@ function paint(element) {
     };
 }
 
+/**
+ * @param {Element} element a chip
+ * @returns {Array} the outer box each side contributes, padding plus border
+ */
+function box(element) {
+    const computed = window.getComputedStyle(element);
+
+    return ['Top', 'Right', 'Bottom', 'Left'].map((side) =>
+        parseFloat(computed['padding' + side]) + parseFloat(computed['border' + side + 'Width'])
+    );
+}
+
 afterEach(() => {
     document.head.innerHTML = '';
     document.body.innerHTML = '';
@@ -126,42 +151,53 @@ afterEach(() => {
 describe.each(CONTROLS.map((control) => [control.name, control]))(
     'the unbranded %s palette (ABN-591)',
     (name, control) => {
+        const SELECTED = control.selected;
+
         test.each([
-            ['', '2px', GREY, WHITE, 'at rest: a grey outline on white'],
-            [control.selected, '2px', ACCENT, ACCENT, 'selected: a solid accent fill'],
-            [HOVER, '1px', ACCENT, GREY, 'hovered while unselected: a thinner accent outline on grey'],
+            ['', false, '2px', GREY, WHITE, 'at rest: a grey outline on white'],
+            [SELECTED, false, '2px', ACCENT, ACCENT, 'selected: a solid accent fill'],
+            [HOVER, false, '1px', ACCENT, GREY, 'hovered: a thinner accent outline on grey'],
+            [SELECTED + ' ' + HOVER, false, '2px', ACCENT, ACCENT, 'hovered while selected: no change'],
+            ['', true, '1px', ACCENT, GREY, 'focused: the hover treatment'],
+            [SELECTED, true, '2px', ACCENT, GREY, 'focused while selected: the fill washes out'],
+            [HOVER, true, '1px', ACCENT, GREY, 'hovered and focused at once'],
             [
-                control.selected + ' ' + HOVER,
+                SELECTED + ' ' + HOVER,
+                true,
                 '2px',
                 ACCENT,
-                ACCENT,
-                'hovered while selected: the pointer changes nothing'
+                GREY,
+                'hovered and focused while selected: focus out-scores hover'
             ]
-        ])('%s -> %s %s on %s (%s)', (classes, borderWidth, borderColor, background) => {
-            expect(paint(chip(control, classes))).toEqual({ borderWidth, borderColor, background });
+        ])(
+            '[%s] focused=%s -> %s %s on %s (%s)',
+            (classes, focused, borderWidth, borderColor, background) => {
+                const element = chip(control, classes, { focused });
+
+                expect(focused ? element.matches(':focus') : true).toBe(true);
+                expect(paint(element)).toEqual({ borderWidth, borderColor, background });
+            }
+        );
+
+        test.each([
+            [HOVER, false, 'under the pointer'],
+            ['', true, 'under the keyboard'],
+            [SELECTED, true, 'selected and focused']
+        ])('the chip does not resize: %s focused=%s (%s)', (classes, focused) => {
+            const resting = box(chip(control, ''));
+
+            expect(box(chip(control, classes, { focused }))).toEqual(resting);
         });
 
-        test('the label on the selected chip stays legible against the fill', () => {
-            expect(rgb(window.getComputedStyle(chip(control, control.selected)).color)).toBe(WHITE);
-        });
-
-        test('the chip does not resize under the pointer', () => {
-            const sizes = ['', HOVER].map((state) => {
-                const computed = window.getComputedStyle(chip(control, state));
-
-                return ['Top', 'Right', 'Bottom', 'Left'].map((side) =>
-                    parseFloat(computed['padding' + side])
-                        + parseFloat(computed['border' + side + 'Width'])
-                );
-            });
-
-            expect(sizes[1]).toEqual(sizes[0]);
+        test.each([
+            ['', ACCENT, 'at rest the label is the accent'],
+            [SELECTED, WHITE, 'on the selected fill it stays legible']
+        ])('the label colour: [%s] is %s (%s)', (classes, expected) => {
+            expect(rgb(window.getComputedStyle(chip(control, classes)).color)).toBe(expected);
         });
 
         test('the keyboard ring is the accent', () => {
-            const focused = chip(control, '');
-
-            focused.focus();
+            const focused = chip(control, '', { focused: true });
 
             expect(focused.matches(':focus-visible')).toBe(true);
             const ring = window.getComputedStyle(focused).outline.split(' ');
@@ -170,6 +206,18 @@ describe.each(CONTROLS.map((control) => [control.name, control]))(
         });
     }
 );
+
+describe('a disabled payment-term chip is exempt (ABN-591)', () => {
+    const control = CONTROLS[0];
+
+    test('the sole offered term keeps its resting appearance under the pointer', () => {
+        const hovered = chip(control, control.exempt + ' ' + HOVER, { disabled: true });
+
+        expect(paint(hovered)).toEqual({ borderWidth: '2px', borderColor: ACCENT, background: ACCENT });
+        expect(rgb(window.getComputedStyle(hovered).color)).toBe(WHITE);
+        expect(box(hovered)).toEqual(box(chip(control, control.exempt, { disabled: true })));
+    });
+});
 
 describe('the chip accent is its own property (ABN-591)', () => {
     test('the shared blue is left where the links use it', () => {
