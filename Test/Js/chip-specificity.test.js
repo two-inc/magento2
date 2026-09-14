@@ -690,3 +690,62 @@ describe('the chip cascade is decided by weight, not by position (ABN-591)', () 
         });
     });
 });
+
+/**
+ * The audit above weighs only this sheet, where a `color` the hover rule states
+ * and a `color` it leaves to the base rule paint alike. What tells them apart is
+ * a host theme, which jsdom never loads: `button:hover` scores 0-1-1 and takes
+ * the label from the base rule at 0-1-0, but not from the hover rule itself. The
+ * theme is modelled here instead, last in source order, so only weight can hold
+ * the label (ABN-598).
+ */
+describe('a theme cannot repaint the unselected chip label (ABN-598)', () => {
+    test.each([
+        [
+            'term chip, hovered', TERM + ' ' + PROBES[':hover'], {},
+            'button.' + PROBES[':hover'],
+            '.' + TERM + '.' + PROBES[':hover'] + ':not(:disabled):not(.' + TERM + '--selected)'
+        ],
+        [
+            'term chip, focused', TERM, { focused: true }, 'button:focus',
+            '.' + TERM + ':focus:not(:disabled):not(.' + TERM + '--selected)'
+        ],
+        [
+            'mode chip, hovered', MODE + ' ' + PROBES[':hover'], {},
+            'button.' + PROBES[':hover'],
+            '.' + MODE + '.' + PROBES[':hover'] + ':not(.' + MODE + '--selected)'
+        ],
+        [
+            'mode chip, focused', MODE, { focused: true }, 'button:focus',
+            '.' + MODE + ':focus:not(.' + MODE + '--selected)'
+        ]
+    ])('%s', (label, classes, options, themeSelector, expected) => {
+        const every = candidates();
+        const root = window.getComputedStyle(document.documentElement);
+        const tokens = {};
+        Array.prototype.forEach.call(root, (property) => {
+            if (property.startsWith('--')) {
+                tokens[property] = root.getPropertyValue(property).trim();
+            }
+        });
+        const chip = mount(classes, options);
+        const theme = {
+            selector: themeSelector,
+            score: score(themeSelector),
+            order: Infinity,
+            declarations: { color: { value: '#fff', important: false } },
+            media: []
+        };
+
+        const matching = every.concat([theme]).filter((rule) =>
+            rule.declarations.color !== undefined
+                && rule.selector.indexOf('::') === -1
+                && chip.matches(rule.selector));
+        const winner = matching.slice().sort((a, b) => weigh(a, b) || a.order - b.order).pop();
+
+        expect({
+            selector: winner.selector,
+            color: resolve('color', winner.declarations.color, tokens)
+        }).toEqual({ selector: expected, color: ACCENT });
+    });
+});

@@ -251,6 +251,9 @@
     border-width: 1px;
     border-color: var(--color-chip-accent);
     background: var(--color-gray89);
+    /* Pinned here, not inherited: a theme's `button:hover` out-scores the base
+       rule the label would otherwise fall through to (ABN-598). */
+    color: var(--color-chip-accent);
 }
 
 /* The group is one tab stop with arrow-key traversal, so the focused chip has
@@ -818,6 +821,9 @@
     border-width: 1px;
     border-color: var(--color-chip-accent);
     background-color: var(--color-gray89);
+    /* Pinned here, not inherited: a theme's `button:hover` out-scores the base
+       rule the label would otherwise fall through to (ABN-598). */
+    color: var(--color-chip-accent);
 }
 
 /* The term chips' ring, offset outside so it is not lost against the chip's own
