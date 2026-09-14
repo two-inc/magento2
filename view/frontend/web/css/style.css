@@ -272,10 +272,6 @@
     color: var(--color-white);
 }
 
-.two-term-chip.two-term-chip--selected:focus:not(:disabled) {
-    background: var(--color-gray89);
-}
-
 .two-term-chip__days {
     font-size: 14px;
     font-weight: 500;
@@ -827,10 +823,6 @@
     padding: 6px 11px;
     border-width: 1px;
     border-color: var(--color-chip-accent);
-    background-color: var(--color-gray89);
-}
-
-.two-company-mode-chip.two-company-mode-chip--selected:focus {
     background-color: var(--color-gray89);
 }
 

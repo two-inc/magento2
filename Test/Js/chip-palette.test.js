@@ -159,15 +159,15 @@ describe.each(CONTROLS.map((control) => [control.name, control]))(
             [HOVER, false, '1px', ACCENT, GREY, 'hovered: a thinner accent outline on grey'],
             [SELECTED + ' ' + HOVER, false, '2px', ACCENT, ACCENT, 'hovered while selected: no change'],
             ['', true, '1px', ACCENT, GREY, 'focused: the hover treatment'],
-            [SELECTED, true, '2px', ACCENT, GREY, 'focused while selected: the fill washes out'],
+            [SELECTED, true, '2px', ACCENT, ACCENT, 'focused while selected: the keyboard changes nothing'],
             [HOVER, true, '1px', ACCENT, GREY, 'hovered and focused at once'],
             [
                 SELECTED + ' ' + HOVER,
                 true,
                 '2px',
                 ACCENT,
-                GREY,
-                'hovered and focused while selected: focus out-scores hover'
+                ACCENT,
+                'hovered and focused while selected: neither changes it'
             ]
         ])(
             '[%s] focused=%s -> %s %s on %s (%s)',
