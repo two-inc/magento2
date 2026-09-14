@@ -9,6 +9,12 @@
  * suite green. The cascade is scored here instead: for each chip state, each
  * property is resolved the way a browser resolves it, and the resolution must
  * be unique as well as correct.
+ *
+ * The resolver refuses what it cannot model rather than passing over it: a
+ * selector it cannot score, or one jsdom cannot match, fails the suite. Its one
+ * declared boundary is that it reads this module's own stylesheet — a brand
+ * overlay ships its own, from its own repository, and the two are composed
+ * there.
  */
 
 'use strict';
@@ -23,116 +29,144 @@ const ACCENT = '#091030';
 const GREY = '#e3e3e3';
 const WHITE = '#fff';
 
-/** `:hover` is unreachable in jsdom, so the sheet is read with it swapped for a
- *  class — same score, same position, so neither half of the cascade moves. */
-const HOVER = 'two-hover-probe';
+/** Stand-ins for the pseudo-classes jsdom cannot enter. A class scores as a
+ *  pseudo-class does and the substitution moves no rule, so neither half of the
+ *  cascade shifts. */
+const PROBES = { ':hover': 'two-hover-probe', ':active': 'two-active-probe' };
 
 const PINNED = ['border-width', 'border-color', 'background-color', 'color'];
 
-/** A `border` or `background` shorthand carries these. */
+/** The shorthands that carry a pinned property. */
 const LONGHAND = {
     border: ['border-width', 'border-style', 'border-color'],
     background: ['background-color']
 };
 
-const STATES = [
-    ['term rest', 'two-term-chip', ['2px', GREY, WHITE, ACCENT]],
-    ['term selected', 'two-term-chip two-term-chip--selected', ['2px', ACCENT, ACCENT, WHITE]],
-    ['term hover', 'two-term-chip ' + HOVER, ['1px', ACCENT, GREY, ACCENT]],
-    [
-        'term hover selected',
-        'two-term-chip two-term-chip--selected ' + HOVER,
-        ['2px', ACCENT, ACCENT, WHITE]
-    ],
-    ['term focus', 'two-term-chip', ['1px', ACCENT, GREY, ACCENT], { focused: true }],
-    [
-        'term focus selected',
-        'two-term-chip two-term-chip--selected',
-        ['2px', ACCENT, ACCENT, WHITE],
-        { focused: true }
-    ],
-    [
-        'term focus hover',
-        'two-term-chip ' + HOVER,
-        ['1px', ACCENT, GREY, ACCENT],
-        { focused: true }
-    ],
-    [
-        'term focus hover selected',
-        'two-term-chip two-term-chip--selected ' + HOVER,
-        ['2px', ACCENT, ACCENT, WHITE],
-        { focused: true }
-    ],
-    [
-        'term sole, disabled',
-        'two-term-chip two-term-chip--single',
-        ['2px', ACCENT, ACCENT, WHITE],
-        { disabled: true }
-    ],
-    [
-        'term sole, disabled and hovered',
-        'two-term-chip two-term-chip--single ' + HOVER,
-        ['2px', ACCENT, ACCENT, WHITE],
-        { disabled: true }
-    ],
-    ['mode rest', 'two-company-mode-chip', ['2px', GREY, WHITE, ACCENT]],
-    [
-        'mode selected',
-        'two-company-mode-chip two-company-mode-chip--selected',
-        ['2px', ACCENT, ACCENT, WHITE]
-    ],
-    ['mode hover', 'two-company-mode-chip ' + HOVER, ['1px', ACCENT, GREY, ACCENT]],
-    [
-        'mode hover selected',
-        'two-company-mode-chip two-company-mode-chip--selected ' + HOVER,
-        ['2px', ACCENT, ACCENT, WHITE]
-    ],
-    ['mode focus', 'two-company-mode-chip', ['1px', ACCENT, GREY, ACCENT], { focused: true }],
-    [
-        'mode focus selected',
-        'two-company-mode-chip two-company-mode-chip--selected',
-        ['2px', ACCENT, ACCENT, WHITE],
-        { focused: true }
-    ],
-    [
-        'mode focus hover',
-        'two-company-mode-chip ' + HOVER,
-        ['1px', ACCENT, GREY, ACCENT],
-        { focused: true }
-    ],
-    [
-        'mode focus hover selected',
-        'two-company-mode-chip two-company-mode-chip--selected ' + HOVER,
-        ['2px', ACCENT, ACCENT, WHITE],
-        { focused: true }
-    ]
+/** Pseudo-classes this resolver scores. Anything else fails rather than
+ *  scoring zero, which would silently hand the state to a weaker rule. */
+const PSEUDO_CLASSES = [
+    'hover', 'focus', 'focus-visible', 'focus-within', 'active', 'disabled',
+    'enabled', 'checked', 'empty', 'root', 'first-child', 'last-child',
+    'nth-child', 'nth-of-type', 'only-child', 'not'
 ];
 
+const TERM = 'two-term-chip';
+const MODE = 'two-company-mode-chip';
+const SELECTED_PAINT = ['2px', ACCENT, ACCENT, WHITE];
+const REST_PAINT = ['2px', GREY, WHITE, ACCENT];
+const RAISED_PAINT = ['1px', ACCENT, GREY, ACCENT];
+
 /**
- * @param {string} selector one compound selector, no comma
- * @returns {Array} the [id, class, element] triple CSS scores selectors by
+ * @param {string} family the chip's base class
+ * @returns {Array} that family's states, as [label, classes, paint, options]
  */
-function score(selector) {
-    const bare = selector.replace(/::[\w-]+/g, '');
+function statesFor(family) {
+    const selected = family + ' ' + family + '--selected';
+    const hover = PROBES[':hover'];
+    const active = PROBES[':active'];
 
     return [
-        (bare.match(/#[\w-]+/g) || []).length,
-        (bare.match(/\.[\w-]+/g) || []).length
-            + (bare.match(/:(?!:)[\w-]+/g) || []).length
-            + (bare.match(/\[[^\]]+\]/g) || []).length,
-        (bare.replace(/[.#:[][^\s>+~,]*/g, '').match(/\b[a-z]+\b/g) || []).length
+        [family + ' rest', family, REST_PAINT],
+        [family + ' selected', selected, SELECTED_PAINT],
+        [family + ' hover', family + ' ' + hover, RAISED_PAINT],
+        [family + ' hover selected', selected + ' ' + hover, SELECTED_PAINT],
+        [family + ' focus', family, RAISED_PAINT, { focused: true }],
+        [family + ' focus selected', selected, SELECTED_PAINT, { focused: true }],
+        [family + ' focus hover', family + ' ' + hover, RAISED_PAINT, { focused: true }],
+        [family + ' focus hover selected', selected + ' ' + hover, SELECTED_PAINT, { focused: true }],
+        [family + ' active', family + ' ' + active, REST_PAINT],
+        [family + ' active selected', selected + ' ' + active, SELECTED_PAINT],
+        [family + ' active hover', family + ' ' + hover + ' ' + active, RAISED_PAINT]
     ];
 }
 
+const STATES = statesFor(TERM).concat(statesFor(MODE)).concat([
+    [
+        'sole term, disabled',
+        TERM + ' ' + TERM + '--single',
+        SELECTED_PAINT,
+        { disabled: true }
+    ],
+    [
+        'sole term, disabled and hovered',
+        TERM + ' ' + TERM + '--single ' + PROBES[':hover'],
+        SELECTED_PAINT,
+        { disabled: true }
+    ]
+]);
+
 /**
- * @param {Array} left a score triple
- * @param {Array} right a score triple
+ * @param {string} compound one compound selector, no combinator
+ * @returns {Array} its [id, class, element] contribution
+ * @throws {Error} on any construct this resolver does not model
+ */
+function scoreCompound(compound) {
+    const counts = [0, 0, 0];
+    let rest = compound;
+
+    while (rest.length) {
+        let match;
+        if ((match = /^\*/.exec(rest))) {
+            // The universal selector contributes nothing.
+        } else if ((match = /^#[\w-]+/.exec(rest))) {
+            counts[0]++;
+        } else if ((match = /^\.[\w-]+/.exec(rest))) {
+            counts[1]++;
+        } else if ((match = /^\[[^\]]+\]/.exec(rest))) {
+            counts[1]++;
+        } else if ((match = /^::[\w-]+/.exec(rest))) {
+            counts[2]++;
+        } else if ((match = /^:not\(([^()]*)\)/.exec(rest))) {
+            const inner = match[1].split(',').map((one) => scoreCompound(one.trim()));
+            [0, 1, 2].forEach((at) => {
+                counts[at] += Math.max.apply(null, inner.map((one) => one[at]));
+            });
+        } else if ((match = /^:([\w-]+)(\([^()]*\))?/.exec(rest))) {
+            if (PSEUDO_CLASSES.indexOf(match[1]) === -1) {
+                throw new Error('unscored pseudo-class ":' + match[1] + '" in "' + compound + '"');
+            }
+            counts[1]++;
+        } else if ((match = /^[a-zA-Z][\w-]*/.exec(rest))) {
+            counts[2]++;
+        } else {
+            throw new Error('unscored selector fragment "' + rest + '" in "' + compound + '"');
+        }
+        rest = rest.slice(match[0].length);
+    }
+
+    return counts;
+}
+
+/**
+ * @param {string} selector one selector, no comma
+ * @returns {Array} the [id, class, element] triple CSS scores it by
+ */
+function score(selector) {
+    return selector
+        .split(/[\s>+~]+/)
+        .filter((compound) => compound.length)
+        .reduce((total, compound) => {
+            const part = scoreCompound(compound);
+
+            return [total[0] + part[0], total[1] + part[1], total[2] + part[2]];
+        }, [0, 0, 0]);
+}
+
+/**
+ * Importance outranks specificity outright, which is the whole reason it is
+ * modelled: an `!important` chip colour would win in a browser.
+ *
+ * @param {Object} left a candidate
+ * @param {Object} right a candidate
  * @returns {number} negative, zero or positive, as a comparator
  */
-function compare(left, right) {
+function weigh(left, right) {
+    if (left.important !== right.important) {
+        return left.important ? 1 : -1;
+    }
     for (let at = 0; at < 3; at++) {
-        if (left[at] !== right[at]) {
-            return left[at] - right[at];
+        if (left.score[at] !== right.score[at]) {
+            return left.score[at] - right.score[at];
         }
     }
 
@@ -140,13 +174,32 @@ function compare(left, right) {
 }
 
 /**
- * The sheet's own rules, each compound selector scored and kept in source order.
- *
- * @returns {Array} {selector, score, order, declarations} entries
+ * @param {string} value a `border` or `background` shorthand
+ * @param {string} longhand the part wanted
+ * @returns {string} that part, or undefined
  */
-function rules() {
+function part(value, longhand) {
+    const pieces = value.match(/#[0-9a-f]{3,8}|var\([^)]*\)|\b[\d.]+px\b|\b(solid|dashed|dotted|none)\b/gi) || [];
+
+    return pieces.find((piece) =>
+        longhand === 'border-width' ? /px$/i.test(piece)
+            : longhand === 'border-style' ? /^(solid|dashed|dotted|none)$/i.test(piece)
+                : !/px$/i.test(piece) && !/^(solid|dashed|dotted|none)$/i.test(piece));
+}
+
+/**
+ * Every style rule in the sheet, scored, in source order.
+ *
+ * @returns {Array} candidates carrying selector, score, importance and order
+ */
+function candidates() {
+    let source = fs.readFileSync(STYLESHEET, 'utf8');
+    Object.keys(PROBES).forEach((pseudo) => {
+        source = source.split(pseudo).join('.' + PROBES[pseudo]);
+    });
+
     const style = document.createElement('style');
-    style.textContent = fs.readFileSync(STYLESHEET, 'utf8').split(':hover').join('.' + HOVER);
+    style.textContent = source;
     document.head.appendChild(style);
 
     const collected = [];
@@ -158,23 +211,17 @@ function rules() {
         for (let at = 0; at < rule.style.length; at++) {
             const property = rule.style[at];
             const value = rule.style.getPropertyValue(property);
+            const important = rule.style.getPropertyPriority(property) === 'important';
             (LONGHAND[property] || [property]).forEach((longhand) => {
-                declarations[longhand] = LONGHAND[property]
-                    ? (value.match(/(#[0-9a-f]{3,8}|var\([^)]*\)|\b\d+px\b|\bsolid\b)/gi) || [])
-                        .find((part) =>
-                            longhand === 'border-width' ? /px$/.test(part)
-                                : longhand === 'border-style' ? /solid/.test(part)
-                                    : !/px$|solid/.test(part))
-                    : value;
+                declarations[longhand] = {
+                    value: LONGHAND[property] ? part(value, longhand) : value,
+                    important
+                };
             });
         }
         rule.selectorText.split(',').forEach((one) => {
-            collected.push({
-                selector: one.trim(),
-                score: score(one.trim()),
-                order,
-                declarations
-            });
+            const selector = one.trim();
+            collected.push({ selector, score: score(selector), order, declarations });
         });
     });
 
@@ -182,14 +229,15 @@ function rules() {
 }
 
 /**
- * @param {string} value a declared value, possibly a `var()` reference
+ * @param {Object} declared a declaration, or undefined
  * @param {Object} tokens the `:root` custom properties
  * @returns {string} the value with one level of `var()` resolved
  */
-function resolve(value, tokens) {
-    const reference = /^var\((--[\w-]+)\)$/.exec((value || '').trim());
+function resolve(declared, tokens) {
+    const value = declared && declared.value !== undefined ? String(declared.value).trim() : '';
+    const reference = /^var\((--[\w-]+)\)$/.exec(value);
 
-    return reference ? tokens[reference[1]] : (value || '').trim();
+    return reference ? tokens[reference[1]] : value;
 }
 
 /**
@@ -218,10 +266,10 @@ afterEach(() => {
     document.body.innerHTML = '';
 });
 
-describe('the chip cascade is decided by score, not by position (ABN-591)', () => {
+describe('the chip cascade is decided by weight, not by position (ABN-591)', () => {
     test.each(STATES.map((state) => [state[0], state]))('%s', (label, state) => {
         const [, classes, expected, options] = state;
-        const all = rules();
+        const all = candidates();
         const root = window.getComputedStyle(document.documentElement);
         const tokens = {};
         Array.prototype.forEach.call(root, (property) => {
@@ -233,17 +281,24 @@ describe('the chip cascade is decided by score, not by position (ABN-591)', () =
 
         const resolved = PINNED.map((property) => {
             const matching = all.filter((rule) => {
-                try {
-                    return chip.matches(rule.selector) && rule.declarations[property] !== undefined;
-                } catch (error) {
+                if (rule.declarations[property] === undefined) {
                     return false;
                 }
-            });
+                // A pseudo-element rule paints a generated box, never the chip's own.
+                if (rule.selector.indexOf('::') !== -1) {
+                    return false;
+                }
+
+                return chip.matches(rule.selector);
+            }).map((rule) => Object.assign({}, rule, {
+                // Importance is per declaration, so it is carried per property.
+                important: rule.declarations[property].important
+            }));
             const winner = matching.slice().sort((a, b) =>
-                compare(a.score, b.score) || a.order - b.order
+                weigh(a, b) || a.order - b.order
             ).pop();
             const tied = matching.filter((rule) =>
-                winner && compare(rule.score, winner.score) === 0
+                winner && weigh(rule, winner) === 0
                     && resolve(rule.declarations[property], tokens)
                         !== resolve(winner.declarations[property], tokens)
             );
@@ -260,5 +315,18 @@ describe('the chip cascade is decided by score, not by position (ABN-591)', () =
             value: expected[at],
             decidedByPosition: []
         })));
+    });
+
+    test('every selector in the sheet is one the resolver models', () => {
+        const all = candidates();
+        const chip = mount(TERM, {});
+
+        expect(all.length).toBeGreaterThan(0);
+        all.forEach((rule) => {
+            expect(() => score(rule.selector)).not.toThrow();
+            if (rule.selector.indexOf('::') === -1) {
+                expect(() => chip.matches(rule.selector)).not.toThrow();
+            }
+        });
     });
 });
