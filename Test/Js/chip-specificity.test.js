@@ -10,9 +10,20 @@
  * property is resolved the way a browser resolves it, and the resolution must
  * be unique as well as correct.
  *
+ * The properties audited are derived from what the chip's own rules declare,
+ * never listed: a named list is only ever as complete as someone's memory of
+ * the spec, and each property it forgot was a state a rule could move unseen.
+ * The comparison is whole-object, so a rule that gains a property fails here
+ * until the table accounts for it.
+ *
  * The resolver refuses what it cannot model rather than passing over it: a
- * selector it cannot score, an at-rule it does not recognise, or a media
- * condition it cannot evaluate all fail the suite. Media blocks are descended
+ * selector it cannot score, an at-rule it does not recognise, a media condition
+ * it cannot evaluate, a CSS-wide keyword and a multi-valued custom property all
+ * fail the suite. One gap is left open deliberately: `border`, `outline`,
+ * `background` and `padding` are split into their longhands, so a shorthand
+ * that resets a component cannot hide one, while any other shorthand is compared
+ * as written — a `flex`, `transition` or `border-radius` shorthand overriding a
+ * longhand a weaker rule set is not modelled. Media blocks are descended
  * into and every state is resolved again at each width the sheet declares a
  * breakpoint for, so a rule that only applies at one viewport is still weighed.
  * Its one declared boundary is that it reads this module's own stylesheet — a
@@ -39,17 +50,18 @@ const PROBES = { ':hover': 'two-hover-probe', ':active': 'two-active-probe' };
 
 const SIDES = ['top', 'right', 'bottom', 'left'];
 
-/** Every property the spec states a value for. `padding` and `outline` are here
- *  because box stability and the focus ring are spec rows of their own: without
- *  them a rule that only grew the chip or only repainted the ring would resolve
- *  unnoticed. */
-const PINNED = ['border-width', 'border-color', 'background-color', 'color']
-    .concat(SIDES.map((side) => 'padding-' + side))
-    .concat(['outline-width', 'outline-style', 'outline-color', 'outline-offset']);
-
-const LENGTH = /^(0|-?[\d.]+(px|em|rem|%|vw|vh|ch))$/i;
+const LENGTH = /^(0|-?[\d.]+(px|em|rem|%|vw|vh|ch)|thin|medium|thick)$/i;
 const LINE_STYLE = /^(none|hidden|solid|dashed|dotted|double|groove|ridge|inset|outset)$/i;
-const COLOUR = /^(#[0-9a-f]{3,8}|(var|rgba?|hsla?|color)\([^)]*\)|transparent|currentcolor|inherit|initial|unset|white|black|red|green|blue|gray|grey)$/i;
+const COLOUR = /^(#[0-9a-f]{3,8}|(var|rgba?|hsla?|color)\([^)]*\)|transparent|currentcolor|white|black|red|green|blue|gray|grey)$/i;
+/** A CSS-wide keyword is not a colour, a length or a style — it takes its value
+ *  from elsewhere in the cascade, which this resolver does not follow. */
+const CSS_WIDE = /^(inherit|initial|unset|revert|revert-layer)$/i;
+
+/** What a shorthand leaves a component at when the value omits it. */
+const INITIAL = {
+    'border-width': 'medium', 'border-style': 'none', 'border-color': 'currentcolor',
+    'outline-width': 'medium', 'outline-style': 'none', 'outline-color': 'currentcolor'
+};
 
 /**
  * @param {string} value a declaration value
@@ -66,6 +78,9 @@ function valueTokens(value) {
  * @throws {Error} on a spelling this resolver does not model
  */
 function kindOf(name, token) {
+    if (CSS_WIDE.test(token)) {
+        throw new Error('unmodelled CSS-wide keyword "' + token + '" in "' + name + '"');
+    }
     if (LENGTH.test(token)) {
         return 'length';
     }
@@ -80,29 +95,37 @@ function kindOf(name, token) {
 }
 
 /**
- * The shorthands that carry a pinned property, each split into its longhands.
- * A spelling none of them models throws rather than resolving to undefined,
- * which would read as a missing declaration instead of an unread one.
+ * A shorthand RESETS every component it omits, so each one emits its whole
+ * family: `border: none` leaves no width and no colour behind for a weaker rule
+ * to supply, and a splitter that emitted only what it read would hand those
+ * components to that weaker rule and report a clean winner.
+ *
+ * @param {string} family `border` or `outline`
+ * @param {string} value the shorthand's value
+ * @returns {Object} every longhand in that family
+ */
+function line(family, value) {
+    const split = {
+        [family + '-width']: INITIAL[family + '-width'],
+        [family + '-style']: INITIAL[family + '-style'],
+        [family + '-color']: INITIAL[family + '-color']
+    };
+    valueTokens(value).forEach((token) => {
+        const kind = kindOf(family, token);
+        split[family + '-' + (kind === 'length' ? 'width' : kind === 'style' ? 'style' : 'color')] = token;
+    });
+
+    return split;
+}
+
+/**
+ * The shorthands split into their longhands. A spelling none of them models
+ * throws rather than resolving to undefined, which would read as a missing
+ * declaration instead of an unread one.
  */
 const SHORTHANDS = {
-    border: (value) => {
-        const split = {};
-        valueTokens(value).forEach((token) => {
-            const kind = kindOf('border', token);
-            split['border-' + (kind === 'length' ? 'width' : kind === 'style' ? 'style' : 'color')] = token;
-        });
-
-        return split;
-    },
-    outline: (value) => {
-        const split = {};
-        valueTokens(value).forEach((token) => {
-            const kind = kindOf('outline', token);
-            split['outline-' + (kind === 'length' ? 'width' : kind === 'style' ? 'style' : 'color')] = token;
-        });
-
-        return split;
-    },
+    border: (value) => line('border', value),
+    outline: (value) => line('outline', value),
     background: (value) => {
         // `none` is the image layer; the shorthand still resets the colour, so a
         // rule saying `background: none` paints transparent rather than nothing.
@@ -143,26 +166,69 @@ const PADDING = {
     [MODE]: { rest: ['5px', '10px'], raised: ['6px', '11px'] }
 };
 
+/** Everything each family declares that no state moves. Listed because the
+ *  comparison is whole-object: a chip rule that gained a property would have to
+ *  be accounted for here rather than slipping past an allowlist. */
+const CHROME = {
+    [TERM]: {
+        'align-items': 'center',
+        'border-radius': '8px',
+        cursor: 'pointer',
+        display: 'flex',
+        'flex-direction': 'column',
+        'font-family': 'inherit',
+        'min-width': '80px',
+        position: 'relative',
+        transition: 'border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease'
+    },
+    [MODE]: {
+        'border-radius': '5px',
+        cursor: 'pointer',
+        flex: '1 1 auto',
+        'font-family': 'inherit',
+        'font-size': '13px',
+        'line-height': '1.3',
+        'min-width': '84px',
+        'text-align': 'center',
+        'text-transform': 'none',
+        'word-break': 'break-word'
+    }
+};
+
 /**
  * @param {string} family the chip's base class
- * @param {Object} state `selected`, `raised` and `focused`
- * @returns {Object} every pinned property's expected value
+ * @param {Object} state `selected`, `raised`, `focused` and `sole`
+ * @returns {Object} every property the chip's rules resolve to in that state
  */
 function paint(family, state) {
     const box = PADDING[family][state.raised ? 'raised' : 'rest'];
-    const expected = {
+    const expected = Object.assign({}, CHROME[family], {
+        'border-style': 'solid',
         'border-width': state.selected || !state.raised ? '2px' : '1px',
         'border-color': state.selected || state.raised ? ACCENT : GREY,
         'background-color': state.selected ? ACCENT : state.raised ? GREY : WHITE,
-        color: state.selected ? WHITE : ACCENT,
-        'outline-width': state.focused ? '2px' : undefined,
-        'outline-style': state.focused ? 'solid' : undefined,
-        'outline-color': state.focused ? ACCENT : undefined,
-        'outline-offset': state.focused ? '2px' : undefined
-    };
+        color: state.selected ? WHITE : ACCENT
+    });
     SIDES.forEach((side, at) => {
         expected['padding-' + side] = box[at % 2];
     });
+    if (state.focused) {
+        Object.assign(expected, {
+            'outline-width': '2px',
+            'outline-style': 'solid',
+            'outline-color': ACCENT,
+            'outline-offset': '2px'
+        });
+    }
+    if (state.sole) {
+        // The sole term is disabled, so it states its own cursor and weight.
+        Object.assign(expected, {
+            cursor: 'default',
+            'font-size': '14px',
+            'font-weight': '500',
+            opacity: '1'
+        });
+    }
 
     return expected;
 }
@@ -210,13 +276,13 @@ const STATES = statesFor(TERM).concat(statesFor(MODE)).concat([
     [
         'sole term, disabled',
         TERM + ' ' + TERM + '--single',
-        paint(TERM, { selected: true }),
+        paint(TERM, { selected: true, sole: true }),
         { disabled: true }
     ],
     [
         'sole term, disabled and hovered',
         TERM + ' ' + TERM + '--single ' + PROBES[':hover'],
-        paint(TERM, { selected: true }),
+        paint(TERM, { selected: true, sole: true }),
         { disabled: true }
     ]
 ]);
@@ -373,6 +439,7 @@ function candidates() {
     document.head.appendChild(style);
 
     const collected = [];
+    const animated = {};
     let order = 0;
     const walk = (rules, media) => {
         Array.prototype.forEach.call(rules, (rule) => {
@@ -397,15 +464,13 @@ function candidates() {
             if (rule.name !== undefined && rule.cssRules) {
                 // An animation is a HIGHER cascade origin than a normal author
                 // declaration, and `animation-fill-mode: both` keeps it winning
-                // after the run — so keyframes are skipped only while they touch
-                // no pinned property. One that did would repaint a chip with this
-                // resolver reporting a clean winner.
+                // after the run. What it animates is recorded and checked against
+                // the properties the chip's own rules turn out to declare, so the
+                // skip is never a blanket one.
+                animated[rule.name] = {};
                 Array.prototype.forEach.call(rule.cssRules, (frame) => {
                     Object.keys(declarationsOf(frame)).forEach((property) => {
-                        if (PINNED.indexOf(property) !== -1) {
-                            throw new Error('keyframes "' + rule.name + '" animates the pinned "'
-                                + property + '"');
-                        }
+                        animated[rule.name][property] = true;
                     });
                 });
 
@@ -415,6 +480,7 @@ function candidates() {
         });
     };
     walk(style.sheet.cssRules, []);
+    collected.animated = animated;
 
     return collected;
 }
@@ -464,7 +530,11 @@ function rgb(value) {
 function resolve(property, declared, tokens) {
     const value = declared && declared.value !== undefined ? String(declared.value).trim() : '';
     const reference = /^var\((--[\w-]+)\)$/.exec(value);
-    const literal = reference ? tokens[reference[1]] : value;
+    const literal = (reference ? tokens[reference[1]] : value).replace(/\s+/g, ' ');
+    if (reference && valueTokens(literal).length > 1) {
+        throw new Error('"' + reference[1] + '" holds "' + literal
+            + '", which is more than the one value "' + property + '" was split as');
+    }
 
     return /(^|-)color$/.test(property) ? rgb(literal) : literal;
 }
@@ -495,6 +565,30 @@ afterEach(() => {
     document.body.innerHTML = '';
 });
 
+/**
+ * The properties to audit are not listed: they are whatever the rules reaching
+ * this chip actually declare. A named list is only ever as complete as someone's
+ * memory of the spec, and each property it forgot was a state a rule could move
+ * unseen.
+ *
+ * @param {Array} all the candidates
+ * @param {Element} chip the mounted chip
+ * @returns {Array} every property some matching rule declares
+ */
+function audited(all, chip) {
+    const properties = {};
+    all.forEach((rule) => {
+        if (rule.selector.indexOf('::') !== -1 || !chip.matches(rule.selector)) {
+            return;
+        }
+        Object.keys(rule.declarations).forEach((property) => {
+            properties[property] = true;
+        });
+    });
+
+    return Object.keys(properties).sort();
+}
+
 describe('the chip cascade is decided by weight, not by position (ABN-591)', () => {
     test.each(STATES.map((state) => [state[0], state]))('%s', (label, state) => {
         const [, classes, expected, options] = state;
@@ -511,7 +605,7 @@ describe('the chip cascade is decided by weight, not by position (ABN-591)', () 
         const readAt = (width) => {
             const all = every.filter((rule) => applies(rule.media, width));
 
-            return PINNED.reduce((resolved, property) => {
+            return audited(all, chip).reduce((resolved, property) => {
                 const matching = all.filter((rule) => {
                     if (rule.declarations[property] === undefined) {
                         return false;
@@ -542,13 +636,32 @@ describe('the chip cascade is decided by weight, not by position (ABN-591)', () 
             }, {});
         };
 
-        const wanted = PINNED.reduce((all, property) => Object.assign(all, {
+        // Only an animation this chip actually runs can outrank its rules. The
+        // one in this sheet binds to a descendant, so it reaches no chip — but
+        // that is checked rather than assumed, and per property.
+        const running = every.filter((rule) => chip.matches(rule.selector)).reduce((names, rule) =>
+            names.concat(valueTokens(
+                (rule.declarations.animation || rule.declarations['animation-name'] || {}).value || ''
+            )), []);
+        audited(every, chip).forEach((property) => {
+            running.forEach((name) => {
+                if (every.animated[name] && every.animated[name][property]) {
+                    throw new Error('keyframes "' + name + '" animates "' + property
+                        + '", which this chip also declares');
+                }
+            });
+        });
+
+        const wanted = Object.keys(expected).sort().reduce((all, property) => Object.assign(all, {
             [property]: expected[property],
             [property + ' decided by position']: []
         }), {});
         const widths = viewports(every);
 
         expect(widths.length).toBeGreaterThan(0);
+        // Whole-object equality both ways: a property the chip rules gained and
+        // the table does not name fails here, which is what the named list could
+        // never do.
         expect(widths.map(readAt)).toEqual(widths.map(() => wanted));
     });
 
