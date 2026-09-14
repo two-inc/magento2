@@ -219,8 +219,8 @@
 
 /*
  * Both chip families carry `--color-chip-accent`, not the `--color-blue2` the
- * link controls keep. Brand overlays that ship a different palette override
- * these rules from their own style.css which loads after this one.
+ * link controls keep. A brand overlay's own palette has to OUT-SCORE these
+ * rules, not merely load after them (ABN-591).
  */
 .two-term-chip {
     display: flex;
@@ -261,8 +261,8 @@
     outline-offset: 2px;
 }
 
-/* Base class doubled throughout the chip rules: every state's winner is then
-   decided by specificity, never by source position. */
+/* Base class doubled on every rule that sets a chip-box property, so each
+   state's winner is decided by specificity, never by source position. */
 .two-term-chip.two-term-chip--selected,
 .two-term-chip.two-term-chip--selected:hover,
 .two-term-chip.two-term-chip--selected:focus,
@@ -423,11 +423,6 @@
     opacity: 1;
 }
 
-.two-term-chip.two-term-chip--single:hover,
-.two-term-chip.two-term-chip--single:disabled:hover {
-    border-color: var(--color-chip-accent);
-}
-
 .two-term-chip--single .two-term-chip__surcharge {
     font-size: 14px;
     font-weight: 500;
@@ -473,9 +468,8 @@
  * update.
  *
  * Deliberately low-key: this is reassurance, not a call to action, and it
- * sits directly under the term chips. Brand overlays that ship their own
- * palette override these rules from their own style.css, which loads after
- * this one.
+ * sits directly under the term chips. A brand overlay's own palette has to
+ * out-score these rules, not merely load after them (ABN-591).
  */
 .two-order-intent-message {
     margin: 0 0 1.5em;

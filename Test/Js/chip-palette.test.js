@@ -25,8 +25,9 @@ const ACCENT = 'rgb(9, 16, 48)';
 const GREY = 'rgb(227, 227, 227)';
 const WHITE = 'rgb(255, 255, 255)';
 
-/** Stands in for `:hover`, which jsdom cannot enter. A class scores the same as
- *  a pseudo-class, so the cascade the chips are read under is the real one. */
+/** Stands in for `:hover`, which jsdom cannot enter. A source-order-equivalent
+ *  stand-in: the substitution rewrites no rule's position, which is what jsdom
+ *  resolves the cascade by. */
 const HOVER = 'two-hover-probe';
 
 /** Each chip in its real nesting — a chip measured outside its container misses
@@ -43,7 +44,6 @@ const CONTROLS = [
         name: 'company-mode chip',
         base: 'two-company-mode-chip',
         selected: 'two-company-mode-chip--selected',
-        exempt: null,
         wrap: [
             '<span class="two-company-field-wrap"><div class="two-company-dropdown">'
                 + '<div class="two-company-mode-chips">',
@@ -174,7 +174,9 @@ describe.each(CONTROLS.map((control) => [control.name, control]))(
             (classes, focused, borderWidth, borderColor, background) => {
                 const element = chip(control, classes, { focused });
 
-                expect(focused ? element.matches(':focus') : true).toBe(true);
+                if (focused) {
+                    expect(element.matches(':focus')).toBe(true);
+                }
                 expect(paint(element)).toEqual({ borderWidth, borderColor, background });
             }
         );
@@ -220,15 +222,6 @@ describe('a disabled payment-term chip is exempt (ABN-591)', () => {
 });
 
 describe('the chip accent is its own property (ABN-591)', () => {
-    test('the shared blue is left where the links use it', () => {
-        injectStylesheet();
-
-        const root = window.getComputedStyle(document.documentElement);
-
-        expect(root.getPropertyValue('--color-chip-accent').trim()).toBe('#091030');
-        expect(root.getPropertyValue('--color-blue2').trim()).toBe('#3043d1');
-    });
-
     test('the sole-trader link keeps the shared blue', () => {
         injectStylesheet();
         document.body.innerHTML = '<span class="two-sole-trader-note__link" id="link">Sole trader</span>';
