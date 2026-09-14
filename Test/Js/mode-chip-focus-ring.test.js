@@ -78,7 +78,7 @@ describe('the popover mode chips show where the keyboard is (ABN-554)', () => {
             .toEqual({ outline: RING, outlineOffset: OFFSET });
     });
 
-    test('the ring is the payment-term chips\', not a second style', () => {
+    test('the ring is the payment-term chips\' geometry, on each control\'s own accent', () => {
         const chips = render();
 
         chips.term.focus();
@@ -86,6 +86,8 @@ describe('the popover mode chips show where the keyboard is (ABN-554)', () => {
         chips.plain.focus();
         const mode = window.getComputedStyle(chips.plain);
 
-        expect([mode.outline, mode.outlineOffset]).toEqual([term.outline, term.outlineOffset]);
+        expect(term.outline).toBe('2px solid var(--color-term-chip-accent)');
+        expect([mode.outline.split(' ')[0], mode.outlineOffset])
+            .toEqual([term.outline.split(' ')[0], term.outlineOffset]);
     });
 });

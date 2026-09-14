@@ -3,6 +3,7 @@
     --color-brownie-vanilla: #736963;
     --color-white: #fff;
     --color-blue2: #3043d1;
+    --color-term-chip-accent: #091030;
 }
 
 #two_gateway_form {
@@ -217,11 +218,9 @@
 }
 
 /*
- * Chip colour palette matches the `.two-company-mode-chip` toggle elsewhere on the
- * checkout page (the company-capture mode options): solid Two-brand
- * blue (`--color-blue2`) for the selected state, white fill with blue
- * text for unselected. Brand overlays that ship a different palette
- * (e.g. a brand overlay's palette) override these rules from their own
+ * The term chips carry their own accent (`--color-term-chip-accent`), not the
+ * `--color-blue2` the company-mode chips and the link controls share. Brand
+ * overlays that ship a different palette override these rules from their own
  * style.css which loads after this one.
  */
 .two-term-chip {
@@ -232,7 +231,7 @@
     border: 2px solid var(--color-gray89);
     border-radius: 8px;
     background: var(--color-white);
-    color: var(--color-blue2);
+    color: var(--color-term-chip-accent);
     cursor: pointer;
     transition:
         border-color 0.15s ease,
@@ -243,15 +242,20 @@
     position: relative;
 }
 
-.two-term-chip:hover {
-    border-color: var(--color-blue2);
+.two-term-chip:hover:not(.two-term-chip--selected):not(.two-term-chip--single) {
+    /* Padding absorbs the 1px the border gives up, so the chip does not resize
+       under the pointer. */
+    padding: 9px 17px;
+    border-width: 1px;
+    border-color: var(--color-term-chip-accent);
+    background: var(--color-gray89);
 }
 
 /* The group is one tab stop with arrow-key traversal, so the focused chip has
    to be identifiable; offset outside the chip to stay visible against the
-   selected chip's own blue fill. Keyboard only: a clicked chip gets no ring. */
+   selected chip's own solid fill. Keyboard only: a clicked chip gets no ring. */
 .two-term-chip:focus-visible {
-    outline: 2px solid var(--color-blue2);
+    outline: 2px solid var(--color-term-chip-accent);
     outline-offset: 2px;
 }
 
@@ -259,8 +263,8 @@
 .two-term-chip--selected:hover,
 .two-term-chip--selected:focus,
 .two-term-chip--selected:active {
-    border-color: var(--color-blue2);
-    background: var(--color-blue2);
+    border-color: var(--color-term-chip-accent);
+    background: var(--color-term-chip-accent);
     color: var(--color-white);
 }
 
@@ -406,8 +410,8 @@
 /* `:disabled` on every selector, to outscore the theme's own `button:disabled`. */
 .two-term-chip--single,
 .two-term-chip--single:disabled {
-    border-color: var(--color-blue2);
-    background: var(--color-blue2);
+    border-color: var(--color-term-chip-accent);
+    background: var(--color-term-chip-accent);
     color: var(--color-white);
     cursor: default;
     font-size: 14px;
@@ -417,7 +421,7 @@
 
 .two-term-chip--single:hover,
 .two-term-chip--single:disabled:hover {
-    border-color: var(--color-blue2);
+    border-color: var(--color-term-chip-accent);
 }
 
 .two-term-chip--single .two-term-chip__surcharge {
