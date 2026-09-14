@@ -28,21 +28,101 @@ const path = require('path');
 const REPO_ROOT = path.resolve(__dirname, '../..');
 const STYLESHEET = path.join(REPO_ROOT, 'view/frontend/web/css/style.css');
 
-const ACCENT = '#091030';
-const GREY = '#e3e3e3';
-const WHITE = '#fff';
+const ACCENT = 'rgb(9, 16, 48)';
+const GREY = 'rgb(227, 227, 227)';
+const WHITE = 'rgb(255, 255, 255)';
 
 /** Stand-ins for the pseudo-classes jsdom cannot enter. A class scores as a
  *  pseudo-class does and the substitution moves no rule, so neither half of the
  *  cascade shifts. */
 const PROBES = { ':hover': 'two-hover-probe', ':active': 'two-active-probe' };
 
-const PINNED = ['border-width', 'border-color', 'background-color', 'color'];
+const SIDES = ['top', 'right', 'bottom', 'left'];
 
-/** The shorthands that carry a pinned property. */
-const LONGHAND = {
-    border: ['border-width', 'border-style', 'border-color'],
-    background: ['background-color']
+/** Every property the spec states a value for. `padding` and `outline` are here
+ *  because box stability and the focus ring are spec rows of their own: without
+ *  them a rule that only grew the chip or only repainted the ring would resolve
+ *  unnoticed. */
+const PINNED = ['border-width', 'border-color', 'background-color', 'color']
+    .concat(SIDES.map((side) => 'padding-' + side))
+    .concat(['outline-width', 'outline-style', 'outline-color', 'outline-offset']);
+
+const LENGTH = /^(0|-?[\d.]+(px|em|rem|%|vw|vh|ch))$/i;
+const LINE_STYLE = /^(none|hidden|solid|dashed|dotted|double|groove|ridge|inset|outset)$/i;
+const COLOUR = /^(#[0-9a-f]{3,8}|(var|rgba?|hsla?|color)\([^)]*\)|transparent|currentcolor|inherit|initial|unset|white|black|red|green|blue|gray|grey)$/i;
+
+/**
+ * @param {string} value a declaration value
+ * @returns {Array} its top-level tokens, functions kept whole
+ */
+function valueTokens(value) {
+    return value.match(/[\w-]+\([^)]*\)|[^\s]+/g) || [];
+}
+
+/**
+ * @param {string} name the property a token belongs to, for the message
+ * @param {string} token one value token
+ * @returns {string} which of length, style or colour it is
+ * @throws {Error} on a spelling this resolver does not model
+ */
+function kindOf(name, token) {
+    if (LENGTH.test(token)) {
+        return 'length';
+    }
+    if (LINE_STYLE.test(token)) {
+        return 'style';
+    }
+    if (COLOUR.test(token)) {
+        return 'colour';
+    }
+
+    throw new Error('unmodelled value "' + token + '" in "' + name + '"');
+}
+
+/**
+ * The shorthands that carry a pinned property, each split into its longhands.
+ * A spelling none of them models throws rather than resolving to undefined,
+ * which would read as a missing declaration instead of an unread one.
+ */
+const SHORTHANDS = {
+    border: (value) => {
+        const split = {};
+        valueTokens(value).forEach((token) => {
+            const kind = kindOf('border', token);
+            split['border-' + (kind === 'length' ? 'width' : kind === 'style' ? 'style' : 'color')] = token;
+        });
+
+        return split;
+    },
+    outline: (value) => {
+        const split = {};
+        valueTokens(value).forEach((token) => {
+            const kind = kindOf('outline', token);
+            split['outline-' + (kind === 'length' ? 'width' : kind === 'style' ? 'style' : 'color')] = token;
+        });
+
+        return split;
+    },
+    background: (value) => {
+        // `none` is the image layer; the shorthand still resets the colour, so a
+        // rule saying `background: none` paints transparent rather than nothing.
+        const colours = valueTokens(value).filter((token) =>
+            (/^none$/i.test(token) ? 'image' : kindOf('background', token)) === 'colour');
+
+        return { 'background-color': colours.length ? colours[colours.length - 1] : 'transparent' };
+    },
+    padding: (value) => {
+        const parts = valueTokens(value);
+        parts.forEach((token) => kindOf('padding', token));
+        const box = [
+            parts[0],
+            parts[1] === undefined ? parts[0] : parts[1],
+            parts[2] === undefined ? parts[0] : parts[2],
+            parts[3] === undefined ? (parts[1] === undefined ? parts[0] : parts[1]) : parts[3]
+        ];
+
+        return SIDES.reduce((split, side, at) => Object.assign(split, { ['padding-' + side]: box[at] }), {});
+    }
 };
 
 /** Pseudo-classes this resolver scores. Anything else fails rather than
@@ -55,9 +135,37 @@ const PSEUDO_CLASSES = [
 
 const TERM = 'two-term-chip';
 const MODE = 'two-company-mode-chip';
-const SELECTED_PAINT = ['2px', ACCENT, ACCENT, WHITE];
-const REST_PAINT = ['2px', GREY, WHITE, ACCENT];
-const RAISED_PAINT = ['1px', ACCENT, GREY, ACCENT];
+
+/** Resting and raised padding per family. The raised pair gives the border back
+ *  the pixel it dropped, which is what keeps the box stable. */
+const PADDING = {
+    [TERM]: { rest: ['8px', '16px'], raised: ['9px', '17px'] },
+    [MODE]: { rest: ['5px', '10px'], raised: ['6px', '11px'] }
+};
+
+/**
+ * @param {string} family the chip's base class
+ * @param {Object} state `selected`, `raised` and `focused`
+ * @returns {Object} every pinned property's expected value
+ */
+function paint(family, state) {
+    const box = PADDING[family][state.raised ? 'raised' : 'rest'];
+    const expected = {
+        'border-width': state.selected || !state.raised ? '2px' : '1px',
+        'border-color': state.selected || state.raised ? ACCENT : GREY,
+        'background-color': state.selected ? ACCENT : state.raised ? GREY : WHITE,
+        color: state.selected ? WHITE : ACCENT,
+        'outline-width': state.focused ? '2px' : undefined,
+        'outline-style': state.focused ? 'solid' : undefined,
+        'outline-color': state.focused ? ACCENT : undefined,
+        'outline-offset': state.focused ? '2px' : undefined
+    };
+    SIDES.forEach((side, at) => {
+        expected['padding-' + side] = box[at % 2];
+    });
+
+    return expected;
+}
 
 /**
  * @param {string} family the chip's base class
@@ -69,17 +177,32 @@ function statesFor(family) {
     const active = PROBES[':active'];
 
     return [
-        [family + ' rest', family, REST_PAINT],
-        [family + ' selected', selected, SELECTED_PAINT],
-        [family + ' hover', family + ' ' + hover, RAISED_PAINT],
-        [family + ' hover selected', selected + ' ' + hover, SELECTED_PAINT],
-        [family + ' focus', family, RAISED_PAINT, { focused: true }],
-        [family + ' focus selected', selected, SELECTED_PAINT, { focused: true }],
-        [family + ' focus hover', family + ' ' + hover, RAISED_PAINT, { focused: true }],
-        [family + ' focus hover selected', selected + ' ' + hover, SELECTED_PAINT, { focused: true }],
-        [family + ' active', family + ' ' + active, REST_PAINT],
-        [family + ' active selected', selected + ' ' + active, SELECTED_PAINT],
-        [family + ' active hover', family + ' ' + hover + ' ' + active, RAISED_PAINT]
+        [family + ' rest', family, paint(family, {})],
+        [family + ' selected', selected, paint(family, { selected: true })],
+        [family + ' hover', family + ' ' + hover, paint(family, { raised: true })],
+        [family + ' hover selected', selected + ' ' + hover, paint(family, { selected: true })],
+        [
+            family + ' focus', family,
+            paint(family, { raised: true, focused: true }), { focused: true }
+        ],
+        [
+            family + ' focus selected', selected,
+            paint(family, { selected: true, focused: true }), { focused: true }
+        ],
+        [
+            family + ' focus hover', family + ' ' + hover,
+            paint(family, { raised: true, focused: true }), { focused: true }
+        ],
+        [
+            family + ' focus hover selected', selected + ' ' + hover,
+            paint(family, { selected: true, focused: true }), { focused: true }
+        ],
+        [family + ' active', family + ' ' + active, paint(family, {})],
+        [family + ' active selected', selected + ' ' + active, paint(family, { selected: true })],
+        [
+            family + ' active hover', family + ' ' + hover + ' ' + active,
+            paint(family, { raised: true })
+        ]
     ];
 }
 
@@ -87,13 +210,13 @@ const STATES = statesFor(TERM).concat(statesFor(MODE)).concat([
     [
         'sole term, disabled',
         TERM + ' ' + TERM + '--single',
-        SELECTED_PAINT,
+        paint(TERM, { selected: true }),
         { disabled: true }
     ],
     [
         'sole term, disabled and hovered',
         TERM + ' ' + TERM + '--single ' + PROBES[':hover'],
-        SELECTED_PAINT,
+        paint(TERM, { selected: true }),
         { disabled: true }
     ]
 ]);
@@ -177,20 +300,6 @@ function weigh(left, right) {
 }
 
 /**
- * @param {string} value a `border` or `background` shorthand
- * @param {string} longhand the part wanted
- * @returns {string} that part, or undefined
- */
-function part(value, longhand) {
-    const pieces = value.match(/#[0-9a-f]{3,8}|var\([^)]*\)|\b[\d.]+px\b|\b(solid|dashed|dotted|none)\b/gi) || [];
-
-    return pieces.find((piece) =>
-        longhand === 'border-width' ? /px$/i.test(piece)
-            : longhand === 'border-style' ? /^(solid|dashed|dotted|none)$/i.test(piece)
-                : !/px$/i.test(piece) && !/^(solid|dashed|dotted|none)$/i.test(piece));
-}
-
-/**
  * @param {string} condition one media condition, no comma
  * @returns {Object} {types, min, max}
  * @throws {Error} on a feature this resolver cannot evaluate
@@ -236,11 +345,9 @@ function declarationsOf(rule) {
         const property = rule.style[at];
         const value = rule.style.getPropertyValue(property);
         const important = rule.style.getPropertyPriority(property) === 'important';
-        (LONGHAND[property] || [property]).forEach((longhand) => {
-            declarations[longhand] = {
-                value: LONGHAND[property] ? part(value, longhand) : value,
-                important
-            };
+        const split = SHORTHANDS[property] ? SHORTHANDS[property](value) : { [property]: value };
+        Object.keys(split).forEach((longhand) => {
+            declarations[longhand] = { value: split[longhand], important };
         });
     }
 
@@ -287,9 +394,21 @@ function candidates() {
 
                 return;
             }
-            // Keyframes select by `animation-name`, never by a selector, so they
-            // are never the winner of a static resolution.
             if (rule.name !== undefined && rule.cssRules) {
+                // An animation is a HIGHER cascade origin than a normal author
+                // declaration, and `animation-fill-mode: both` keeps it winning
+                // after the run — so keyframes are skipped only while they touch
+                // no pinned property. One that did would repaint a chip with this
+                // resolver reporting a clean winner.
+                Array.prototype.forEach.call(rule.cssRules, (frame) => {
+                    Object.keys(declarationsOf(frame)).forEach((property) => {
+                        if (PINNED.indexOf(property) !== -1) {
+                            throw new Error('keyframes "' + rule.name + '" animates the pinned "'
+                                + property + '"');
+                        }
+                    });
+                });
+
                 return;
             }
             throw new Error('unmodelled at-rule "' + rule.cssText.slice(0, 60) + '"');
@@ -323,15 +442,31 @@ function viewports(all) {
 }
 
 /**
+ * @param {string} value a colour, hex or functional
+ * @returns {string} the `rgb(r, g, b)` spelling, so `#fff` and `#ffffff` agree
+ */
+function rgb(value) {
+    const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value);
+    if (!hex) {
+        return value;
+    }
+    const digits = hex[1].length === 3 ? hex[1].replace(/./g, '$&$&') : hex[1];
+
+    return 'rgb(' + [0, 2, 4].map((at) => parseInt(digits.substr(at, 2), 16)).join(', ') + ')';
+}
+
+/**
+ * @param {string} property the property being resolved
  * @param {Object} declared a declaration, or undefined
  * @param {Object} tokens the `:root` custom properties
- * @returns {string} the value with one level of `var()` resolved
+ * @returns {string} the value, `var()` resolved and colours normalised
  */
-function resolve(declared, tokens) {
+function resolve(property, declared, tokens) {
     const value = declared && declared.value !== undefined ? String(declared.value).trim() : '';
     const reference = /^var\((--[\w-]+)\)$/.exec(value);
+    const literal = reference ? tokens[reference[1]] : value;
 
-    return reference ? tokens[reference[1]] : value;
+    return /(^|-)color$/.test(property) ? rgb(literal) : literal;
 }
 
 /**
@@ -374,45 +509,43 @@ describe('the chip cascade is decided by weight, not by position (ABN-591)', () 
         const chip = mount(classes, options || {});
 
         const readAt = (width) => {
-        const all = every.filter((rule) => applies(rule.media, width));
+            const all = every.filter((rule) => applies(rule.media, width));
 
-        return PINNED.map((property) => {
-            const matching = all.filter((rule) => {
-                if (rule.declarations[property] === undefined) {
-                    return false;
-                }
-                // A pseudo-element rule paints a generated box, never the chip's own.
-                if (rule.selector.indexOf('::') !== -1) {
-                    return false;
-                }
+            return PINNED.reduce((resolved, property) => {
+                const matching = all.filter((rule) => {
+                    if (rule.declarations[property] === undefined) {
+                        return false;
+                    }
+                    // A pseudo-element rule paints a generated box, never the chip's own.
+                    if (rule.selector.indexOf('::') !== -1) {
+                        return false;
+                    }
 
-                return chip.matches(rule.selector);
-            }).map((rule) => Object.assign({}, rule, {
-                // Importance is per declaration, so it is carried per property.
-                important: rule.declarations[property].important
-            }));
-            const winner = matching.slice().sort((a, b) =>
-                weigh(a, b) || a.order - b.order
-            ).pop();
-            const tied = matching.filter((rule) =>
-                winner && weigh(rule, winner) === 0
-                    && resolve(rule.declarations[property], tokens)
-                        !== resolve(winner.declarations[property], tokens)
-            );
+                    return chip.matches(rule.selector);
+                }).map((rule) => Object.assign({}, rule, {
+                    // Importance is per declaration, so it is carried per property.
+                    important: rule.declarations[property].important
+                }));
+                const winner = matching.slice().sort((a, b) =>
+                    weigh(a, b) || a.order - b.order
+                ).pop();
+                const tied = matching.filter((rule) =>
+                    winner && weigh(rule, winner) === 0
+                        && resolve(property, rule.declarations[property], tokens)
+                            !== resolve(property, winner.declarations[property], tokens)
+                );
 
-            return {
-                property,
-                value: winner ? resolve(winner.declarations[property], tokens) : undefined,
-                decidedByPosition: tied.map((rule) => rule.selector)
-            };
-        });
+                return Object.assign(resolved, {
+                    [property]: winner ? resolve(property, winner.declarations[property], tokens) : undefined,
+                    [property + ' decided by position']: tied.map((rule) => rule.selector)
+                });
+            }, {});
         };
 
-        const wanted = PINNED.map((property, at) => ({
-            property,
-            value: expected[at],
-            decidedByPosition: []
-        }));
+        const wanted = PINNED.reduce((all, property) => Object.assign(all, {
+            [property]: expected[property],
+            [property + ' decided by position']: []
+        }), {});
         const widths = viewports(every);
 
         expect(widths.length).toBeGreaterThan(0);
