@@ -262,6 +262,8 @@ The push goes out under the App token rather than `GITHUB_TOKEN` for two reasons
 
 To trigger a release, merge that `staging → main` PR. CI runs on the merged commit; once green, `release.yml` fires.
 
+`.github/workflows/release-dispatch.yml` fires on the published Release and notifies the infrastructure repository, which resolves the newly published version and raises the pull request that moves the release-tracking Magento staging shop onto it. Because that shop installs from Packagist, a dispatch can arrive before Packagist has indexed the new tag; the infrastructure repository's daily reconcile covers that case, so nothing here needs to wait or retry (TWO-25769).
+
 ## Links
 
 - [Two developer documentation](https://docs.two.inc/)
