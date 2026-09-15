@@ -98,7 +98,7 @@ make run
 make stop
 ```
 
-After install, Magento is available at http://localhost:1234/ (admin: http://localhost:1234/admin, credentials: `exampleuser` / `examplepassword123`).
+After install, Magento is available at http://localhost:1234/ (admin: http://localhost:1234/admin, credentials: `exampleuser@two.inc` / `examplepassword123`).
 
 To use a different port: `make install PORT=5678`.
 
@@ -261,6 +261,8 @@ The push goes out under the App token rather than `GITHUB_TOKEN` for two reasons
 `.github/workflows/auto-pr.yml` runs on every push to `staging` (a merge is a push) and keeps a single rolling `staging → main` promotion PR open, no-opping when one already exists or when `staging` is not ahead of `main`.
 
 To trigger a release, merge that `staging → main` PR. CI runs on the merged commit; once green, `release.yml` fires.
+
+`.github/workflows/release-dispatch.yml` fires on the published Release and notifies the infrastructure repository, which resolves the newly published version and raises the pull request that moves the release-tracking Magento staging shop onto it. Because that shop installs from Packagist, a dispatch can arrive before Packagist has indexed the new tag; the infrastructure repository's daily reconcile covers that case, so nothing here needs to wait or retry (TWO-25769).
 
 ## Links
 

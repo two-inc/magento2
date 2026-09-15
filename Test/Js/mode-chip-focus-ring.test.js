@@ -19,7 +19,7 @@ const path = require('path');
 const REPO_ROOT = path.resolve(__dirname, '../..');
 const STYLESHEET = path.join(REPO_ROOT, 'view/frontend/web/css/style.css');
 
-const RING = '2px solid var(--color-blue2)';
+const RING = '2px solid var(--color-chip-accent)';
 const OFFSET = '2px';
 
 /**
@@ -62,7 +62,7 @@ afterEach(() => {
 
 describe('the popover mode chips show where the keyboard is (ABN-554)', () => {
     test.each([
-        ['selected', 'the selected chip, whose own blue fill the ring has to survive'],
+        ['selected', 'the selected chip'],
         ['plain', 'an unselected chip']
     ])('a keyboard-focused chip is ringed: %s (%s)', (which) => {
         const chip = render()[which];
