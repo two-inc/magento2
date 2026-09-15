@@ -759,8 +759,8 @@ describe('a theme cannot repaint the unselected chip label (ABN-598)', () => {
  */
 describe('a theme cannot repaint the chip surcharge (TWO-25748)', () => {
     const SURCHARGE = 'two-term-chip__surcharge';
-    /** A host theme reaches the span through its own container and the tag. */
-    const THEME = '.checkout-payment-method span';
+    /** A host theme reaches the span through two core containers and the tag. */
+    const THEME = '.checkout-payment-method .payment-method-content span';
 
     /**
      * @param {string} classes the chip's classes
@@ -769,25 +769,28 @@ describe('a theme cannot repaint the chip surcharge (TWO-25748)', () => {
      */
     const mountSurcharge = (classes, options) => {
         document.body.innerHTML = '<div class="checkout-payment-method">'
+            + '<div class="payment-method-content">'
             + '<div class="two-term-chips"><div class="two-term-chips__container">'
             + '<button type="button" class="' + classes + '" id="chip"'
             + (options.disabled ? ' disabled' : '') + '>'
             + '<span class="two-term-chip__days">30 days</span>'
             + '<span class="' + SURCHARGE + '" id="fee">+ 1.50</span>'
-            + '</button></div></div></div>';
+            + '</button></div></div></div></div>';
 
         return document.getElementById('fee');
     };
 
+    const TRIPLED = '.' + SURCHARGE + '.' + SURCHARGE + '.' + SURCHARGE;
+
     test.each([
-        ['at rest', TERM, {}, ACCENT, '.' + SURCHARGE + '.' + SURCHARGE],
+        ['at rest', TERM, {}, ACCENT, TRIPLED],
         [
             'selected', TERM + ' ' + TERM + '--selected', {}, WHITE,
-            '.' + TERM + '--selected .' + SURCHARGE + '.' + SURCHARGE
+            '.' + TERM + '--selected ' + TRIPLED
         ],
         [
             'sole term', TERM + ' ' + TERM + '--single', { disabled: true }, WHITE,
-            '.' + TERM + '--single .' + SURCHARGE + '.' + SURCHARGE
+            '.' + TERM + '--single ' + TRIPLED
         ]
     ])('%s', (label, classes, options, colour, expected) => {
         const every = candidates();

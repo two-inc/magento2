@@ -295,18 +295,16 @@
     font-weight: 700;
 }
 
-/* Doubled and pinned, not inherited: a theme rule reaching this span beats
-   inheritance at any weight, and out-scores a single class (TWO-25748). */
-.two-term-chip__surcharge.two-term-chip__surcharge {
+/* Tripled: inheritance loses to any rule matching this span, and 0-2-0 loses to
+   `.checkout-payment-method .payment-method-content span` (0-2-1) (TWO-25748). */
+.two-term-chip__surcharge.two-term-chip__surcharge.two-term-chip__surcharge {
     font-size: 12px;
     line-height: 1.3;
     opacity: 0.75;
     color: var(--color-chip-accent);
 }
 
-/* Restated per filled state: a rule on the span wins over the chip's inherited
-   colour regardless of weight (TWO-25748). */
-.two-term-chip--selected .two-term-chip__surcharge.two-term-chip__surcharge {
+.two-term-chip--selected .two-term-chip__surcharge.two-term-chip__surcharge.two-term-chip__surcharge {
     color: var(--color-white);
 }
 
@@ -435,7 +433,7 @@
     opacity: 1;
 }
 
-.two-term-chip--single .two-term-chip__surcharge.two-term-chip__surcharge {
+.two-term-chip--single .two-term-chip__surcharge.two-term-chip__surcharge.two-term-chip__surcharge {
     font-size: 14px;
     font-weight: 500;
     opacity: 1;
