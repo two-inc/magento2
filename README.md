@@ -98,7 +98,7 @@ make run
 make stop
 ```
 
-After install, Magento is available at http://localhost:1234/ (admin: http://localhost:1234/admin, credentials: `exampleuser` / `examplepassword123`).
+After install, Magento is available at http://localhost:1234/ (admin: http://localhost:1234/admin, credentials: `exampleuser@two.inc` / `examplepassword123`).
 
 To use a different port: `make install PORT=5678`.
 
