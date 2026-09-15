@@ -221,6 +221,36 @@ describe('a disabled payment-term chip is exempt (ABN-591)', () => {
     });
 });
 
+/**
+ * @param {string} classes extra classes putting the chip into one state
+ * @param {Object} [options] `disabled` for the native flag
+ * @returns {Element} the fee line inside the chip's label
+ */
+function surcharge(classes, options) {
+    const settings = options || {};
+    const control = CONTROLS[0];
+    injectStylesheet();
+    document.body.innerHTML = control.wrap[0]
+        + '<button type="button" class="' + control.base + ' ' + classes + '" id="chip"'
+        + (settings.disabled ? ' disabled' : '') + '>'
+        + '<span class="two-term-chip__days">30 days</span>'
+        + '<span class="two-term-chip__surcharge" id="fee">+ 1.50</span>'
+        + '</button>'
+        + control.wrap[1];
+
+    return document.getElementById('fee');
+}
+
+describe('the chip surcharge carries the colour of the state it sits on (TWO-25748)', () => {
+    test.each([
+        ['', false, ACCENT, 'at rest it matches the label beside it'],
+        ['two-term-chip--selected', false, WHITE, 'reversed out on the selected fill'],
+        ['two-term-chip--single', true, WHITE, 'reversed out on the sole term fill']
+    ])('[%s] disabled=%s -> %s (%s)', (classes, disabled, expected) => {
+        expect(rgb(window.getComputedStyle(surcharge(classes, { disabled })).color)).toBe(expected);
+    });
+});
+
 describe('the chip accent is its own property (ABN-591)', () => {
     test('the sole-trader link keeps the shared blue', () => {
         injectStylesheet();

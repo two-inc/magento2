@@ -749,3 +749,73 @@ describe('a theme cannot repaint the unselected chip label (ABN-598)', () => {
         }).toEqual({ selector: expected, color: ACCENT });
     });
 });
+
+/**
+ * The audit above weighs only rules reaching the chip itself. The fee line is a
+ * span inside the label, and an inherited colour loses to ANY rule matching that
+ * span whatever its weight, so a theme reaching it needed no specificity at all
+ * to take it. Each state declares the colour instead, and each has to out-score
+ * the theme rule that reaches the span (TWO-25748).
+ */
+describe('a theme cannot repaint the chip surcharge (TWO-25748)', () => {
+    const SURCHARGE = 'two-term-chip__surcharge';
+    /** A host theme reaches the span through its own container and the tag. */
+    const THEME = '.checkout-payment-method span';
+
+    /**
+     * @param {string} classes the chip's classes
+     * @param {Object} options `disabled` for the native flag
+     * @returns {Element} the fee line, under the theme container the theme rule names
+     */
+    const mountSurcharge = (classes, options) => {
+        document.body.innerHTML = '<div class="checkout-payment-method">'
+            + '<div class="two-term-chips"><div class="two-term-chips__container">'
+            + '<button type="button" class="' + classes + '" id="chip"'
+            + (options.disabled ? ' disabled' : '') + '>'
+            + '<span class="two-term-chip__days">30 days</span>'
+            + '<span class="' + SURCHARGE + '" id="fee">+ 1.50</span>'
+            + '</button></div></div></div>';
+
+        return document.getElementById('fee');
+    };
+
+    test.each([
+        ['at rest', TERM, {}, ACCENT, '.' + SURCHARGE + '.' + SURCHARGE],
+        [
+            'selected', TERM + ' ' + TERM + '--selected', {}, WHITE,
+            '.' + TERM + '--selected .' + SURCHARGE + '.' + SURCHARGE
+        ],
+        [
+            'sole term', TERM + ' ' + TERM + '--single', { disabled: true }, WHITE,
+            '.' + TERM + '--single .' + SURCHARGE + '.' + SURCHARGE
+        ]
+    ])('%s', (label, classes, options, colour, expected) => {
+        const every = candidates();
+        const root = window.getComputedStyle(document.documentElement);
+        const tokens = {};
+        Array.prototype.forEach.call(root, (property) => {
+            if (property.startsWith('--')) {
+                tokens[property] = root.getPropertyValue(property).trim();
+            }
+        });
+        const fee = mountSurcharge(classes, options);
+        const theme = {
+            selector: THEME,
+            score: score(THEME),
+            order: Infinity,
+            declarations: { color: { value: '#f0f', important: false } },
+            media: []
+        };
+
+        const matching = every.concat([theme]).filter((rule) =>
+            rule.declarations.color !== undefined
+                && rule.selector.indexOf('::') === -1
+                && fee.matches(rule.selector));
+        const winner = matching.slice().sort((a, b) => weigh(a, b) || a.order - b.order).pop();
+
+        expect({
+            selector: winner.selector,
+            color: resolve('color', winner.declarations.color, tokens)
+        }).toEqual({ selector: expected, color: colour });
+    });
+});
