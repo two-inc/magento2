@@ -97,6 +97,7 @@ install: clean
 	# Magento's 90-day default password lifetime the moment a fresh
 	# container starts, bouncing every non-My-Account admin page.
 	docker exec $(CONTAINER) php bin/magento config:set admin/security/password_lifetime 0
+	docker exec $(CONTAINER) bash /data/extensions/workdir/dev/create-admin-user
 	# Pre-bake all theme JS/CSS so RequireJS XHRs hit plain file IO instead
 	# of falling through Magento's pub/static.php router (a full bootstrap
 	# per asset). Without this, RequireJS's ~hundreds of runtime-loaded
@@ -119,7 +120,8 @@ install: clean
 		echo " Proxy store:   $$PROXY_URL/"; \
 		echo " Proxy admin:   $$PROXY_URL/admin"; \
 	fi; \
-	echo " Credentials:   exampleuser / examplepassword123"; \
+	echo " Credentials:   exampleuser@two.inc / examplepassword123"; \
+	echo "                (the base image's own 'exampleuser' account still works too)"; \
 	echo " Xdebug:        installed (activate with 'make debug')"; \
 	bash dev/print-resolved-hosts.sh $(CONTAINER); \
 	echo "========================================="
@@ -154,7 +156,8 @@ run:
 		echo " Proxy store:   $$PROXY_URL/"; \
 		echo " Proxy admin:   $$PROXY_URL/admin"; \
 	fi; \
-	echo " Credentials:   exampleuser / examplepassword123"; \
+	echo " Credentials:   exampleuser@two.inc / examplepassword123"; \
+	echo "                (the base image's own 'exampleuser' account still works too)"; \
 	bash dev/print-resolved-hosts.sh $(CONTAINER); \
 	echo "========================================="
 
@@ -185,7 +188,8 @@ debug:
 		echo " Proxy store:   $$PROXY_URL/"; \
 		echo " Proxy admin:   $$PROXY_URL/admin"; \
 	fi; \
-	echo " Credentials:   exampleuser / examplepassword123"; \
+	echo " Credentials:   exampleuser@two.inc / examplepassword123"; \
+	echo "                (the base image's own 'exampleuser' account still works too)"; \
 	echo " Mode:          debug (Xdebug + caches disabled)"; \
 	bash dev/print-resolved-hosts.sh $(CONTAINER); \
 	echo "========================================="
